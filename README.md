@@ -99,16 +99,21 @@ Open:
 
 ## Replit Deployment
 
-This repo includes `.replit` and `replit.nix` for deploying the Next.js landing app from `landing/`.
+This repo includes `.replit` and `replit.nix` for deploying the Python app and serving the built landing page.
 
 After importing to Replit:
 
 1. Click **Run** to preview.
 2. Click **Deploy** (Autoscale).
 3. Build command is already configured:
-   - `cd landing && npm ci && npm run build`
+   - `cd landing && npm ci && npm run build && cd ../app && python3 -m pip install -r requirements.txt`
 4. Start command is already configured:
-   - `cd landing && npm run start`
+   - `cd app && FLEETSIGHT_APP_HOST=0.0.0.0 FLEETSIGHT_APP_PORT=$PORT python3 server.py`
+
+Routes:
+
+- App console: `/`
+- Marketing landing page: `/landing`
 
 ## OpenClaw Usage
 

@@ -1,14 +1,13 @@
-entrypoint = "bash -lc 'cd landing && npm run dev'"
+entrypoint = "bash -lc 'cd app && python3 -m pip install -r requirements.txt >/tmp/pip.log 2>&1 && FLEETSIGHT_APP_HOST=0.0.0.0 FLEETSIGHT_APP_PORT=${PORT:-3000} python3 server.py'"
 
 [nix]
 channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["bash", "-lc", "cd landing && npm ci && npm run build"]
-run = ["bash", "-lc", "cd landing && npm run start"]
+build = ["bash", "-lc", "cd landing && npm ci && npm run build && cd ../app && python3 -m pip install -r requirements.txt"]
+run = ["bash", "-lc", "cd app && FLEETSIGHT_APP_HOST=0.0.0.0 FLEETSIGHT_APP_PORT=${PORT:-3000} python3 server.py"]
 
 [env]
 PORT = "3000"
 XDG_CACHE_HOME = "/tmp/.cache"
-

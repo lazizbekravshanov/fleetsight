@@ -28,6 +28,7 @@ from fastapi.staticfiles import StaticFiles
 ROOT = Path(__file__).resolve().parents[1]
 FLEETSIGHT_ENGINE_DIR = ROOT / "fleetsight" / "skills" / "fleetsight"
 WEB_DIR = Path(__file__).resolve().parent / "web"
+LANDING_OUT_DIR = ROOT / "landing" / "out"
 DEFAULT_DATA_DIR = (Path(__file__).resolve().parent / "app_data").resolve()
 
 
@@ -83,6 +84,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
+if (LANDING_OUT_DIR / "_next").exists():
+    app.mount("/_next", StaticFiles(directory=str(LANDING_OUT_DIR / "_next")), name="landing_next")
 
 
 def now_utc() -> datetime:
@@ -447,6 +450,27 @@ def _startup() -> None:
 @app.get("/")
 def root_page() -> FileResponse:
     return FileResponse(str(WEB_DIR / "index.html"))
+
+
+@app.get("/landing")
+def landing_page() -> FileResponse:
+    index = LANDING_OUT_DIR / "index.html"
+    if not index.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Landing page is not built yet. Run `cd landing && npm ci && npm run build` first.",
+        )
+    return FileResponse(str(index))
+
+
+@app.get("/landing/{asset_path:path}")
+def landing_asset(asset_path: str) -> FileResponse:
+    target = (LANDING_OUT_DIR / asset_path).resolve()
+    if LANDING_OUT_DIR.resolve() not in target.parents:
+        raise HTTPException(status_code=403, detail="Invalid landing asset path")
+    if not target.exists() or not target.is_file():
+        raise HTTPException(status_code=404, detail="Landing asset not found")
+    return FileResponse(str(target))
 
 
 @app.get("/healthz")

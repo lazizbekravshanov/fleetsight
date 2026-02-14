@@ -50,6 +50,10 @@ Open:
 
 `http://127.0.0.1:8787`
 
+Landing route (after building Next landing):
+
+`http://127.0.0.1:8787/landing`
+
 ## First-Use Flow
 
 1. Sign up with email + password
@@ -109,3 +113,15 @@ python3 fmcsa_sync.py --resource-id 6qg9-x4f8 --max-rows 100000
 - Report reads are restricted to `app_data/`
 - Password hashing currently uses salted SHA-256 (MVP only)
 - For production, replace auth/session/email with hardened providers
+
+## Build Landing for App Route
+
+To serve the redesigned landing from `/landing`:
+
+```bash
+cd ../landing
+npm ci
+npm run build
+```
+
+This generates `landing/out` which the FastAPI app serves.
