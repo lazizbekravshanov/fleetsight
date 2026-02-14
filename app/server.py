@@ -734,11 +734,23 @@ def chat_message(
                 f"- /api/reports/file?path={relative_to_data(report['clusters_csv'])}\n"
             )
     else:
-        reply = (
-            "Upload a CSV first, then run:\n"
-            "`/fleetsight analyze <path_to_csv> --top 50 --threshold 30`\n\n"
-            "You can also ask: `explain scoring`."
-        )
+        if OPENAI_API_KEY:
+            try:
+                reply = call_openai_codex(prompt=prompt, user_role=str(user["role"]))
+            except HTTPException as exc:
+                detail = str(exc.detail) if hasattr(exc, "detail") else "Unknown error"
+                reply = (
+                    f"Assistant error: {detail}\n\n"
+                    "Try `/fleetsight analyze latest --top 50 --threshold 30` "
+                    "or ask `explain scoring`."
+                )
+        else:
+            reply = (
+                "Upload a CSV first, then run:\n"
+                "`/fleetsight analyze <path_to_csv> --top 50 --threshold 30`\n\n"
+                "You can also ask: `explain scoring`.\n"
+                "For general chatbot responses, set OPENAI_API_KEY on the server."
+            )
     append_message(int(convo_id), "assistant", reply)
     log_action(user_id, "chat_message", {"conversation_id": int(convo_id)})
     return {"ok": True, "conversation_id": int(convo_id), "reply": reply}
