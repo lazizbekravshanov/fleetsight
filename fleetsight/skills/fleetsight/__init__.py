@@ -1,0 +1,2 @@
+"""FleetSight OpenClaw skill package."""
+

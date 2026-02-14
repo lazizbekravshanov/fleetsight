@@ -1,0 +1,22 @@
+{
+  "name": "fleetsight",
+  "display_name": "FleetSight",
+  "description": "Detect likely affiliated/chameleon carrier networks from identifier overlap.",
+  "version": "0.1.0",
+  "entrypoint": "python3 fleetsight.py",
+  "commands": [
+    {
+      "name": "analyze",
+      "usage": "/fleetsight analyze <path_to_csv> [--top 50] [--threshold 30]"
+    },
+    {
+      "name": "sample-data",
+      "usage": "/fleetsight sample-data"
+    },
+    {
+      "name": "explain",
+      "usage": "/fleetsight explain"
+    }
+  ]
+}
+
