@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+import urllib.error
+import urllib.request
 
 from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +41,8 @@ APP_DB = Path(getenv("FLEETSIGHT_APP_DB", str(APP_DATA / "fleetsight_app.db"))).
 APP_HOST = getenv("FLEETSIGHT_APP_HOST", "127.0.0.1")
 APP_PORT = int(getenv("FLEETSIGHT_APP_PORT", "8787"))
 EMAIL_FROM = getenv("FLEETSIGHT_EMAIL_FROM", "no-reply@fleetsight.local")
+OPENAI_API_KEY = getenv("OPENAI_API_KEY", "")
+OPENAI_MODEL = getenv("OPENAI_MODEL", "gpt-4.1-mini")
 DOT_DOMAINS = {
     d.strip().lower()
     for d in getenv(
@@ -374,6 +378,67 @@ def relative_to_data(path: str) -> str:
         return str(p)
 
 
+def extract_response_text(payload: Dict[str, Any]) -> str:
+    text = payload.get("output_text")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    chunks: List[str] = []
+    for item in payload.get("output", []) or []:
+        for content in item.get("content", []) or []:
+            if content.get("type") == "output_text" and content.get("text"):
+                chunks.append(str(content["text"]))
+    return "\n".join(chunks).strip()
+
+
+def call_openai_codex(prompt: str, user_role: str) -> str:
+    if not OPENAI_API_KEY:
+        raise HTTPException(
+            status_code=400,
+            detail="OPENAI_API_KEY is not configured on the server.",
+        )
+    instructions = (
+        "You are Codex inside FleetSight. "
+        "Be concise, technical, and practical for freight verification workflows. "
+        "Do not invent facts. If uncertain, say so."
+    )
+    req_body = {
+        "model": OPENAI_MODEL,
+        "instructions": instructions,
+        "input": [
+            {
+                "role": "user",
+                "content": (
+                    f"User role: {user_role}\n"
+                    "Task:\n"
+                    f"{prompt}"
+                ),
+            }
+        ],
+    }
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(req_body).encode("utf-8"),
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=45) as resp:  # nosec B310
+            payload = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        raise HTTPException(status_code=502, detail=f"OpenAI API error: {detail[:500]}")
+    except Exception as exc:  # pragma: no cover
+        raise HTTPException(status_code=502, detail=f"OpenAI request failed: {exc}")
+
+    text = extract_response_text(payload)
+    if not text:
+        raise HTTPException(status_code=502, detail="OpenAI returned empty output.")
+    return text
+
+
 @app.on_event("startup")
 def _startup() -> None:
     init_db()
@@ -677,6 +742,25 @@ def fmcsa_catalog(x_session_token: Optional[str] = Header(default=None)) -> Dict
         return {"items": [], "hint": "Run sync script first: python app/fmcsa_sync.py"}
     data = json.loads(path.read_text(encoding="utf-8"))
     return data
+
+
+@app.post("/api/codex-assist")
+def codex_assist(
+    payload: Dict[str, Any], x_session_token: Optional[str] = Header(default=None)
+) -> Dict[str, Any]:
+    user = get_user_from_session(x_session_token)
+    prompt = (payload.get("prompt") or "").strip()
+    if not prompt:
+        raise HTTPException(status_code=400, detail="prompt is required")
+    if len(prompt) > 8000:
+        raise HTTPException(status_code=400, detail="prompt too long")
+    answer = call_openai_codex(prompt=prompt, user_role=str(user["role"]))
+    log_action(
+        int(user["user_id"]),
+        "codex_assist",
+        {"prompt_chars": len(prompt), "model": OPENAI_MODEL},
+    )
+    return {"ok": True, "answer": answer, "model": OPENAI_MODEL}
 
 
 def main() -> None:

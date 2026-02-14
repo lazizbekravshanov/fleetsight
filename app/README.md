@@ -13,6 +13,7 @@ This app adds a ChatGPT-style interface on top of the FleetSight detection engin
   - `usdot_official`: auto-approved only for approved DOT domains
   - `usdot_official` non-approved domains: pending admin approval
 - Chat interface for FleetSight commands
+- Codex Assist panel (OpenAI API-backed)
 - CSV upload + analysis execution
 - JSON/CSV report download links
 - Audit log table in SQLite
@@ -29,6 +30,13 @@ This app adds a ChatGPT-style interface on top of the FleetSight detection engin
 cd app
 python3 -m pip install -r requirements.txt
 cp .env.example .env  # optional
+```
+
+Set OpenAI key for Codex integration:
+
+```bash
+export OPENAI_API_KEY="your_api_key"
+export OPENAI_MODEL="gpt-4.1-mini"  # optional override
 ```
 
 ## Run
@@ -51,6 +59,7 @@ Open:
 5. Upload carrier CSV
 6. Click **Analyze Latest Upload** or chat:
    - `/fleetsight analyze latest --top 50 --threshold 30`
+7. Use **Codex Assist** panel for technical guidance and workflow help.
 
 ## Admin Approval Flow
 

@@ -86,6 +86,31 @@ body {
   color: #3f5f82;
 }
 
+.codex-panel {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  padding: 0.55rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.codex-panel h3 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.codex-panel textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  padding: 0.55rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  color: #1a406e;
+}
+
 .admin-panel {
   margin-top: 1rem;
   border: 1px solid var(--line);

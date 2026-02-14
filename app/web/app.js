@@ -165,6 +165,31 @@ q("new-chat").onclick = () => {
   appendMessage("assistant", "New chat started. Upload a CSV then run /fleetsight analyze <path>.");
 };
 
+q("codex-send").onclick = async () => {
+  const prompt = q("codex-prompt").value.trim();
+  if (!prompt) {
+    setStatus("Enter a Codex prompt first.");
+    return;
+  }
+  if (!state.sessionToken) {
+    setStatus("Login first to use Codex Assist.");
+    return;
+  }
+  appendMessage("user", `[Codex] ${prompt}`);
+  q("codex-prompt").value = "";
+  try {
+    const data = await api("/api/codex-assist", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    appendMessage("assistant", `[Codex:${data.model}] ${data.answer}`);
+  } catch (e) {
+    appendMessage("assistant", `Codex error: ${e.message}`);
+    setStatus(e.message);
+  }
+};
+
 function toggleAdminPanel() {
   const panel = q("admin-panel");
   if (state.role === "admin") {
