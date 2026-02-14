@@ -5,6 +5,11 @@ const state = {
   role: "",
 };
 
+const STORAGE_KEYS = {
+  sessionToken: "fleetsight.session_token",
+  role: "fleetsight.role",
+};
+
 function q(id) {
   return document.getElementById(id);
 }
@@ -37,10 +42,41 @@ async function api(path, opts = {}) {
   const res = await fetch(path, { ...opts, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
+    if (res.status === 401) {
+      clearSession();
+      setStatus("Session expired. Please login again.");
+    }
     const msg = data.detail || `Request failed: ${res.status}`;
     throw new Error(msg);
   }
   return data;
+}
+
+function persistSession() {
+  if (!state.sessionToken) {
+    localStorage.removeItem(STORAGE_KEYS.sessionToken);
+    localStorage.removeItem(STORAGE_KEYS.role);
+    return;
+  }
+  localStorage.setItem(STORAGE_KEYS.sessionToken, state.sessionToken);
+  localStorage.setItem(STORAGE_KEYS.role, state.role || "");
+}
+
+function clearSession() {
+  state.sessionToken = "";
+  state.role = "";
+  toggleAdminPanel();
+  persistSession();
+}
+
+function restoreSession() {
+  const token = localStorage.getItem(STORAGE_KEYS.sessionToken) || "";
+  const role = localStorage.getItem(STORAGE_KEYS.role) || "";
+  if (!token) return;
+  state.sessionToken = token;
+  state.role = role;
+  toggleAdminPanel();
+  setStatus("Session restored. You can continue chatting.");
 }
 
 async function loadConversations() {
@@ -105,6 +141,7 @@ q("login").onclick = async () => {
     });
     state.sessionToken = data.session_token;
     state.role = data.role || "";
+    persistSession();
     setStatus(`Logged in as ${q("email").value} (${data.role})`);
     toggleAdminPanel();
     await loadConversations();
@@ -114,6 +151,10 @@ q("login").onclick = async () => {
 };
 
 q("upload").onclick = async () => {
+  if (!state.sessionToken) {
+    setStatus("Login first to upload CSV.");
+    return;
+  }
   const file = q("csv-file").files[0];
   if (!file) {
     setStatus("Select a CSV file first.");
@@ -138,6 +179,10 @@ q("analyze-latest").onclick = async () => {
 };
 
 q("send").onclick = async () => {
+  if (!state.sessionToken) {
+    setStatus("Login first to chat.");
+    return;
+  }
   const text = q("prompt").value.trim();
   if (!text) return;
   appendMessage("user", text);
@@ -245,3 +290,16 @@ q("refresh-pending").onclick = async () => {
     setStatus(e.message);
   }
 };
+
+window.addEventListener("load", async () => {
+  restoreSession();
+  if (!state.sessionToken) return;
+  try {
+    await loadConversations();
+    if (state.role === "admin") {
+      await loadPendingUsers();
+    }
+  } catch (e) {
+    setStatus(e.message);
+  }
+});
