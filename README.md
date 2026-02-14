@@ -115,6 +115,34 @@ Routes:
 - App console: `/`
 - Marketing landing page: `/landing`
 
+## Vercel Deployment (Recommended for Landing)
+
+Deploy the `landing/` app to Vercel from repo root:
+
+```bash
+npm i -g vercel
+vercel
+vercel --prod
+```
+
+This repo includes `vercel.json` configured to:
+
+- install from `landing/`
+- build with `next build`
+- publish `landing/out`
+
+Optional Vercel env for CTA links:
+
+- `NEXT_PUBLIC_APP_URL=https://<your-app-host>`
+
+Example app hosts:
+
+- Railway / Render / Fly / any HTTPS backend running `app/server.py`
+
+If your landing is on Vercel and backend is elsewhere, set backend CORS:
+
+- `FLEETSIGHT_CORS_ORIGINS=https://<your-vercel-domain>`
+
 ## OpenClaw Usage
 
 After installing the skill in your OpenClaw skills directory:

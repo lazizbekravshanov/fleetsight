@@ -48,6 +48,11 @@ AUTH_DISABLED = getenv("FLEETSIGHT_DISABLE_AUTH", "1").lower() in {"1", "true", 
 DEV_USER_ID = int(getenv("FLEETSIGHT_DEV_USER_ID", "1"))
 DEV_USER_EMAIL = getenv("FLEETSIGHT_DEV_USER_EMAIL", "dev@fleetsight.local")
 DEV_USER_ROLE = getenv("FLEETSIGHT_DEV_USER_ROLE", "admin")
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in getenv("FLEETSIGHT_CORS_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 EMAIL_FROM = getenv("FLEETSIGHT_EMAIL_FROM", "no-reply@fleetsight.local")
 OPENAI_API_KEY = getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = getenv("OPENAI_MODEL", "gpt-4.1-mini")
@@ -83,10 +88,11 @@ import fleetsight as engine  # noqa: E402
 
 
 app = FastAPI(title="FleetSight App", version="0.2.0")
+ALLOW_ALL_ORIGINS = CORS_ORIGINS == ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["*"] if ALLOW_ALL_ORIGINS else CORS_ORIGINS,
+    allow_credentials=not ALLOW_ALL_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

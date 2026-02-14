@@ -82,6 +82,7 @@ function Section({
 
 export default function Page() {
   const [dark, setDark] = useState(false);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "#";
 
   useEffect(() => {
     const fromStorage = window.localStorage.getItem("fleetsight-theme");
@@ -135,12 +136,18 @@ export default function Page() {
             AI-powered verification and risk intelligence for USDOT and FMCSA data.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <button className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-500">
+            <a
+              href={appUrl}
+              className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-500"
+            >
               Verify a USDOT
-            </button>
-            <button className="rounded-xl border border-blue-200 bg-white/80 px-5 py-3 text-sm font-medium text-blue-700 backdrop-blur transition hover:shadow-glow dark:border-slate-600 dark:bg-slate-900/50 dark:text-blue-200">
+            </a>
+            <a
+              href={appUrl}
+              className="rounded-xl border border-blue-200 bg-white/80 px-5 py-3 text-sm font-medium text-blue-700 backdrop-blur transition hover:shadow-glow dark:border-slate-600 dark:bg-slate-900/50 dark:text-blue-200"
+            >
               Request Early Access
-            </button>
+            </a>
           </div>
         </motion.div>
 
@@ -304,4 +311,3 @@ export default function Page() {
     </main>
   );
 }
-
