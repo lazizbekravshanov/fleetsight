@@ -4,6 +4,9 @@ const state = {
   uploadedPath: "",
   role: "",
 };
+const DEV_MODE = true;
+const DEV_SESSION_TOKEN = "dev-session-token";
+const DEV_ROLE = "admin";
 
 const STORAGE_KEYS = {
   sessionToken: "fleetsight.session_token",
@@ -63,6 +66,7 @@ function persistSession() {
 }
 
 function clearSession() {
+  if (DEV_MODE) return;
   state.sessionToken = "";
   state.role = "";
   toggleAdminPanel();
@@ -292,7 +296,16 @@ q("refresh-pending").onclick = async () => {
 };
 
 window.addEventListener("load", async () => {
+  if (DEV_MODE) {
+    state.sessionToken = DEV_SESSION_TOKEN;
+    state.role = DEV_ROLE;
+    toggleAdminPanel();
+    setStatus("Dev mode: auth disabled (hardcoded admin session).");
+    const authGrid = document.querySelector(".auth-grid");
+    if (authGrid) authGrid.style.display = "none";
+  } else {
   restoreSession();
+  }
   if (!state.sessionToken) return;
   try {
     await loadConversations();

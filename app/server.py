@@ -44,6 +44,10 @@ APP_DATA = Path(getenv("FLEETSIGHT_APP_DATA", str(DEFAULT_DATA_DIR))).expanduser
 APP_DB = Path(getenv("FLEETSIGHT_APP_DB", str(APP_DATA / "fleetsight_app.db"))).expanduser().resolve()
 APP_HOST = getenv("FLEETSIGHT_APP_HOST", "127.0.0.1")
 APP_PORT = int(getenv("FLEETSIGHT_APP_PORT", "8787"))
+AUTH_DISABLED = getenv("FLEETSIGHT_DISABLE_AUTH", "1").lower() in {"1", "true", "yes", "on"}
+DEV_USER_ID = int(getenv("FLEETSIGHT_DEV_USER_ID", "1"))
+DEV_USER_EMAIL = getenv("FLEETSIGHT_DEV_USER_EMAIL", "dev@fleetsight.local")
+DEV_USER_ROLE = getenv("FLEETSIGHT_DEV_USER_ROLE", "admin")
 EMAIL_FROM = getenv("FLEETSIGHT_EMAIL_FROM", "no-reply@fleetsight.local")
 OPENAI_API_KEY = getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL = getenv("OPENAI_MODEL", "gpt-4.1-mini")
@@ -204,6 +208,17 @@ def init_db() -> None:
         )
 
 
+def dev_user_identity() -> Dict[str, Any]:
+    return {
+        "user_id": DEV_USER_ID,
+        "expires_at": utc_iso(now_utc() + timedelta(days=3650)),
+        "email": DEV_USER_EMAIL,
+        "role": DEV_USER_ROLE,
+        "email_verified": 1,
+        "approved": 1,
+    }
+
+
 def emit_verification_email(email: str, token: str) -> None:
     outbox = APP_DATA / "mail_outbox"
     outbox.mkdir(parents=True, exist_ok=True)
@@ -227,7 +242,9 @@ def log_action(user_id: Optional[int], action: str, details: Dict[str, Any]) -> 
         )
 
 
-def get_user_from_session(session_token: Optional[str]) -> sqlite3.Row:
+def get_user_from_session(session_token: Optional[str]) -> Dict[str, Any] | sqlite3.Row:
+    if AUTH_DISABLED:
+        return dev_user_identity()
     if not session_token:
         raise HTTPException(status_code=401, detail="Missing session token")
     raw = verify_signed_token(session_token)
