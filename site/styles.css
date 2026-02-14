@@ -1,0 +1,293 @@
+:root {
+  --bg: #f4f9ff;
+  --surface: #ffffff;
+  --surface-2: #eef5ff;
+  --ink: #0f1c2e;
+  --muted: #5b6f88;
+  --line: #c7d9f3;
+  --blue-1: #0a84ff;
+  --blue-2: #2f6bff;
+  --blue-3: #7cc7ff;
+  --glow: 0 0 0 1px rgba(10, 132, 255, 0.2), 0 14px 40px rgba(37, 80, 170, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at 10% -10%, #d8ecff 0, var(--bg) 40%, #f7fbff 100%);
+  min-height: 100vh;
+}
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(10, 132, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 132, 255, 0.08) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.9), transparent 88%);
+  z-index: 0;
+}
+
+.fragments {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.frag {
+  position: absolute;
+  display: block;
+  border: 1px solid rgba(33, 113, 255, 0.35);
+  background: linear-gradient(135deg, rgba(140, 206, 255, 0.42), rgba(33, 113, 255, 0.14));
+  box-shadow: var(--glow);
+  animation: drift 12s ease-in-out infinite;
+}
+
+.f1 { width: 34px; height: 34px; top: 10%; left: 6%; animation-delay: -2s; }
+.f2 { width: 24px; height: 24px; top: 18%; right: 8%; animation-delay: -8s; }
+.f3 { width: 18px; height: 18px; top: 58%; left: 12%; animation-delay: -4s; }
+.f4 { width: 42px; height: 42px; top: 72%; right: 14%; animation-delay: -1s; }
+.f5 { width: 12px; height: 12px; top: 35%; right: 24%; animation-delay: -7s; }
+.f6 { width: 22px; height: 22px; top: 84%; left: 34%; animation-delay: -5s; }
+
+.page {
+  position: relative;
+  z-index: 2;
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3.5rem 0 1.75rem;
+}
+
+.hero {
+  padding: 2.75rem;
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.98), rgba(238, 245, 255, 0.96));
+  box-shadow: var(--glow);
+}
+
+.kicker {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue-2);
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 5vw, 4.1rem);
+  margin: 0.4rem 0 0.7rem;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--muted);
+  font-size: 1.07rem;
+}
+
+.hero-cta {
+  margin-top: 1.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.62rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue-1), var(--blue-2));
+  box-shadow: 0 10px 24px rgba(18, 101, 214, 0.3);
+}
+
+.btn-secondary {
+  color: var(--blue-2);
+  border-color: rgba(47, 107, 255, 0.35);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.terminal {
+  margin-top: 1.2rem;
+  border: 1px solid rgba(22, 71, 145, 0.28);
+  background: #f2f8ff;
+  padding: 0.7rem 0.8rem;
+  overflow-x: auto;
+}
+
+.terminal code {
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+  font-size: 0.86rem;
+  color: #164791;
+}
+
+.panel {
+  margin-top: 1rem;
+  padding: 1.45rem;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--glow);
+}
+
+h2 {
+  margin: 0 0 0.85rem;
+  font-size: 1.45rem;
+}
+
+.steps, .cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.step, .card {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #fff, var(--surface-2));
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.step:hover, .card:hover {
+  border-color: #86b3ff;
+  transform: translateY(-2px);
+}
+
+.step-id {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+  color: var(--blue-2);
+  font-size: 0.78rem;
+}
+
+h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.card code {
+  display: inline-block;
+  margin-top: 0.7rem;
+  padding: 0.3rem 0.45rem;
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+  font-size: 0.76rem;
+  color: #1e53b5;
+  border: 1px solid rgba(30, 83, 181, 0.23);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.source {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.commands {
+  display: grid;
+  gap: 0.6rem;
+}
+
+pre {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(32, 92, 188, 0.26);
+  background: #f2f8ff;
+  overflow-x: auto;
+}
+
+pre code {
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+  color: #12429a;
+  font-size: 0.82rem;
+}
+
+.footer {
+  position: relative;
+  z-index: 2;
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0.3rem 0 2.2rem;
+}
+
+.footer p {
+  color: #587397;
+  font-family: "IBM Plex Mono", "SF Mono", monospace;
+  font-size: 0.77rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: reveal 550ms ease forwards;
+}
+
+.hero.reveal { animation-delay: 80ms; }
+.panel.reveal:nth-of-type(1) { animation-delay: 180ms; }
+.panel.reveal:nth-of-type(2) { animation-delay: 250ms; }
+.panel.reveal:nth-of-type(3) { animation-delay: 320ms; }
+.panel.reveal:nth-of-type(4) { animation-delay: 390ms; }
+.footer.reveal { animation-delay: 440ms; }
+
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(3deg); }
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .steps, .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .page {
+    width: min(680px, calc(100% - 1.2rem));
+    padding-top: 2rem;
+  }
+
+  .hero {
+    padding: 1.25rem;
+  }
+
+  .panel {
+    padding: 1rem;
+  }
+}
+

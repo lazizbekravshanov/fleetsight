@@ -1,0 +1,236 @@
+:root {
+  --bg: #f4f9ff;
+  --surface: #ffffff;
+  --line: #c8daf4;
+  --ink: #0f2238;
+  --muted: #5c728d;
+  --blue: #0a84ff;
+  --blue-2: #2f6bff;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Space Grotesk", "Avenir Next", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(10, 132, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 132, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.app {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  padding: 1rem;
+  background: #f8fbff;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.brand p {
+  margin: 0.25rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.sidebar button, .topbar button, .composer button {
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+}
+
+#new-chat {
+  width: 100%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-2));
+  color: white;
+  border-color: transparent;
+}
+
+.conversations {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.conv {
+  width: 100%;
+  text-align: left;
+}
+
+.meta {
+  margin-top: 1rem;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.76rem;
+  color: #3f5f82;
+}
+
+.admin-panel {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  padding: 0.55rem;
+}
+
+.admin-panel h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.pending-users {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pending-item {
+  border: 1px solid var(--line);
+  background: #f8fbff;
+  padding: 0.45rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.pending-item .email {
+  font-size: 0.8rem;
+  color: #24476f;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.pending-item .meta-line {
+  font-size: 0.73rem;
+  color: #537196;
+}
+
+.workspace {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--line);
+  padding: 0.7rem;
+  background: rgba(255, 255, 255, 0.9);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.topbar input, .topbar select, .composer textarea {
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+  padding: 0.55rem;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.uploader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#uploaded-path {
+  color: #1c4d98;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.75rem;
+}
+
+.messages {
+  padding: 0.9rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.msg {
+  border: 1px solid var(--line);
+  background: white;
+  padding: 0.7rem;
+}
+
+.msg.user {
+  border-left: 4px solid #2f6bff;
+}
+
+.msg.assistant {
+  border-left: 4px solid #0a84ff;
+  background: #f7fbff;
+}
+
+.msg .role {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #4a6485;
+  letter-spacing: 0.08em;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.msg pre {
+  margin: 0.35rem 0 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.83rem;
+  color: #14355d;
+}
+
+.composer {
+  border-top: 1px solid var(--line);
+  background: #f9fcff;
+  padding: 0.7rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+.composer textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .auth-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

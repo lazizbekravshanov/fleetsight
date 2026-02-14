@@ -1,0 +1,13 @@
+PYTHON ?= python3
+APP_DATA ?= $(CURDIR)/app_data
+APP_HOST ?= 127.0.0.1
+APP_PORT ?= 8787
+
+.PHONY: run sync-fmcsa
+
+run:
+	FLEETSIGHT_APP_DATA=$(APP_DATA) FLEETSIGHT_APP_HOST=$(APP_HOST) FLEETSIGHT_APP_PORT=$(APP_PORT) $(PYTHON) server.py
+
+sync-fmcsa:
+	FLEETSIGHT_APP_DATA=$(APP_DATA) $(PYTHON) fmcsa_sync.py
+

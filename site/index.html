@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetSight | Open-Source Carrier Network Intelligence</title>
+  <meta name="description" content="FleetSight detects likely affiliated carrier networks from identifier overlap. Open source, explainable scoring, local-first workflows.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="fragments" aria-hidden="true">
+    <span class="frag f1"></span>
+    <span class="frag f2"></span>
+    <span class="frag f3"></span>
+    <span class="frag f4"></span>
+    <span class="frag f5"></span>
+    <span class="frag f6"></span>
+  </div>
+
+  <main class="page">
+    <header class="hero reveal">
+      <p class="kicker">OpenClaw Skill • Fleet Intelligence</p>
+      <h1>FleetSight</h1>
+      <p class="subtitle">
+        Detect likely affiliated and chameleon carrier networks with transparent, explainable scoring.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#commands">Try Sample Data</a>
+        <a class="btn btn-secondary" href="https://github.com/lazizbekravshanov/fleetsight" target="_blank" rel="noreferrer">View GitHub</a>
+      </div>
+      <div class="terminal">
+        <code>/fleetsight analyze carriers.csv --top 50 --threshold 30</code>
+      </div>
+    </header>
+
+    <section class="panel reveal">
+      <h2>How It Works</h2>
+      <div class="steps">
+        <article class="step">
+          <span class="step-id">01</span>
+          <h3>Ingest CSV</h3>
+          <p>Read carrier records with graceful handling for blank fields and strict required-column checks.</p>
+        </article>
+        <article class="step">
+          <span class="step-id">02</span>
+          <h3>Score Links</h3>
+          <p>Normalize phone, email, domain, address, and IP. Weighted matching with rarity down-weighting.</p>
+        </article>
+        <article class="step">
+          <span class="step-id">03</span>
+          <h3>Build Clusters</h3>
+          <p>Threshold pairwise edges, compute connected components, export JSON and CSV reports.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel reveal">
+      <h2>What You Get</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Ranked Links</h3>
+          <p>Top N carrier-to-carrier links with total score and contribution-level reasons.</p>
+          <code>links.json / links.csv</code>
+        </article>
+        <article class="card">
+          <h3>Affiliation Clusters</h3>
+          <p>Connected components over score-thresholded edges, including size and link stats.</p>
+          <code>clusters.json / clusters.csv</code>
+        </article>
+        <article class="card">
+          <h3>Chat Summary</h3>
+          <p>Concise markdown result with top links, top clusters, and report paths.</p>
+          <code>summary.md</code>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel source reveal">
+      <h2>Open Source by Design</h2>
+      <p>
+        FleetSight is MIT-licensed. Audit every rule, improve every weight, and run fully local in your own environment.
+      </p>
+      <a class="btn btn-primary" href="https://github.com/lazizbekravshanov/fleetsight" target="_blank" rel="noreferrer">Contribute on GitHub</a>
+    </section>
+
+    <section class="panel reveal" id="commands">
+      <h2>Quick Commands</h2>
+      <div class="commands">
+        <pre><code>/fleetsight sample-data</code></pre>
+        <pre><code>/fleetsight analyze ~/.openclaw/workspace/fleetsight_samples/carriers_sample.csv --top 50 --threshold 30</code></pre>
+        <pre><code>/fleetsight explain</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer reveal">
+    <p>FleetSight • Open-source carrier network intelligence</p>
+  </footer>
+
+  <script src="./script.js"></script>
+</body>
+</html>
+

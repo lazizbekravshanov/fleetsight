@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetSight Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="bg"></div>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>FleetSight</h1>
+        <p>Carrier Risk Console</p>
+      </div>
+      <button id="new-chat">New Chat</button>
+      <div id="conversations" class="conversations"></div>
+      <section id="admin-panel" class="admin-panel hidden">
+        <h3>Admin Review</h3>
+        <button id="refresh-pending">Refresh Pending USDOT</button>
+        <div id="pending-users" class="pending-users"></div>
+      </section>
+      <div class="meta">
+        <p id="auth-status">Not signed in</p>
+      </div>
+    </aside>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="auth-grid">
+          <input id="email" type="email" placeholder="Email (required)">
+          <input id="password" type="password" placeholder="Password (min 8 chars)">
+          <select id="role">
+            <option value="carrier">Carrier</option>
+            <option value="broker">Broker</option>
+            <option value="usdot_official">USDOT Official</option>
+          </select>
+          <button id="signup">Sign Up</button>
+          <input id="verify-token" type="text" placeholder="Email verify token">
+          <button id="verify">Verify Email</button>
+          <button id="login">Login</button>
+        </div>
+        <div class="uploader">
+          <input id="csv-file" type="file" accept=".csv">
+          <button id="upload">Upload CSV</button>
+          <button id="analyze-latest">Analyze Latest Upload</button>
+          <span id="uploaded-path"></span>
+        </div>
+      </header>
+      <section id="messages" class="messages"></section>
+      <footer class="composer">
+        <textarea id="prompt" placeholder='Type a message, e.g. "/fleetsight analyze uploads/user_1/file.csv --top 50 --threshold 30"'></textarea>
+        <button id="send">Send</button>
+      </footer>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

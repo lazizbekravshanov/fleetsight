@@ -37,6 +37,7 @@ License: **MIT** (see `LICENSE`)
 .
 ├── LICENSE
 ├── README.md
+├── app/
 └── fleetsight/
     ├── Makefile
     ├── README.md
@@ -62,6 +63,24 @@ make verify
 ```
 
 This runs unit tests and a deterministic end-to-end verify flow.
+
+## Chat App (Signup + Chatbot + Upload)
+
+A ChatGPT-style web interface is available in `app/`.
+
+```bash
+cd app
+python3 -m pip install -r requirements.txt
+make run
+```
+
+Open:
+
+`http://127.0.0.1:8787`
+
+Detailed setup:
+
+- `app/README.md`
 
 ## OpenClaw Usage
 
