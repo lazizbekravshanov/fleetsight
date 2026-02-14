@@ -8,15 +8,18 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import shutil
 import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from fastapi import FastAPI, File, Header, HTTPException, UploadFile
@@ -328,7 +331,213 @@ def parse_chat_for_analyze(prompt: str) -> Optional[Dict[str, Any]]:
                 return {"cmd": "analyze", "csv": token, "top": top, "threshold": threshold}
     if "explain" in lowered and "score" in lowered:
         return {"cmd": "explain"}
+    usdot = extract_usdot_number(prompt)
+    if usdot:
+        return {"cmd": "usdot_lookup", "usdot": usdot}
     return None
+
+
+def extract_usdot_number(prompt: str) -> Optional[str]:
+    slash_cmd = re.search(r"\B/usdot\s+(\d{4,8})\b", prompt, flags=re.IGNORECASE)
+    if slash_cmd:
+        return slash_cmd.group(1)
+    named = re.search(r"\b(?:usdot|dot)\s*#?:?\s*(\d{4,8})\b", prompt, flags=re.IGNORECASE)
+    if named:
+        return named.group(1)
+    # Fallback: treat bare number as USDOT only when user explicitly mentions carrier lookup intent.
+    if re.search(r"\b(carrier|company|broker|safety|inspection|crash|accident)\b", prompt, flags=re.IGNORECASE):
+        bare = re.search(r"\b(\d{5,8})\b", prompt)
+        if bare:
+            return bare.group(1)
+    return None
+
+
+class _TableCellParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.cells: List[str] = []
+        self._capture_depth = 0
+        self._buf: List[str] = []
+
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Optional[str]]]) -> None:
+        _ = attrs
+        if tag in {"td", "th"}:
+            self._capture_depth = 1
+            self._buf = []
+        elif self._capture_depth > 0:
+            self._capture_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if self._capture_depth == 0:
+            return
+        if tag in {"td", "th"} and self._capture_depth == 1:
+            text = " ".join("".join(self._buf).split())
+            if text:
+                self.cells.append(text)
+            self._capture_depth = 0
+            self._buf = []
+            return
+        self._capture_depth = max(0, self._capture_depth - 1)
+
+    def handle_data(self, data: str) -> None:
+        if self._capture_depth > 0:
+            self._buf.append(data)
+
+
+def _extract_pair(cells: List[str], labels: List[str]) -> str:
+    canon = {re.sub(r"\s+", " ", label.strip().lower().rstrip(":")) for label in labels}
+    for idx in range(len(cells) - 1):
+        key = re.sub(r"\s+", " ", cells[idx].strip().lower().rstrip(":"))
+        if key in canon:
+            value = cells[idx + 1].strip()
+            if value:
+                return value
+    return ""
+
+
+def _extract_row_metrics(cells: List[str], row_name: str) -> Dict[str, str]:
+    row_key = row_name.strip().lower()
+    for idx, cell in enumerate(cells):
+        if cell.strip().lower() != row_key:
+            continue
+        metrics: List[str] = []
+        for probe in cells[idx + 1 : idx + 10]:
+            token = probe.strip()
+            if not token:
+                continue
+            if re.fullmatch(r"[\d,]+(?:\.\d+)?%?", token):
+                metrics.append(token)
+            if len(metrics) >= 3:
+                break
+        if metrics:
+            out: Dict[str, str] = {"inspections": metrics[0]}
+            if len(metrics) >= 2:
+                out["out_of_service"] = metrics[1]
+            if len(metrics) >= 3:
+                out["out_of_service_pct"] = metrics[2]
+            return out
+    return {}
+
+
+def fetch_fmcsa_public_profile(usdot: str) -> Dict[str, Any]:
+    params = urllib.parse.urlencode(
+        {
+            "searchtype": "ANY",
+            "query_type": "queryCarrierSnapshot",
+            "query_param": "USDOT",
+            "query_string": usdot,
+        }
+    )
+    url = f"https://safer.fmcsa.dot.gov/query.asp?{params}"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "FleetSight/0.2 (+public carrier lookup)"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:  # nosec B310
+            html = resp.read().decode("latin-1", errors="ignore")
+    except urllib.error.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"FMCSA lookup failed: HTTP {exc.code}")
+    except Exception as exc:  # pragma: no cover
+        raise HTTPException(status_code=502, detail=f"FMCSA lookup failed: {exc}")
+
+    if "No records matching your query" in html:
+        return {"ok": False, "source_url": url, "detail": "No FMCSA carrier record found for this USDOT."}
+
+    parser = _TableCellParser()
+    parser.feed(html)
+    cells = parser.cells
+
+    legal_name = _extract_pair(cells, ["Legal Name"])
+    dba_name = _extract_pair(cells, ["DBA Name"])
+    status = _extract_pair(cells, ["USDOT Status", "Entity Type"])
+    mc_numbers = _extract_pair(cells, ["MC/MX/FF Number(s)", "MC/MX Number"])
+    phone = _extract_pair(cells, ["Telephone", "Phone"])
+    phys_addr = _extract_pair(cells, ["Physical Address"])
+    mailing_addr = _extract_pair(cells, ["Mailing Address"])
+    power_units = _extract_pair(cells, ["Power Units"])
+    drivers = _extract_pair(cells, ["Drivers", "Driver Total"])
+    mileage = _extract_pair(cells, ["MCS-150 Mileage (Year)", "MCS-150 Mileage"])
+    mcs150_date = _extract_pair(cells, ["MCS-150 Form Date"])
+
+    inspection_rows = {
+        "vehicle": _extract_row_metrics(cells, "vehicle"),
+        "driver": _extract_row_metrics(cells, "driver"),
+        "hazmat": _extract_row_metrics(cells, "hazmat"),
+    }
+    crash_rows = {
+        "tow": _extract_row_metrics(cells, "tow"),
+        "injury": _extract_row_metrics(cells, "injury"),
+        "fatal": _extract_row_metrics(cells, "fatal"),
+    }
+
+    return {
+        "ok": True,
+        "source_url": url,
+        "usdot": usdot,
+        "legal_name": legal_name,
+        "dba_name": dba_name,
+        "status": status,
+        "mc_numbers": mc_numbers,
+        "phone": phone,
+        "physical_address": phys_addr,
+        "mailing_address": mailing_addr,
+        "power_units": power_units,
+        "drivers": drivers,
+        "mcs150_mileage": mileage,
+        "mcs150_form_date": mcs150_date,
+        "inspections": inspection_rows,
+        "crashes": crash_rows,
+    }
+
+
+def format_carrier_profile(profile: Dict[str, Any]) -> str:
+    if not profile.get("ok"):
+        return (
+            f"USDOT {profile.get('usdot', '')}: {profile.get('detail', 'No data found.')}\n"
+            f"Source: {profile.get('source_url', '')}"
+        ).strip()
+
+    lines = [
+        f"USDOT {profile.get('usdot', '')} public profile (FMCSA):",
+        f"- Legal name: {profile.get('legal_name') or 'N/A'}",
+        f"- DBA: {profile.get('dba_name') or 'N/A'}",
+        f"- USDOT status: {profile.get('status') or 'N/A'}",
+        f"- MC/MX/FF: {profile.get('mc_numbers') or 'N/A'}",
+        f"- Phone: {profile.get('phone') or 'N/A'}",
+        f"- Physical address: {profile.get('physical_address') or 'N/A'}",
+        f"- Mailing address: {profile.get('mailing_address') or 'N/A'}",
+        f"- Power units: {profile.get('power_units') or 'N/A'}",
+        f"- Drivers: {profile.get('drivers') or 'N/A'}",
+        f"- MCS-150 mileage: {profile.get('mcs150_mileage') or 'N/A'}",
+        f"- MCS-150 form date: {profile.get('mcs150_form_date') or 'N/A'}",
+        "",
+        "Inspection metrics (from Snapshot tables when available):",
+    ]
+
+    for label in ("vehicle", "driver", "hazmat"):
+        row = profile.get("inspections", {}).get(label, {}) if isinstance(profile.get("inspections"), dict) else {}
+        lines.append(
+            f"- {label.title()}: inspections={row.get('inspections', 'N/A')}, "
+            f"out_of_service={row.get('out_of_service', 'N/A')}, "
+            f"out_of_service_pct={row.get('out_of_service_pct', 'N/A')}"
+        )
+
+    lines.extend(["", "Crash metrics (when available):"])
+    for label in ("tow", "injury", "fatal"):
+        row = profile.get("crashes", {}).get(label, {}) if isinstance(profile.get("crashes"), dict) else {}
+        primary = row.get("inspections", "N/A")
+        lines.append(f"- {label.title()}: {primary}")
+
+    lines.extend(
+        [
+            "",
+            f"Source: {profile.get('source_url', '')}",
+            "Note: FMCSA Snapshot does not provide a definitive public flag for 'double brokerage'.",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def recent_report_dir() -> Optional[Path]:
@@ -679,7 +888,11 @@ def chat_message(
     append_message(int(convo_id), "user", prompt)
 
     parsed = parse_chat_for_analyze(prompt)
-    if parsed and parsed.get("cmd") == "explain":
+    if parsed and parsed.get("cmd") == "usdot_lookup":
+        profile = fetch_fmcsa_public_profile(str(parsed.get("usdot", "")).strip())
+        profile["usdot"] = str(parsed.get("usdot", "")).strip()
+        reply = format_carrier_profile(profile)
+    elif parsed and parsed.get("cmd") == "explain":
         lines = [
             "FleetSight scoring uses normalized identifiers and weighted overlap:",
             "- phone: 40",
@@ -742,13 +955,14 @@ def chat_message(
                 reply = (
                     f"Assistant error: {detail}\n\n"
                     "Try `/fleetsight analyze latest --top 50 --threshold 30` "
-                    "or ask `explain scoring`."
+                    "or ask `explain scoring`, or provide a USDOT number."
                 )
         else:
             reply = (
                 "Upload a CSV first, then run:\n"
                 "`/fleetsight analyze <path_to_csv> --top 50 --threshold 30`\n\n"
                 "You can also ask: `explain scoring`.\n"
+                "You can also provide a USDOT number for public carrier lookup.\n"
                 "For general chatbot responses, set OPENAI_API_KEY on the server."
             )
     append_message(int(convo_id), "assistant", reply)
