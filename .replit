@@ -1,0 +1,14 @@
+entrypoint = "bash -lc 'cd landing && npm run dev'"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["bash", "-lc", "cd landing && npm ci && npm run build"]
+run = ["bash", "-lc", "cd landing && npm run start"]
+
+[env]
+PORT = "3000"
+XDG_CACHE_HOME = "/tmp/.cache"
+

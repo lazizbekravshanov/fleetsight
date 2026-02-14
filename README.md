@@ -97,6 +97,19 @@ Open:
 
 `http://localhost:3000`
 
+## Replit Deployment
+
+This repo includes `.replit` and `replit.nix` for deploying the Next.js landing app from `landing/`.
+
+After importing to Replit:
+
+1. Click **Run** to preview.
+2. Click **Deploy** (Autoscale).
+3. Build command is already configured:
+   - `cd landing && npm ci && npm run build`
+4. Start command is already configured:
+   - `cd landing && npm run start`
+
 ## OpenClaw Usage
 
 After installing the skill in your OpenClaw skills directory:
