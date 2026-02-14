@@ -38,6 +38,7 @@ License: **MIT** (see `LICENSE`)
 ├── LICENSE
 ├── README.md
 ├── app/
+├── landing/
 └── fleetsight/
     ├── Makefile
     ├── README.md
@@ -81,6 +82,20 @@ Open:
 Detailed setup:
 
 - `app/README.md`
+
+## New Marketing Landing (Next.js)
+
+Redesigned product landing page built with App Router + Tailwind + Framer Motion.
+
+```bash
+cd landing
+npm install
+npm run dev
+```
+
+Open:
+
+`http://localhost:3000`
 
 ## OpenClaw Usage
 
