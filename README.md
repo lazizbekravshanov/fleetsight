@@ -1,2 +1,87 @@
-# fleetsight
-The palantir of Transportation
+# FleetSight
+
+FleetSight is an open-source carrier-affiliation detection MVP built as an OpenClaw skill.
+
+Tagline: **Make trucking great through transparent, explainable network intelligence.**
+
+## What It Does
+
+FleetSight analyzes carrier records and detects likely affiliated or chameleon networks by finding overlaps across identifiers:
+
+- phone
+- email
+- email domain
+- address
+- IP
+
+It outputs:
+
+1. Ranked pairwise links with a score and explainable match reasons
+2. Affiliation clusters (connected components over thresholded links)
+3. Exportable reports (`JSON`, `CSV`, and a markdown summary)
+
+## Why Open Source
+
+This project is open source so carriers, brokers, compliance teams, and investigators can:
+
+- inspect exactly how scoring works
+- reproduce results locally
+- extend and audit detection logic
+- contribute improvements without vendor lock-in
+
+License: **MIT** (see `LICENSE`)
+
+## Project Structure
+
+```text
+.
+├── LICENSE
+├── README.md
+└── fleetsight/
+    ├── Makefile
+    ├── README.md
+    ├── tests/
+    └── skills/fleetsight/
+        ├── fleetsight.py
+        ├── skill.json
+        └── skill.yaml
+```
+
+## Quick Start
+
+Requirements:
+
+- Python 3.11+ (3.9+ also works with current code)
+- OpenClaw (self-hosted)
+
+From repo root:
+
+```bash
+cd fleetsight
+make verify
+```
+
+This runs unit tests and a deterministic end-to-end verify flow.
+
+## OpenClaw Usage
+
+After installing the skill in your OpenClaw skills directory:
+
+```bash
+/fleetsight sample-data
+/fleetsight analyze carriers.csv --top 50 --threshold 30
+/fleetsight explain
+```
+
+For full setup and integration steps, see:
+
+- `fleetsight/README.md`
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repo
+2. Create a feature branch
+3. Add tests for behavior changes
+4. Open a PR with a clear description
