@@ -1,10 +1,8 @@
 import { getServerAuthSession } from "@/auth";
-import { ensureDbInitialized } from "@/lib/db-init";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/http";
 
 export async function GET() {
-  await ensureDbInitialized();
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
     return jsonError("Unauthorized", 401);

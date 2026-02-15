@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { ensureDbInitialized } from "@/lib/db-init";
 import { jsonError } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
 
@@ -9,7 +8,6 @@ const querySchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
-  await ensureDbInitialized();
   const email = req.nextUrl.searchParams.get("email") || "";
   const parsed = querySchema.safeParse({ email });
   if (!parsed.success) {

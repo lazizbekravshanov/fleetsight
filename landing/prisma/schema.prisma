@@ -3,19 +3,19 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id           String           @id @default(cuid())
-  email        String           @unique
-  passwordHash String
-  failedLoginAttempts Int       @default(0)
-  lockoutUntil DateTime?
-  createdAt    DateTime         @default(now())
-  profile      CustomerProfile?
-  apiTokens    ApiToken[]
+  id                  String           @id @default(cuid())
+  email               String           @unique
+  passwordHash        String
+  failedLoginAttempts Int              @default(0)
+  lockoutUntil        DateTime?
+  createdAt           DateTime         @default(now())
+  profile             CustomerProfile?
+  apiTokens           ApiToken[]
 
   @@index([createdAt])
 }

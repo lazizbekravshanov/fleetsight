@@ -1,26 +1,22 @@
 # FleetSight Customer App (Next.js 14)
 
-Production-style customer auth + onboarding + FMCSA + OpenClaw integration.
+Production auth + onboarding + FMCSA + OpenClaw integration.
 
 ## Stack
 
 - Next.js 14 App Router + TypeScript + Tailwind
 - NextAuth (Credentials)
-- Prisma + SQLite (local) + schema ready for Postgres migration
-- FMCSA QCMobile API via server-only route handlers
-- OpenClaw HTTP skill adapter + webhook ingestion
+- Prisma + PostgreSQL (required for production)
+- FMCSA QCMobile API (server-side only)
+- OpenClaw HTTP adapter + webhook ingest
 
 ## Environment
 
-Copy `.env.example` to `.env.local`:
+Copy `.env.example` to `.env.local`.
 
-```bash
-cp .env.example .env.local
-```
+Required:
 
-Required vars:
-
-- `DATABASE_URL` (local default: `file:./dev.db`)
+- `DATABASE_URL` (PostgreSQL)
 - `NEXTAUTH_URL`
 - `NEXTAUTH_SECRET`
 - `FMCSA_WEBKEY`
@@ -28,7 +24,7 @@ Required vars:
 - `OPENCLAW_ISSUER_ID` (optional)
 - `TOKEN_SIGNING_SECRET`
 
-## Run Locally
+## Local Run
 
 ```bash
 npm install
@@ -39,85 +35,47 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## Main Routes
+## Production (Vercel)
+
+Use a persistent Postgres DB (Neon/Supabase/Railway/etc).
+
+1. Set `DATABASE_URL` to your Postgres connection string.
+2. Set all auth/OpenClaw/FMCSA env vars.
+3. Deploy. Build runs `prisma migrate deploy` before `next build`.
+
+## Routes
 
 - `/login`
 - `/signup`
 - `/onboarding`
 - `/dashboard`
 
-## Auth Flow
+## APIs
 
-1. Sign up on `/signup`
-2. Auto sign-in with credentials
-3. On `/onboarding`, submit company + USDOT
-4. Server validates USDOT using FMCSA `carriers/:dotNumber`
-5. Customer profile saved in DB
-6. Redirect to `/dashboard`
-
-Rate limiting is enabled for signup and login attempts.
-
-## FMCSA Integration
-
-All FMCSA calls are server-side only and use:
-
-- Base URL: `https://mobile.fmcsa.dot.gov/qc/services/`
-- Query auth: `?webKey=<FMCSA_WEBKEY>`
-
-Implemented APIs:
-
+- `POST /api/auth/signup`
+- `GET /api/auth/attempts`
+- `POST /api/fmcsa/validate`
 - `GET /api/fmcsa/carriers/:dotNumber`
 - `GET /api/fmcsa/carriers/:dotNumber/basics`
-- `POST /api/fmcsa/validate`
+- `POST /api/openclaw/token`
+- `POST /api/openclaw/webhook`
+- `GET /api/openclaw/carriers/:dotNumber`
+- `GET /api/openclaw/carriers/:dotNumber/basics`
 
-A short-lived server cache is used in `lib/fmcsa.ts`.
-
-## OpenClaw Integration
-
-### FleetSight endpoints
-
-- `POST /api/openclaw/token` (customer-scoped token generation)
-- `POST /api/openclaw/webhook` (event ingest, HMAC verified)
-- `GET /api/openclaw/carriers/:dotNumber` (bearer token)
-- `GET /api/openclaw/carriers/:dotNumber/basics` (bearer token)
-
-### Skill adapter files
-
-- `openclaw/skill.md`
-- `openclaw/skill.ts`
-
-Functions:
-
-- `getCarrierProfile(dotNumber)`
-- `getCarrierBasics(dotNumber)`
-- `summarizeRisk(dotNumber)`
-
-## Curl Tests
-
-### 1) Validate USDOT route
+## Test Curl
 
 ```bash
-curl -X POST http://localhost:3000/api/fmcsa/validate \
+curl -X POST https://<host>/api/fmcsa/validate \
   -H "Content-Type: application/json" \
   -d '{"dotNumber":"3875124"}'
 ```
-
-### 2) Simulate OpenClaw webhook
 
 ```bash
 BODY='{"source":"openclaw","type":"carrier.risk_changed","dotNumber":"3875124","riskScore":84}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$OPENCLAW_WEBHOOK_SECRET" -binary | xxd -p -c 256)
 
-curl -X POST http://localhost:3000/api/openclaw/webhook \
+curl -X POST https://<host>/api/openclaw/webhook \
   -H "Content-Type: application/json" \
   -H "x-openclaw-signature: $SIG" \
   -d "$BODY"
 ```
-
-## Postgres Migration Note
-
-For Postgres deployment:
-
-1. Change `provider = "sqlite"` to `provider = "postgresql"` in `prisma/schema.prisma`
-2. Set `DATABASE_URL` to your Postgres DSN
-3. Run migrations with `npm run prisma:deploy`

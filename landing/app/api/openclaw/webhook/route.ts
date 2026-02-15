@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import { NextRequest } from "next/server";
-import { ensureDbInitialized } from "@/lib/db-init";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/http";
 
@@ -15,7 +14,6 @@ function verifySignature(payload: string, signature: string, secret: string): bo
 }
 
 export async function POST(req: NextRequest) {
-  await ensureDbInitialized();
   const secret = process.env.OPENCLAW_WEBHOOK_SECRET;
   if (!secret) {
     return jsonError("OPENCLAW_WEBHOOK_SECRET is not configured", 500);

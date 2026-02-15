@@ -1,6 +1,5 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { ensureDbInitialized } from "@/lib/db-init";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -12,7 +11,6 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  await ensureDbInitialized();
   if (!enforceSameOrigin(req)) {
     return jsonError("Invalid origin", 403);
   }
