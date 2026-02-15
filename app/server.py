@@ -679,20 +679,29 @@ def _startup() -> None:
     init_db()
 
 
-@app.get("/")
-def root_page() -> FileResponse:
-    return FileResponse(str(WEB_DIR / "index.html"))
-
-
-@app.get("/landing")
-def landing_page() -> FileResponse:
+def landing_index() -> Path:
     index = LANDING_OUT_DIR / "index.html"
     if not index.exists():
         raise HTTPException(
             status_code=404,
             detail="Landing page is not built yet. Run `cd landing && npm ci && npm run build` first.",
         )
-    return FileResponse(str(index))
+    return index
+
+
+@app.get("/")
+def root_page() -> FileResponse:
+    return FileResponse(str(landing_index()))
+
+
+@app.get("/landing")
+def landing_page() -> FileResponse:
+    return FileResponse(str(landing_index()))
+
+
+@app.get("/app")
+def app_console_page() -> FileResponse:
+    return FileResponse(str(WEB_DIR / "index.html"))
 
 
 @app.get("/landing/{asset_path:path}")

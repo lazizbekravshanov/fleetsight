@@ -50,7 +50,11 @@ Open:
 
 `http://127.0.0.1:8787`
 
-Landing route (after building Next landing):
+Console route:
+
+`http://127.0.0.1:8787/app`
+
+Landing route alias (after building Next landing):
 
 `http://127.0.0.1:8787/landing`
 

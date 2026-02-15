@@ -112,8 +112,9 @@ After importing to Replit:
 
 Routes:
 
-- App console: `/`
-- Marketing landing page: `/landing`
+- Marketing landing page: `/`
+- App console: `/app`
+- Marketing landing page alias: `/landing`
 
 ## Vercel Deployment (Recommended for Landing)
 
