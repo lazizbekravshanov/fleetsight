@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "installCommand": "cd landing && npm ci",
+  "installCommand": "npm install --no-save next@14.2.35 && cd landing && npm ci",
   "buildCommand": "cd landing && npm run build"
 }
