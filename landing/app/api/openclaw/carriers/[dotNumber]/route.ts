@@ -22,14 +22,16 @@ export async function GET(req: NextRequest, context: { params: { dotNumber: stri
   if (!token.scope.includes("carrier:read")) {
     return jsonError("Token scope does not allow carrier reads", 403);
   }
+  if (!token.user.profile) {
+    return jsonError("Token user has no onboarded USDOT", 403);
+  }
+  if (token.user.profile.usdotNumber !== parsed.data.dotNumber) {
+    return jsonError("Token does not grant access to this USDOT", 403);
+  }
 
   try {
     const profilePayload = await getCarrierProfile(parsed.data.dotNumber);
     const carrier = extractCarrierRecord(profilePayload);
-
-    if (token.user.profile && token.user.profile.usdotNumber !== parsed.data.dotNumber) {
-      return jsonError("Token does not grant access to this USDOT", 403);
-    }
 
     return Response.json({ ok: true, carrier, profile: profilePayload });
   } catch (error) {

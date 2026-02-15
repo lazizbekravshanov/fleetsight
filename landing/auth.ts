@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
 import { verifyPassword } from "@/lib/password";
 
 const loginSchema = z.object({
@@ -30,18 +29,6 @@ export const authOptions: NextAuthOptions = {
         }
 
         const email = parsed.data.email;
-        const ip = (req?.headers?.["x-forwarded-for"] || req?.headers?.["x-real-ip"] || "unknown") as string;
-        const key = `login:${email}:${ip.split(",")[0].trim()}`;
-        const gate = checkRateLimit(key, {
-          windowMs: 10 * 60 * 1000,
-          maxAttempts: 5,
-          lockMs: 15 * 60 * 1000
-        });
-
-        if (!gate.allowed) {
-          throw new Error("LOCKED_OUT");
-        }
-
         const user = await prisma.user.findUnique({
           where: { email },
           include: { profile: true }
@@ -51,12 +38,34 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const now = new Date();
+        if (user.lockoutUntil && user.lockoutUntil > now) {
+          throw new Error("LOCKED_OUT");
+        }
+
         const isValid = await verifyPassword(parsed.data.password, user.passwordHash);
         if (!isValid) {
+          const nextFailedAttempts = user.failedLoginAttempts + 1;
+          const shouldLock = nextFailedAttempts >= 5;
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              failedLoginAttempts: shouldLock ? 0 : nextFailedAttempts,
+              lockoutUntil: shouldLock ? new Date(Date.now() + 15 * 60 * 1000) : null
+            }
+          });
           return null;
         }
 
-        resetRateLimit(key);
+        if (user.failedLoginAttempts > 0 || user.lockoutUntil) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              failedLoginAttempts: 0,
+              lockoutUntil: null
+            }
+          });
+        }
 
         return {
           id: user.id,

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { getClientIp, jsonError } from "@/lib/http";
-import { getRateLimitState } from "@/lib/rate-limit";
+import { jsonError } from "@/lib/http";
+import { prisma } from "@/lib/prisma";
 
 const querySchema = z.object({
   email: z.string().email().toLowerCase()
@@ -14,10 +14,13 @@ export async function GET(req: NextRequest) {
     return jsonError("Invalid email", 400);
   }
 
-  const ip = getClientIp(req);
-  const state = getRateLimitState(`login:${parsed.data.email}:${ip}`);
+  const user = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+    select: { lockoutUntil: true }
+  });
+  const locked = Boolean(user?.lockoutUntil && user.lockoutUntil > new Date());
   return Response.json({
-    locked: Boolean(state.lockedUntilMs),
-    lockedUntil: state.lockedUntilMs ? new Date(state.lockedUntilMs).toISOString() : null
+    locked,
+    lockedUntil: locked ? user?.lockoutUntil?.toISOString() ?? null : null
   });
 }

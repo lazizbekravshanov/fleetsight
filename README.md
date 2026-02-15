@@ -130,7 +130,7 @@ This repo includes `vercel.json` configured to:
 
 - install from `landing/`
 - build with `next build`
-- publish `landing/out`
+- deploy as a dynamic Next.js app (no static `landing/out` directory)
 
 Optional Vercel env for CTA links:
 
