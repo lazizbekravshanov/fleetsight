@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { ensureDbInitialized } from "@/lib/db-init";
 import { prisma } from "@/lib/prisma";
 
 function tokenSecret(): string {
@@ -20,6 +21,7 @@ export function generateScopedToken(input: { userId: string; scope: string }) {
 }
 
 export async function authenticateApiToken(authHeader: string | null) {
+  await ensureDbInitialized();
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }

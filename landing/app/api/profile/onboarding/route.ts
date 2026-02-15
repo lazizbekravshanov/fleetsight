@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getServerAuthSession } from "@/auth";
+import { ensureDbInitialized } from "@/lib/db-init";
 import { extractCarrierRecord, FmcsaHttpError, getCarrierProfile } from "@/lib/fmcsa";
 import { enforceSameOrigin, jsonError } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +12,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  await ensureDbInitialized();
   if (!enforceSameOrigin(req)) {
     return jsonError("Invalid origin", 403);
   }

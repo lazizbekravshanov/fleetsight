@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
+import { ensureDbInitialized } from "@/lib/db-init";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 
@@ -23,6 +24,7 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials, req) {
+        await ensureDbInitialized();
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) {
           return null;
@@ -77,6 +79,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
+      await ensureDbInitialized();
       if (user) {
         token.sub = user.id;
         token.onboardingComplete = user.onboardingComplete;
