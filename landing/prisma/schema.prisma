@@ -11,6 +11,8 @@ model User {
   id           String           @id @default(cuid())
   email        String           @unique
   passwordHash String
+  failedLoginAttempts Int       @default(0)
+  lockoutUntil DateTime?
   createdAt    DateTime         @default(now())
   profile      CustomerProfile?
   apiTokens    ApiToken[]

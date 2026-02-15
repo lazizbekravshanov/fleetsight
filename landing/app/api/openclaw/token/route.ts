@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return jsonError("Unauthorized", 401);
   }
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { profile: { select: { usdotNumber: true } } }
+  });
+  if (!user?.profile?.usdotNumber) {
+    return jsonError("Complete onboarding before generating OpenClaw tokens", 403);
+  }
 
   const payload = await req.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(payload);
