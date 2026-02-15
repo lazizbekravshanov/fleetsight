@@ -1,0 +1,5 @@
+{
+  "framework": null,
+  "installCommand": "cd landing && npm ci",
+  "buildCommand": "cd landing && npm run build"
+}
