@@ -276,9 +276,9 @@ def upsert_inspections(conn, rows: List[Dict[str, Any]]) -> int:
             continue
         values.append((
             dot,
-            safe_date(r.get("inspection_date") or r.get("insp_date")),
-            (r.get("vin") or "")[:30] or None,
-            (r.get("insp_state") or r.get("state") or "")[:10] or None,
+            safe_date(r.get("insp_date") or r.get("inspection_date")),
+            None,  # VIN not available in this dataset
+            (r.get("report_state") or r.get("insp_state") or r.get("state") or "")[:10] or None,
             safe_int(r.get("vehicle_oos_total") or r.get("veh_oos_total")) or 0,
             safe_int(r.get("driver_oos_total")) or 0,
         ))
@@ -464,8 +464,8 @@ def sync_crashes(conn, dot_numbers: List[int], run_id: str) -> int:
     create_sync_run(conn, f"{run_id}_crashes", "crashes")
 
     total = 0
-    for chunk in _chunk_list(dot_numbers, 100):
-        dot_list = ",".join(str(d) for d in chunk)
+    for chunk in _chunk_list(dot_numbers, 25):
+        dot_list = ",".join(f"'{d}'" for d in chunk)
         where = f"dot_number in({dot_list})"
         rows = socrata_fetch_all(CRASH_RESOURCE, where=where)
         count = upsert_crashes(conn, rows)
@@ -477,13 +477,13 @@ def sync_crashes(conn, dot_numbers: List[int], run_id: str) -> int:
 
 
 def sync_inspections(conn, dot_numbers: List[int], run_id: str) -> int:
-    """Fetch inspection records (with VINs) for known DOT numbers."""
+    """Fetch inspection records for known DOT numbers."""
     log(f"Stage 4: Fetching inspections for {len(dot_numbers)} carriers...")
     create_sync_run(conn, f"{run_id}_inspections", "inspections")
 
     total = 0
-    for chunk in _chunk_list(dot_numbers, 100):
-        dot_list = ",".join(str(d) for d in chunk)
+    for chunk in _chunk_list(dot_numbers, 25):
+        dot_list = ",".join(f"'{d}'" for d in chunk)
         where = f"dot_number in({dot_list})"
         rows = socrata_fetch_all(INSPECTION_RESOURCE, where=where)
         count = upsert_inspections(conn, rows)
