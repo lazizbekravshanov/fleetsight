@@ -29,20 +29,24 @@ export function CarrierSearch({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
     setLoading(true);
+    setSearchError(null);
     try {
       const res = await fetch(
         `/api/chameleon/search?q=${encodeURIComponent(query.trim())}&sort=risk&limit=20`
       );
+      if (!res.ok) throw new Error(`Search API returned ${res.status}`);
       const data = await res.json();
       setResults(data.results || []);
       setTotal(data.total || 0);
-    } catch {
+    } catch (e) {
       setResults([]);
+      setSearchError(e instanceof Error ? e.message : "Search failed");
     } finally {
       setLoading(false);
     }
@@ -67,6 +71,10 @@ export function CarrierSearch({
           {loading ? "..." : "Search"}
         </button>
       </form>
+
+      {searchError && (
+        <p className="mt-2 text-xs text-rose-400">{searchError}</p>
+      )}
 
       {total > 0 && (
         <p className="mt-2 text-xs text-slate-400">{total} results found</p>

@@ -11,12 +11,16 @@ type Stats = {
 
 export function StatsBar() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/chameleon/stats")
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error(`API returned ${r.status}`);
+        return r.json();
+      })
       .then(setStats)
-      .catch(() => {});
+      .catch((e) => setError(e.message));
   }, []);
 
   const cards = [
@@ -30,6 +34,14 @@ export function StatsBar() {
         : "—",
     },
   ];
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+        Stats error: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
