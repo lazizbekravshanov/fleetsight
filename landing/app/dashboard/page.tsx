@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getServerAuthSession } from "@/auth";
 import { CarrierSnapshot } from "@/components/carrier-snapshot";
 import { OpenClawConnectCard } from "@/components/openclaw-connect-card";
@@ -36,6 +37,19 @@ export default async function DashboardPage() {
         <div className="grid gap-5 md:grid-cols-2">
           <CarrierSnapshot usdotNumber={user.profile.usdotNumber} />
           <OpenClawConnectCard />
+          <Link
+            href="/chameleon"
+            className="group rounded-xl border border-slate-800 bg-slate-900/70 p-5 transition hover:border-blue-500/40 hover:bg-slate-900"
+          >
+            <h3 className="text-lg font-semibold text-white">Chameleon Detection</h3>
+            <p className="mt-2 text-sm text-slate-400">
+              Detect reincarnated carriers using shared addresses, phones, officers,
+              VINs, and prior-revocation links from FMCSA data.
+            </p>
+            <p className="mt-3 text-sm font-medium text-blue-400 transition group-hover:text-blue-300">
+              View dashboard &rarr;
+            </p>
+          </Link>
         </div>
       </div>
     </main>

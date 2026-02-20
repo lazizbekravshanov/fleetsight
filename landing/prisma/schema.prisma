@@ -55,3 +55,140 @@ model WebhookEvent {
   @@index([source, type])
   @@index([createdAt])
 }
+
+// ── Chameleon Carrier Detection ─────────────────────────────────
+
+model FmcsaCarrier {
+  id               String    @id @default(cuid())
+  dotNumber        Int       @unique
+  legalName        String
+  dbaName          String?
+  phyStreet        String?
+  phyCity          String?
+  phyState         String?
+  phyZip           String?
+  phone            String?
+  fax              String?
+  cellPhone        String?
+  companyOfficer1  String?
+  companyOfficer2  String?
+  statusCode       String?
+  priorRevokeFlag  String?
+  priorRevokeDot   Int?
+  addDate          DateTime?
+  powerUnits       Int?
+  totalDrivers     Int?
+  fleetSize        String?
+  docketPrefix     String?
+  docketNumber     String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  crashes     FmcsaCrash[]
+  inspections FmcsaInspection[]
+  riskScore   CarrierRiskScore?
+  clusterMemberships ClusterMember[]
+
+  @@index([phone])
+  @@index([phyStreet, phyCity, phyState])
+  @@index([companyOfficer1])
+  @@index([priorRevokeFlag])
+}
+
+model FmcsaCrash {
+  id           String   @id @default(cuid())
+  dotNumber    Int
+  reportDate   DateTime?
+  reportNumber String?
+  state        String?
+  fatalities   Int      @default(0)
+  injuries     Int      @default(0)
+  towAway      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  carrier FmcsaCarrier @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
+
+  @@index([dotNumber])
+}
+
+model FmcsaInspection {
+  id              String    @id @default(cuid())
+  dotNumber       Int
+  inspectionDate  DateTime?
+  vin             String?
+  state           String?
+  vehicleOosTotal Int       @default(0)
+  driverOosTotal  Int       @default(0)
+  createdAt       DateTime  @default(now())
+
+  carrier FmcsaCarrier @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
+
+  @@index([dotNumber])
+  @@index([vin])
+}
+
+model CarrierLink {
+  id         String @id @default(cuid())
+  dotNumberA Int
+  dotNumberB Int
+  score      Float
+  reasonsJson String
+  runId      String
+
+  @@index([dotNumberA])
+  @@index([dotNumberB])
+  @@index([score])
+  @@unique([dotNumberA, dotNumberB, runId])
+}
+
+model CarrierCluster {
+  id           String  @id @default(cuid())
+  clusterId    String
+  size         Int
+  edgeCount    Int
+  avgLinkScore Float
+  maxLinkScore Float
+  runId        String
+
+  members ClusterMember[]
+
+  @@unique([clusterId, runId])
+}
+
+model ClusterMember {
+  id        String @id @default(cuid())
+  clusterId String
+  dotNumber Int
+
+  cluster CarrierCluster @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  carrier FmcsaCarrier   @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
+
+  @@unique([clusterId, dotNumber])
+  @@index([dotNumber])
+}
+
+model CarrierRiskScore {
+  id             String @id @default(cuid())
+  dotNumber      Int    @unique
+  chameleonScore Float
+  safetyScore    Float
+  compositeScore Float
+  signalsJson    String
+  clusterSize    Int    @default(0)
+  updatedAt      DateTime @updatedAt
+
+  carrier FmcsaCarrier @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
+
+  @@index([compositeScore])
+}
+
+model SyncRun {
+  id            String   @id @default(cuid())
+  runId         String   @unique
+  dataset       String
+  status        String   @default("running")
+  rowsProcessed Int      @default(0)
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
