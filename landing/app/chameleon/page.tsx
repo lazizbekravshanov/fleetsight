@@ -1,14 +1,7 @@
-import { redirect } from "next/navigation";
-import { getServerAuthSession } from "@/auth";
 import { ChameleonDashboard } from "@/components/chameleon/chameleon-dashboard";
 import Link from "next/link";
 
-export default async function ChameleonPage() {
-  const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
+export default function ChameleonPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
