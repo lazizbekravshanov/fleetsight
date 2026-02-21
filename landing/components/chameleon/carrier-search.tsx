@@ -22,31 +22,38 @@ function scoreBadge(score: number) {
 
 export function CarrierSearch({
   onSelect,
+  initialResults,
 }: {
   onSelect: (dot: number) => void;
+  initialResults: SearchResult[];
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>(initialResults);
   const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(0);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [total, setTotal] = useState(initialResults.length);
+  const [searched, setSearched] = useState(false);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      setResults(initialResults);
+      setSearched(false);
+      return;
+    }
     setLoading(true);
-    setSearchError(null);
     try {
       const res = await fetch(
         `/api/chameleon/search?q=${encodeURIComponent(query.trim())}&sort=risk&limit=20`
       );
-      if (!res.ok) throw new Error(`Search API returned ${res.status}`);
+      if (!res.ok) throw new Error(`Search returned ${res.status}`);
       const data = await res.json();
       setResults(data.results || []);
       setTotal(data.total || 0);
-    } catch (e) {
+      setSearched(true);
+    } catch {
       setResults([]);
-      setSearchError(e instanceof Error ? e.message : "Search failed");
+      setTotal(0);
+      setSearched(true);
     } finally {
       setLoading(false);
     }
@@ -54,7 +61,9 @@ export function CarrierSearch({
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-      <h3 className="text-lg font-semibold text-white">Search Carriers</h3>
+      <h3 className="text-lg font-semibold text-white">
+        {searched ? "Search Results" : "Top Risk Carriers"}
+      </h3>
       <form onSubmit={handleSearch} className="mt-3 flex gap-2">
         <input
           type="text"
@@ -72,11 +81,7 @@ export function CarrierSearch({
         </button>
       </form>
 
-      {searchError && (
-        <p className="mt-2 text-xs text-rose-400">{searchError}</p>
-      )}
-
-      {total > 0 && (
+      {searched && (
         <p className="mt-2 text-xs text-slate-400">{total} results found</p>
       )}
 

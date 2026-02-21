@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type Stats = {
   carrierCount: number;
   clusterCount: number;
@@ -9,39 +7,18 @@ type Stats = {
   lastSync: { date: string; status: string } | null;
 };
 
-export function StatsBar() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/chameleon/stats")
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`API returned ${r.status}`);
-        return r.json();
-      })
-      .then(setStats)
-      .catch((e) => setError(e.message));
-  }, []);
-
+export function StatsBar({ stats }: { stats: Stats }) {
   const cards = [
-    { label: "Carriers Tracked", value: stats?.carrierCount ?? "—" },
-    { label: "Chameleon Clusters", value: stats?.clusterCount ?? "—" },
-    { label: "High Risk", value: stats?.highRiskCount ?? "—" },
+    { label: "Carriers Tracked", value: stats.carrierCount },
+    { label: "Chameleon Clusters", value: stats.clusterCount },
+    { label: "High Risk", value: stats.highRiskCount },
     {
       label: "Last Sync",
-      value: stats?.lastSync
+      value: stats.lastSync
         ? new Date(stats.lastSync.date).toLocaleDateString()
         : "—",
     },
   ];
-
-  if (error) {
-    return (
-      <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
-        Stats error: {error}
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
