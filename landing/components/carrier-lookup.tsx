@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   decodeCarship,
   decodeStatus,
@@ -43,6 +43,35 @@ const BADGE_COLORS = {
   amber: "bg-amber-500/20 text-amber-300",
   slate: "bg-slate-500/20 text-slate-300",
 } as const;
+
+const BORDER_COLORS = {
+  blue: "border-l-blue-500",
+  purple: "border-l-purple-500",
+  amber: "border-l-amber-500",
+  slate: "border-l-slate-500",
+} as const;
+
+/* ── Skeleton Loading ──────────────────────────────────────────── */
+
+function SkeletonRows({ count = 3 }: { count?: number }) {
+  return (
+    <div className="mx-auto max-w-5xl space-y-3">
+      {Array.from({ length: count }).map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
+          className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-5"
+        >
+          <div className="h-3 w-2/5 rounded-full bg-slate-800" />
+          <div className="h-3 w-1/5 rounded-full bg-slate-800" />
+          <div className="ml-auto h-3 w-1/6 rounded-full bg-slate-800" />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
 
 export function CarrierLookup() {
   const [query, setQuery] = useState("");
@@ -100,26 +129,22 @@ export function CarrierLookup() {
     <main className="min-h-screen bg-slate-950 text-slate-100">
       {/* Header */}
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-6xl px-4 py-3 sm:px-6">
           <p className="text-sm font-semibold tracking-wide text-blue-400">
             FleetSight
           </p>
-          <Link
-            href="/login"
-            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800"
-          >
-            Sign in
-          </Link>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* Search */}
-        <div className="text-center">
-          <h1 className="text-3xl font-semibold sm:text-4xl">
+        <div className="relative text-center">
+          {/* Radial glow orb */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+          <h1 className="relative text-4xl font-semibold sm:text-5xl bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
             FMCSA Carrier Lookup
           </h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="relative mt-2 text-sm text-slate-400">
             Search 4.4M FMCSA-registered carriers, brokers &amp; freight forwarders by name or DOT number
           </p>
         </div>
@@ -128,27 +153,48 @@ export function CarrierLookup() {
           onSubmit={handleSearch}
           className="mx-auto mt-6 flex max-w-2xl gap-2"
         >
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="DOT number or company name..."
-            className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 outline-none ring-blue-500 placeholder:text-slate-500 focus:ring"
-          />
-          <button
+          <div className="relative flex-1">
+            <svg
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="DOT number or company name..."
+              className="w-full rounded-xl border border-slate-700 bg-slate-900 py-3 pl-11 pr-3 text-base text-slate-100 outline-none placeholder:text-slate-500 transition-shadow focus:shadow-glow"
+            />
+          </div>
+          <motion.button
             type="submit"
             disabled={searching}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition-shadow hover:shadow-glow disabled:opacity-60"
           >
             {searching ? "Searching..." : "Search"}
-          </button>
+          </motion.button>
         </form>
 
         {/* Results */}
         {searched && results.length === 0 && (
-          <p className="mt-6 text-center text-sm text-slate-500">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-10 text-center text-base text-slate-500 tracking-wide"
+          >
             No carriers found. Try a different search term.
-          </p>
+          </motion.p>
         )}
 
         {results.length > 0 && (
@@ -156,14 +202,30 @@ export function CarrierLookup() {
             <p className="mb-2 text-xs text-slate-400">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
-            <ul className="space-y-1">
+            <motion.ul
+              key={results.map((r) => r.dotNumber).join()}
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.05 } },
+              }}
+              className="space-y-1"
+            >
               {results.map((r) => {
                 const badge = entityTypeBadge(r.classdef);
                 return (
-                  <li key={r.dotNumber}>
+                  <motion.li
+                    key={r.dotNumber}
+                    variants={{
+                      hidden: { opacity: 0, y: 12 },
+                      visible: { opacity: 1, y: 0 },
+                    }}
+                    whileHover={{ scale: 1.01 }}
+                  >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition hover:bg-slate-800/60 ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition hover:bg-slate-800/60 hover:shadow-panel ${
                         selectedDot === r.dotNumber
                           ? "bg-slate-800/60 ring-1 ring-blue-500/40"
                           : ""
@@ -212,26 +274,28 @@ export function CarrierLookup() {
                         )}
                       </div>
                     </button>
-                  </li>
+                  </motion.li>
                 );
               })}
-            </ul>
+            </motion.ul>
           </div>
         )}
 
         {/* Detail */}
         {selectedDot && (
-          <div className="mt-8">
-            {detailLoading && (
-              <p className="text-center text-sm text-slate-400">
-                Loading carrier details...
-              </p>
-            )}
+          <motion.div
+            key={selectedDot}
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            {detailLoading && <SkeletonRows />}
             {detailError && (
               <p className="text-center text-sm text-rose-400">{detailError}</p>
             )}
             {detail && <CarrierDetailView detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
-          </div>
+          </motion.div>
         )}
       </div>
     </main>
@@ -260,34 +324,37 @@ function CarrierDetailView({
   return (
     <div className="mx-auto max-w-5xl">
       {/* Carrier Header */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <h2 className="text-xl font-semibold text-white">
-              {c.legal_name}
-            </h2>
-            {c.dba_name && (
-              <p className="text-sm text-slate-400">DBA {c.dba_name}</p>
-            )}
-            <p className="mt-1 text-xs text-slate-500">
-              USDOT {c.dot_number}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
-            >
-              {badge.label}
-            </span>
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                c.status_code === "A"
-                  ? "bg-emerald-500/20 text-emerald-300"
-                  : "bg-rose-500/20 text-rose-300"
-              }`}
-            >
-              {decodeStatus(c.status_code)}
-            </span>
+      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70 shadow-panel">
+        <div className="h-0.5 bg-gradient-to-r from-blue-500 to-blue-400" />
+        <div className="p-5">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-semibold text-white">
+                {c.legal_name}
+              </h2>
+              {c.dba_name && (
+                <p className="text-sm text-slate-400">DBA {c.dba_name}</p>
+              )}
+              <p className="mt-1 text-xs text-slate-500">
+                USDOT {c.dot_number}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
+              >
+                {badge.label}
+              </span>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  c.status_code === "A"
+                    ? "bg-emerald-500/20 text-emerald-300"
+                    : "bg-rose-500/20 text-rose-300"
+                }`}
+              >
+                {decodeStatus(c.status_code)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -313,13 +380,22 @@ function CarrierDetailView({
       </div>
 
       {/* Tab Content */}
-      <div className="mt-4">
-        {activeTab === "overview" && <OverviewTab carrier={c} authority={detail.authority} oos={detail.oos} />}
-        {activeTab === "inspections" && (
-          <InspectionsTab inspections={detail.inspections} />
-        )}
-        {activeTab === "crashes" && <CrashesTab crashes={detail.crashes} />}
-      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+          className="mt-4"
+        >
+          {activeTab === "overview" && <OverviewTab carrier={c} authority={detail.authority} oos={detail.oos} />}
+          {activeTab === "inspections" && (
+            <InspectionsTab inspections={detail.inspections} />
+          )}
+          {activeTab === "crashes" && <CrashesTab crashes={detail.crashes} />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
@@ -338,8 +414,9 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Company Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
           Company Info
         </h3>
         <dl className="space-y-2 text-sm">
@@ -387,8 +464,9 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
       </div>
 
       {/* SAFER Stats */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           SAFER Stats
         </h3>
         <dl className="space-y-2 text-sm">
@@ -431,8 +509,9 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
       </div>
 
       {/* Authority Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 md:col-span-2">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Authority &amp; Operating Status
         </h3>
         <AuthoritySection authority={authority} oos={oos} />
@@ -449,7 +528,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-slate-500 tracking-wide">
         Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.
       </p>
     );
@@ -458,9 +537,9 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
   return (
     <div className="space-y-4">
       {authorityRecords.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="max-h-[32rem] overflow-auto">
           <table className="w-full text-left text-xs text-slate-300">
-            <thead>
+            <thead className="sticky top-0 bg-slate-900">
               <tr className="border-b border-slate-700 text-slate-400">
                 <th className="px-3 py-2">Authority Type</th>
                 <th className="px-3 py-2">Status</th>
@@ -470,7 +549,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
             </thead>
             <tbody>
               {authorityRecords.map((a, i) => (
-                <tr key={i} className="border-b border-slate-800/50">
+                <tr key={i} className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30">
                   <td className="px-3 py-2">{str(a.authorityType) || str(a.authTypDesc) || "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -499,9 +578,9 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             Out-of-Service Orders
           </h4>
-          <div className="overflow-x-auto">
+          <div className="max-h-[32rem] overflow-auto">
             <table className="w-full text-left text-xs text-slate-300">
-              <thead>
+              <thead className="sticky top-0 bg-slate-900">
                 <tr className="border-b border-slate-700 text-slate-400">
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Effective Date</th>
@@ -510,7 +589,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
               </thead>
               <tbody>
                 {oosRecords.map((o, i) => (
-                  <tr key={i} className="border-b border-slate-800/50">
+                  <tr key={i} className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30">
                     <td className="px-3 py-2">{str(o.oosType) || str(o.oosTypeDesc) || "—"}</td>
                     <td className="px-3 py-2">
                       {str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}
@@ -574,7 +653,7 @@ function InspectionsTab({
 }) {
   if (inspections.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-slate-500">
+      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
         No inspection records found.
       </p>
     );
@@ -607,9 +686,9 @@ function InspectionsTab({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
         <table className="w-full text-left text-xs text-slate-300">
-          <thead>
+          <thead className="sticky top-0 bg-slate-900">
             <tr className="border-b border-slate-700 text-slate-400">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
@@ -626,7 +705,7 @@ function InspectionsTab({
             {inspections.map((insp, i) => (
               <tr
                 key={insp.inspection_id ?? i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30"
+                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {insp.insp_date
@@ -681,7 +760,7 @@ function InspectionsTab({
 function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
   if (crashes.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-slate-500">
+      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
         No crash records found.
       </p>
     );
@@ -711,9 +790,9 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
         <table className="w-full text-left text-xs text-slate-300">
-          <thead>
+          <thead className="sticky top-0 bg-slate-900">
             <tr className="border-b border-slate-700 text-slate-400">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
@@ -730,7 +809,7 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
             {crashes.map((cr, i) => (
               <tr
                 key={cr.crash_id ?? i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30"
+                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {cr.report_date
@@ -808,15 +887,18 @@ function Stat({
   warn?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-4 py-2">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p
-        className={`text-lg font-semibold ${
-          warn ? "text-rose-400" : "text-slate-100"
-        }`}
-      >
-        {value}
-      </p>
+    <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/70">
+      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-blue-500"}`} />
+      <div className="px-4 py-2">
+        <p className="text-xs text-slate-400">{label}</p>
+        <p
+          className={`text-xl font-semibold ${
+            warn ? "text-rose-400" : "text-slate-100"
+          }`}
+        >
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
