@@ -26,6 +26,8 @@ export async function GET(req: NextRequest) {
       statusCode: r.status_code ?? null,
       phyState: r.phy_state ?? null,
       powerUnits: r.power_units ? parseInt(r.power_units, 10) : null,
+      classdef: r.classdef ?? null,
+      businessOrgDesc: r.business_org_desc ?? null,
     })),
     total: results.length,
   });

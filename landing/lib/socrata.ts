@@ -34,9 +34,24 @@ export type SocrataCarrier = {
   docket1?: string;
   docket1_status_code?: string;
   owntract?: string;
+  owntrail?: string;
+  owntruck?: string;
   trmtrail?: string;
   interstate?: string;
   intrastate?: string;
+  business_org_desc?: string;
+  business_org_id?: string;
+  mcs150_date?: string;
+  mcs150_mileage?: string;
+  mcs150_mileage_year?: string;
+  cell_phone?: string;
+  fax?: string;
+  carrier_mailing_street?: string;
+  carrier_mailing_city?: string;
+  carrier_mailing_state?: string;
+  carrier_mailing_zip?: string;
+  dun_bradstreet_no?: string;
+  safety_inv_terr?: string;
 };
 
 export type SocrataInspection = {
@@ -54,6 +69,15 @@ export type SocrataInspection = {
   hazmat_viol_total?: string;
   hazmat_oos_total?: string;
   location_desc?: string;
+  report_number?: string;
+  insp_facility?: string;
+  insp_start_time?: string;
+  insp_end_time?: string;
+  post_acc_ind?: string;
+  gross_comb_veh_wt?: string;
+  insp_carrier_name?: string;
+  insp_carrier_city?: string;
+  insp_carrier_state?: string;
 };
 
 export type SocrataCrash = {
@@ -66,6 +90,13 @@ export type SocrataCrash = {
   fatalities?: string;
   injuries?: string;
   tow_away?: string;
+  report_number?: string;
+  report_time?: string;
+  cargo_body_type_id?: string;
+  vehicle_configuration_id?: string;
+  federal_recordable?: string;
+  state_recordable?: string;
+  truck_bus_ind?: string;
 };
 
 async function socrataFetch<T>(

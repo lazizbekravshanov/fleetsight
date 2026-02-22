@@ -8,6 +8,10 @@ import {
   decodeOperation,
   decodeFleetSize,
   decodeInspectionLevel,
+  decodeVehicleConfig,
+  decodeCargoBodyType,
+  decodeClassdef,
+  entityTypeBadge,
 } from "@/lib/fmcsa-codes";
 import type { SocrataCarrier, SocrataInspection, SocrataCrash } from "@/lib/socrata";
 
@@ -18,6 +22,8 @@ type SearchResult = {
   statusCode: string | null;
   phyState: string | null;
   powerUnits: number | null;
+  classdef: string | null;
+  businessOrgDesc: string | null;
 };
 
 type CarrierDetail = {
@@ -25,9 +31,18 @@ type CarrierDetail = {
   inspections: SocrataInspection[];
   crashes: SocrataCrash[];
   basics: unknown;
+  authority: unknown;
+  oos: unknown;
 };
 
 type Tab = "overview" | "inspections" | "crashes";
+
+const BADGE_COLORS = {
+  blue: "bg-blue-500/20 text-blue-300",
+  purple: "bg-purple-500/20 text-purple-300",
+  amber: "bg-amber-500/20 text-amber-300",
+  slate: "bg-slate-500/20 text-slate-300",
+} as const;
 
 export function CarrierLookup() {
   const [query, setQuery] = useState("");
@@ -105,7 +120,7 @@ export function CarrierLookup() {
             FMCSA Carrier Lookup
           </h1>
           <p className="mt-2 text-sm text-slate-400">
-            Search 4.4M FMCSA-registered carriers by name or DOT number
+            Search 4.4M FMCSA-registered carriers, brokers &amp; freight forwarders by name or DOT number
           </p>
         </div>
 
@@ -142,52 +157,64 @@ export function CarrierLookup() {
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
             <ul className="space-y-1">
-              {results.map((r) => (
-                <li key={r.dotNumber}>
-                  <button
-                    onClick={() => handleSelect(r.dotNumber)}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition hover:bg-slate-800/60 ${
-                      selectedDot === r.dotNumber
-                        ? "bg-slate-800/60 ring-1 ring-blue-500/40"
-                        : ""
-                    }`}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-slate-100">
-                        {r.legalName}
-                        {r.dbaName && (
-                          <span className="ml-2 text-slate-500">
-                            DBA {r.dbaName}
+              {results.map((r) => {
+                const badge = entityTypeBadge(r.classdef);
+                return (
+                  <li key={r.dotNumber}>
+                    <button
+                      onClick={() => handleSelect(r.dotNumber)}
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition hover:bg-slate-800/60 ${
+                        selectedDot === r.dotNumber
+                          ? "bg-slate-800/60 ring-1 ring-blue-500/40"
+                          : ""
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-slate-100">
+                          {r.legalName}
+                          {r.dbaName && (
+                            <span className="ml-2 text-slate-500">
+                              DBA {r.dbaName}
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          DOT {r.dotNumber}
+                          {r.phyState && (
+                            <span className="ml-2">{r.phyState}</span>
+                          )}
+                          {r.powerUnits != null && (
+                            <span className="ml-2">
+                              {r.powerUnits} power unit
+                              {r.powerUnits !== 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="ml-2 flex shrink-0 items-center gap-1.5">
+                        {r.classdef && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
+                          >
+                            {badge.label}
                           </span>
                         )}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        DOT {r.dotNumber}
-                        {r.phyState && (
-                          <span className="ml-2">{r.phyState}</span>
-                        )}
-                        {r.powerUnits != null && (
-                          <span className="ml-2">
-                            {r.powerUnits} power unit
-                            {r.powerUnits !== 1 ? "s" : ""}
+                        {r.statusCode && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                              r.statusCode === "A"
+                                ? "bg-emerald-500/20 text-emerald-300"
+                                : "bg-rose-500/20 text-rose-300"
+                            }`}
+                          >
+                            {decodeStatus(r.statusCode)}
                           </span>
                         )}
-                      </p>
-                    </div>
-                    {r.statusCode && (
-                      <span
-                        className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                          r.statusCode === "A"
-                            ? "bg-emerald-500/20 text-emerald-300"
-                            : "bg-rose-500/20 text-rose-300"
-                        }`}
-                      >
-                        {decodeStatus(r.statusCode)}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
@@ -203,7 +230,7 @@ export function CarrierLookup() {
             {detailError && (
               <p className="text-center text-sm text-rose-400">{detailError}</p>
             )}
-            {detail && <CarrierDetail detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
+            {detail && <CarrierDetailView detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
           </div>
         )}
       </div>
@@ -213,7 +240,7 @@ export function CarrierLookup() {
 
 /* ── Carrier Detail ─────────────────────────────────────────────── */
 
-function CarrierDetail({
+function CarrierDetailView({
   detail,
   activeTab,
   setActiveTab,
@@ -223,6 +250,7 @@ function CarrierDetail({
   setActiveTab: (t: Tab) => void;
 }) {
   const c = detail.carrier;
+  const badge = entityTypeBadge(c.classdef);
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: "overview", label: "Overview" },
     { key: "inspections", label: "Inspections", count: detail.inspections.length },
@@ -245,15 +273,22 @@ function CarrierDetail({
               USDOT {c.dot_number}
             </p>
           </div>
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              c.status_code === "A"
-                ? "bg-emerald-500/20 text-emerald-300"
-                : "bg-rose-500/20 text-rose-300"
-            }`}
-          >
-            {decodeStatus(c.status_code)}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
+            >
+              {badge.label}
+            </span>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                c.status_code === "A"
+                  ? "bg-emerald-500/20 text-emerald-300"
+                  : "bg-rose-500/20 text-rose-300"
+              }`}
+            >
+              {decodeStatus(c.status_code)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -279,7 +314,7 @@ function CarrierDetail({
 
       {/* Tab Content */}
       <div className="mt-4">
-        {activeTab === "overview" && <OverviewTab carrier={c} />}
+        {activeTab === "overview" && <OverviewTab carrier={c} authority={detail.authority} oos={detail.oos} />}
         {activeTab === "inspections" && (
           <InspectionsTab inspections={detail.inspections} />
         )}
@@ -291,10 +326,14 @@ function CarrierDetail({
 
 /* ── Overview Tab ───────────────────────────────────────────────── */
 
-function OverviewTab({ carrier: c }: { carrier: SocrataCarrier }) {
+function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; authority: unknown; oos: unknown }) {
   const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
     .filter(Boolean)
     .join(", ");
+  const mailingAddress = [c.carrier_mailing_street, c.carrier_mailing_city, c.carrier_mailing_state, c.carrier_mailing_zip]
+    .filter(Boolean)
+    .join(", ");
+  const classifications = decodeClassdef(c.classdef);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -306,8 +345,13 @@ function OverviewTab({ carrier: c }: { carrier: SocrataCarrier }) {
         <dl className="space-y-2 text-sm">
           <Row label="Legal Name" value={c.legal_name} />
           {c.dba_name && <Row label="DBA Name" value={c.dba_name} />}
-          {address && <Row label="Address" value={address} />}
+          {address && <Row label="Physical Address" value={address} />}
+          {mailingAddress && mailingAddress !== address && (
+            <Row label="Mailing Address" value={mailingAddress} />
+          )}
           {c.phone && <Row label="Phone" value={c.phone} />}
+          {c.cell_phone && <Row label="Cell Phone" value={c.cell_phone} />}
+          {c.fax && <Row label="Fax" value={c.fax} />}
           {c.email_address && <Row label="Email" value={c.email_address} />}
           {c.company_officer_1 && (
             <Row label="Officer 1" value={c.company_officer_1} />
@@ -315,10 +359,28 @@ function OverviewTab({ carrier: c }: { carrier: SocrataCarrier }) {
           {c.company_officer_2 && (
             <Row label="Officer 2" value={c.company_officer_2} />
           )}
+          {c.business_org_desc && (
+            <Row label="Entity Type" value={c.business_org_desc} />
+          )}
+          {c.dun_bradstreet_no && (
+            <Row label="D&B Number" value={c.dun_bradstreet_no} />
+          )}
           {c.add_date && (
             <Row
               label="Operating Since"
               value={new Date(c.add_date).toLocaleDateString()}
+            />
+          )}
+          {c.mcs150_date && (
+            <Row
+              label="MCS-150 Date"
+              value={new Date(c.mcs150_date).toLocaleDateString()}
+            />
+          )}
+          {c.mcs150_mileage && (
+            <Row
+              label="MCS-150 Mileage"
+              value={`${parseInt(c.mcs150_mileage, 10).toLocaleString()} mi${c.mcs150_mileage_year ? ` (${c.mcs150_mileage_year})` : ""}`}
             />
           )}
         </dl>
@@ -335,10 +397,16 @@ function OverviewTab({ carrier: c }: { carrier: SocrataCarrier }) {
             label="Operation Type"
             value={decodeOperation(c.carrier_operation)}
           />
+          {classifications.length > 0 && (
+            <Row label="Classification" value={classifications.join(", ")} />
+          )}
           <Row label="Fleet Size" value={decodeFleetSize(c.fleetsize)} />
           {c.power_units && <Row label="Power Units" value={c.power_units} />}
           {c.truck_units && <Row label="Trucks" value={c.truck_units} />}
           {c.bus_units && <Row label="Buses" value={c.bus_units} />}
+          {c.owntract && <Row label="Owned Tractors" value={c.owntract} />}
+          {c.owntrail && <Row label="Owned Trailers" value={c.owntrail} />}
+          {c.owntruck && <Row label="Owned Trucks" value={c.owntruck} />}
           {c.total_drivers && (
             <Row label="Total Drivers" value={c.total_drivers} />
           )}
@@ -361,8 +429,131 @@ function OverviewTab({ carrier: c }: { carrier: SocrataCarrier }) {
           )}
         </dl>
       </div>
+
+      {/* Authority Info */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 md:col-span-2">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">
+          Authority &amp; Operating Status
+        </h3>
+        <AuthoritySection authority={authority} oos={oos} />
+      </div>
     </div>
   );
+}
+
+/* ── Authority Section ──────────────────────────────────────────── */
+
+function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown }) {
+  const authorityRecords = extractArray(authority, "authority");
+  const oosRecords = extractArray(oos, "oos");
+
+  if (authorityRecords.length === 0 && oosRecords.length === 0) {
+    return (
+      <p className="text-sm text-slate-500">
+        Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {authorityRecords.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead>
+              <tr className="border-b border-slate-700 text-slate-400">
+                <th className="px-3 py-2">Authority Type</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Granted Date</th>
+                <th className="hidden px-3 py-2 sm:table-cell">Docket</th>
+              </tr>
+            </thead>
+            <tbody>
+              {authorityRecords.map((a, i) => (
+                <tr key={i} className="border-b border-slate-800/50">
+                  <td className="px-3 py-2">{str(a.authorityType) || str(a.authTypDesc) || "—"}</td>
+                  <td className="px-3 py-2">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
+                        ? "bg-emerald-500/20 text-emerald-300"
+                        : "bg-rose-500/20 text-rose-300"
+                    }`}>
+                      {str(a.authStatusDesc) || str(a.authStatus) || "—"}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">
+                    {str(a.authGrantDate) ? new Date(str(a.authGrantDate)!).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="hidden px-3 py-2 sm:table-cell">
+                    {str(a.docketNbr) || str(a.docketPrefix) ? `${str(a.docketPrefix) ?? ""}${str(a.docketNbr) ?? ""}` : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {oosRecords.length > 0 && (
+        <div>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Out-of-Service Orders
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead>
+                <tr className="border-b border-slate-700 text-slate-400">
+                  <th className="px-3 py-2">Type</th>
+                  <th className="px-3 py-2">Effective Date</th>
+                  <th className="px-3 py-2">Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {oosRecords.map((o, i) => (
+                  <tr key={i} className="border-b border-slate-800/50">
+                    <td className="px-3 py-2">{str(o.oosType) || str(o.oosTypeDesc) || "—"}</td>
+                    <td className="px-3 py-2">
+                      {str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-slate-400">
+                      {str(o.oosReason) || str(o.oosReasonDesc) || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-slate-600">
+        Insurance details (BIPD, cargo, bond) are not available via public API.
+      </p>
+    </div>
+  );
+}
+
+/** Extract array from FMCSA nested response shape */
+function extractArray(payload: unknown, key: string): Record<string, unknown>[] {
+  if (!payload || typeof payload !== "object") return [];
+  const obj = payload as Record<string, unknown>;
+  // Shape: { content: { <key>: [...] } } or { content: { <key>: { ... } } }
+  if (obj.content && typeof obj.content === "object") {
+    const content = obj.content as Record<string, unknown>;
+    const val = content[key];
+    if (Array.isArray(val)) return val as Record<string, unknown>[];
+    if (val && typeof val === "object") return [val as Record<string, unknown>];
+  }
+  const val = obj[key];
+  if (Array.isArray(val)) return val as Record<string, unknown>[];
+  if (val && typeof val === "object") return [val as Record<string, unknown>];
+  return [];
+}
+
+function str(v: unknown): string | null {
+  if (v == null) return null;
+  const s = String(v);
+  return s === "" ? null : s;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -421,10 +612,13 @@ function InspectionsTab({
           <thead>
             <tr className="border-b border-slate-700 text-slate-400">
               <th className="px-3 py-2">Date</th>
+              <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
               <th className="px-3 py-2">Level</th>
               <th className="px-3 py-2 text-right">Violations</th>
               <th className="px-3 py-2 text-right">OOS</th>
+              <th className="hidden px-3 py-2 text-center md:table-cell">Post-Acc</th>
+              <th className="hidden px-3 py-2 text-right lg:table-cell">Weight (lbs)</th>
               <th className="hidden px-3 py-2 sm:table-cell">Location</th>
             </tr>
           </thead>
@@ -438,6 +632,9 @@ function InspectionsTab({
                   {insp.insp_date
                     ? new Date(insp.insp_date).toLocaleDateString()
                     : "—"}
+                </td>
+                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                  {insp.report_number ?? "—"}
                 </td>
                 <td className="px-3 py-2">{insp.report_state ?? "—"}</td>
                 <td className="px-3 py-2">
@@ -453,7 +650,21 @@ function InspectionsTab({
                     "0"
                   )}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 text-center md:table-cell">
+                  {insp.post_acc_ind === "Y" ? (
+                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">
+                      Yes
+                    </span>
+                  ) : (
+                    <span className="text-slate-600">—</span>
+                  )}
+                </td>
+                <td className="hidden px-3 py-2 text-right lg:table-cell text-slate-500">
+                  {insp.gross_comb_veh_wt
+                    ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString()
+                    : "—"}
+                </td>
+                <td className="hidden px-3 py-2 sm:table-cell text-slate-500" title={insp.insp_facility ?? undefined}>
                   {insp.location_desc ?? "—"}
                 </td>
               </tr>
@@ -505,11 +716,14 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
           <thead>
             <tr className="border-b border-slate-700 text-slate-400">
               <th className="px-3 py-2">Date</th>
+              <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
               <th className="hidden px-3 py-2 sm:table-cell">City</th>
+              <th className="hidden px-3 py-2 md:table-cell">Vehicle</th>
               <th className="px-3 py-2 text-right">Fatal</th>
               <th className="px-3 py-2 text-right">Injuries</th>
               <th className="px-3 py-2 text-right">Tow</th>
+              <th className="hidden px-3 py-2 text-center lg:table-cell">Fed Rec.</th>
             </tr>
           </thead>
           <tbody>
@@ -522,10 +736,28 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                   {cr.report_date
                     ? new Date(cr.report_date).toLocaleDateString()
                     : "—"}
+                  {cr.report_time && (
+                    <span className="ml-1 text-slate-600">{cr.report_time}</span>
+                  )}
+                </td>
+                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                  {cr.report_number ?? "—"}
                 </td>
                 <td className="px-3 py-2">{cr.report_state ?? "—"}</td>
                 <td className="hidden px-3 py-2 sm:table-cell">
                   {cr.city ?? "—"}
+                </td>
+                <td className="hidden px-3 py-2 md:table-cell text-slate-400" title={cr.vehicle_configuration_id ? decodeVehicleConfig(cr.vehicle_configuration_id) : undefined}>
+                  {cr.truck_bus_ind === "TRUCK"
+                    ? "Truck"
+                    : cr.truck_bus_ind === "BUS"
+                      ? "Bus"
+                      : cr.truck_bus_ind ?? "—"}
+                  {cr.vehicle_configuration_id && (
+                    <span className="ml-1 text-slate-600">
+                      ({decodeVehicleConfig(cr.vehicle_configuration_id)})
+                    </span>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {parseInt(cr.fatalities ?? "0", 10) > 0 ? (
@@ -543,6 +775,17 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                 </td>
                 <td className="px-3 py-2 text-right">
                   {cr.tow_away ?? "0"}
+                </td>
+                <td className="hidden px-3 py-2 text-center lg:table-cell">
+                  {cr.federal_recordable === "Y" ? (
+                    <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">
+                      Yes
+                    </span>
+                  ) : cr.federal_recordable === "N" ? (
+                    <span className="text-slate-600">No</span>
+                  ) : (
+                    <span className="text-slate-600">—</span>
+                  )}
                 </td>
               </tr>
             ))}

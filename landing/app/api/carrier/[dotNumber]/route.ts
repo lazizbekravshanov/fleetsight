@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
 import { getCarrierByDot, getInspectionsByDot, getCrashesByDot } from "@/lib/socrata";
-import { getCarrierBasics } from "@/lib/fmcsa";
+import { getCarrierBasics, getCarrierAuthority, getCarrierOos } from "@/lib/fmcsa";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -29,10 +29,16 @@ export async function GET(
     return jsonError("Carrier not found", 404);
   }
 
-  // Optional BASIC measures — non-fatal if key is missing
+  // Optional FMCSA API data — non-fatal if key is missing
   let basics: unknown = null;
+  let authority: unknown = null;
+  let oos: unknown = null;
   try {
-    basics = await getCarrierBasics(String(dotNumber));
+    [basics, authority, oos] = await Promise.all([
+      getCarrierBasics(String(dotNumber)).catch(() => null),
+      getCarrierAuthority(String(dotNumber)).catch(() => null),
+      getCarrierOos(String(dotNumber)).catch(() => null),
+    ]);
   } catch {
     // FMCSA_WEBKEY may not be configured — skip silently
   }
@@ -42,5 +48,7 @@ export async function GET(
     inspections,
     crashes,
     basics,
+    authority,
+    oos,
   });
 }
