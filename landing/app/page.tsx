@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CarrierLookup } from "@/components/carrier-lookup";
+import { CarrierLookup } from "@/components/carrier";
 
 export const metadata: Metadata = {
   title: "FleetSight | FMCSA Carrier Lookup",

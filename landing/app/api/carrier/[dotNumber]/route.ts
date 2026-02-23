@@ -1,7 +1,16 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
-import { getCarrierByDot, getInspectionsByDot, getCrashesByDot } from "@/lib/socrata";
+import {
+  getCarrierByDot,
+  getInspectionsByDot,
+  getCrashesByDot,
+  getInsuranceByDot,
+  getViolationsByDot,
+  getAuthorityHistoryByDot,
+  getComplaintsByDot,
+  getPeerBenchmark,
+} from "@/lib/socrata";
 import { getCarrierBasics, getCarrierAuthority, getCarrierOos } from "@/lib/fmcsa";
 
 const paramSchema = z.object({
@@ -19,11 +28,16 @@ export async function GET(
 
   const dotNumber = parseInt(parsed.data.dotNumber, 10);
 
-  const [carrier, inspections, crashes] = await Promise.all([
-    getCarrierByDot(dotNumber),
-    getInspectionsByDot(dotNumber),
-    getCrashesByDot(dotNumber),
-  ]);
+  const [carrier, inspections, crashes, insurance, violations, authorityHistory, complaints] =
+    await Promise.all([
+      getCarrierByDot(dotNumber),
+      getInspectionsByDot(dotNumber),
+      getCrashesByDot(dotNumber),
+      getInsuranceByDot(dotNumber).catch(() => []),
+      getViolationsByDot(dotNumber).catch(() => []),
+      getAuthorityHistoryByDot(dotNumber).catch(() => []),
+      getComplaintsByDot(dotNumber).catch(() => []),
+    ]);
 
   if (!carrier) {
     return jsonError("Carrier not found", 404);
@@ -43,6 +57,14 @@ export async function GET(
     // FMCSA_WEBKEY may not be configured — skip silently
   }
 
+  // Peer benchmark — depends on carrier's fleetsize, non-fatal
+  let peerBenchmark = null;
+  try {
+    peerBenchmark = await getPeerBenchmark(carrier.fleetsize);
+  } catch {
+    // Non-fatal
+  }
+
   return Response.json({
     carrier,
     inspections,
@@ -50,5 +72,10 @@ export async function GET(
     basics,
     authority,
     oos,
+    insurance,
+    violations,
+    authorityHistory,
+    complaints,
+    peerBenchmark,
   });
 }

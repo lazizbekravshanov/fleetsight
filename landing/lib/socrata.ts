@@ -3,6 +3,11 @@ const BASE_URL = "https://data.transportation.gov/resource";
 const CENSUS_RESOURCE = "az4n-8mr2";
 const INSPECTION_RESOURCE = "fx4q-ay7w";
 const CRASH_RESOURCE = "aayw-vxb3";
+const INSURANCE_RESOURCE = "qh9u-swkp";
+const VIOLATION_RESOURCE = "876r-jsdb";
+const AUTH_HIST_RESOURCE = "9mw4-x3tu";
+const COMPLAINT_RESOURCE = "r6z9-e9sk";
+const FLEET_UNIT_RESOURCE = "wt8s-2hbx";
 
 export type SocrataCarrier = {
   dot_number: string;
@@ -170,4 +175,139 @@ export async function getCrashesByDot(
     $order: "report_date DESC",
     $limit: String(limit),
   });
+}
+
+/* ── New Socrata Types ────────────────────────────────────────── */
+
+export type SocrataInsurance = {
+  dot_number: string;
+  ins_type?: string;
+  status?: string;
+  coverage_value?: string;
+  coverage_type?: string;
+  insurer_name?: string;
+  policy_effective_date?: string;
+  policy_cancellation_date?: string;
+  form_type?: string;
+};
+
+export type SocrataViolation = {
+  dot_number: string;
+  insp_date?: string;
+  basic_code_desc?: string;
+  group_desc?: string;
+  violation_code?: string;
+  violation_desc?: string;
+  oos_indicator?: string;
+  unit_type?: string;
+  severity_weight?: string;
+};
+
+export type SocrataAuthorityHistory = {
+  dot_number: string;
+  auth_type_desc?: string;
+  auth_action_desc?: string;
+  action_date?: string;
+  docket_number?: string;
+  auth_status?: string;
+};
+
+export type SocrataComplaint = {
+  dot_number: string;
+  complaint_date?: string;
+  complaint_category?: string;
+  status?: string;
+  complaint_text?: string;
+};
+
+export type SocrataFleetUnit = {
+  dot_number: string;
+  vin?: string;
+  unit_type?: string;
+  unit_make?: string;
+  unit_year?: string;
+  unit_type_desc?: string;
+};
+
+/* ── New Socrata Fetch Functions ──────────────────────────────── */
+
+export async function getInsuranceByDot(
+  dotNumber: number,
+  limit = 50
+): Promise<SocrataInsurance[]> {
+  return socrataFetch<SocrataInsurance>(INSURANCE_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $order: "policy_effective_date DESC",
+    $limit: String(limit),
+  });
+}
+
+export async function getViolationsByDot(
+  dotNumber: number,
+  limit = 200
+): Promise<SocrataViolation[]> {
+  return socrataFetch<SocrataViolation>(VIOLATION_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $order: "insp_date DESC",
+    $limit: String(limit),
+  });
+}
+
+export async function getAuthorityHistoryByDot(
+  dotNumber: number,
+  limit = 50
+): Promise<SocrataAuthorityHistory[]> {
+  return socrataFetch<SocrataAuthorityHistory>(AUTH_HIST_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $order: "action_date DESC",
+    $limit: String(limit),
+  });
+}
+
+export async function getComplaintsByDot(
+  dotNumber: number,
+  limit = 100
+): Promise<SocrataComplaint[]> {
+  return socrataFetch<SocrataComplaint>(COMPLAINT_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $order: "complaint_date DESC",
+    $limit: String(limit),
+  });
+}
+
+export async function getFleetUnitsByDot(
+  dotNumber: number,
+  limit = 200
+): Promise<SocrataFleetUnit[]> {
+  return socrataFetch<SocrataFleetUnit>(FLEET_UNIT_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $limit: String(limit),
+  });
+}
+
+export async function getPeerBenchmark(
+  fleetsize: string | undefined
+): Promise<{ avgPowerUnits: number; avgDrivers: number; avgOosRate: number; carrierCount: number }> {
+  if (!fleetsize) {
+    return { avgPowerUnits: 0, avgDrivers: 0, avgOosRate: 0, carrierCount: 0 };
+  }
+
+  const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `fleetsize='${fleetsize}' AND status_code='A'`,
+    $select: "avg(power_units) as avg_pu, avg(total_drivers) as avg_dr, count(*) as cnt",
+    $limit: "1",
+  });
+
+  // The aggregate response comes back as a single row with string values
+  const row = results[0] as Record<string, string> | undefined;
+  if (!row) {
+    return { avgPowerUnits: 0, avgDrivers: 0, avgOosRate: 0, carrierCount: 0 };
+  }
+
+  return {
+    avgPowerUnits: parseFloat(row.avg_pu ?? "0") || 0,
+    avgDrivers: parseFloat(row.avg_dr ?? "0") || 0,
+    avgOosRate: 0, // computed client-side from inspections
+    carrierCount: parseInt(row.cnt ?? "0", 10) || 0,
+  };
 }

@@ -1,0 +1,324 @@
+"use client";
+
+import { useState } from "react";
+import { Stat, SkeletonRows } from "../shared";
+import type { FleetData, NhtsaRecall } from "../types";
+
+export function FleetTab({
+  data,
+  loading,
+  error,
+}: {
+  data: FleetData | null;
+  loading: boolean;
+  error: string | null;
+}) {
+  if (loading) {
+    return <SkeletonRows count={4} />;
+  }
+
+  if (error) {
+    return (
+      <p className="py-12 text-center text-sm text-rose-400">{error}</p>
+    );
+  }
+
+  if (!data) {
+    return (
+      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+        Fleet data will load when this tab is selected.
+      </p>
+    );
+  }
+
+  const { units, decodedVehicles, recalls } = data;
+
+  if (units.length === 0 && decodedVehicles.length === 0) {
+    return (
+      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+        No fleet unit records found for this carrier.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <FleetSummary decodedVehicles={decodedVehicles} units={units} />
+      <FleetComposition decodedVehicles={decodedVehicles} />
+      {recalls.length > 0 && <RecallAlerts recalls={recalls} />}
+      <FleetDetailTable decodedVehicles={decodedVehicles} />
+    </div>
+  );
+}
+
+/* ── Fleet Summary ────────────────────────────────────────────── */
+
+function FleetSummary({
+  decodedVehicles,
+  units,
+}: {
+  decodedVehicles: FleetData["decodedVehicles"];
+  units: FleetData["units"];
+}) {
+  const currentYear = new Date().getFullYear();
+  const years = decodedVehicles
+    .map((v) => parseInt(v.modelYear, 10))
+    .filter((y) => y > 1900 && y <= currentYear + 2);
+  const avgAge =
+    years.length > 0
+      ? currentYear - Math.round(years.reduce((a, b) => a + b, 0) / years.length)
+      : null;
+
+  // Top 3 makes
+  const makeCounts = new Map<string, number>();
+  for (const v of decodedVehicles) {
+    if (v.make) {
+      const mk = v.make.toUpperCase();
+      makeCounts.set(mk, (makeCounts.get(mk) || 0) + 1);
+    }
+  }
+  const topMakes = [...makeCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+        Fleet Summary
+      </h3>
+      <div className="flex flex-wrap gap-4 mb-4">
+        <Stat label="Unit Records" value={units.length} />
+        <Stat label="Decoded Vehicles" value={decodedVehicles.length} />
+        {avgAge !== null && <Stat label="Avg Fleet Age" value={`${avgAge} yr`} />}
+      </div>
+      {topMakes.length > 0 && (
+        <div className="text-xs text-slate-400">
+          <span className="text-slate-500">Top makes: </span>
+          {topMakes.map(([make, count], i) => (
+            <span key={make}>
+              {i > 0 && ", "}
+              <span className="text-slate-200">{make}</span>{" "}
+              <span className="text-slate-500">({count})</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Fleet Composition ────────────────────────────────────────── */
+
+function FleetComposition({
+  decodedVehicles,
+}: {
+  decodedVehicles: FleetData["decodedVehicles"];
+}) {
+  if (decodedVehicles.length === 0) return null;
+
+  // GVWR breakdown
+  const gvwrCounts = new Map<string, number>();
+  for (const v of decodedVehicles) {
+    const cls = v.gvwr || "Unknown";
+    gvwrCounts.set(cls, (gvwrCounts.get(cls) || 0) + 1);
+  }
+  const sortedGvwr = [...gvwrCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const gvwrMax = sortedGvwr[0]?.[1] ?? 1;
+
+  // Make distribution
+  const makeCounts = new Map<string, number>();
+  for (const v of decodedVehicles) {
+    if (v.make) {
+      makeCounts.set(v.make.toUpperCase(), (makeCounts.get(v.make.toUpperCase()) || 0) + 1);
+    }
+  }
+  const sortedMakes = [...makeCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const makeMax = sortedMakes[0]?.[1] ?? 1;
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        Fleet Composition
+      </h3>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* GVWR Breakdown */}
+        <div>
+          <p className="text-xs text-slate-500 mb-2">GVWR Class</p>
+          <div className="space-y-2">
+            {sortedGvwr.slice(0, 6).map(([cls, count]) => (
+              <div key={cls}>
+                <div className="flex justify-between text-xs mb-0.5">
+                  <span className="text-slate-300 truncate max-w-[70%]">{cls}</span>
+                  <span className="text-slate-400">{count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-emerald-500"
+                    style={{ width: `${(count / gvwrMax) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Make Distribution */}
+        <div>
+          <p className="text-xs text-slate-500 mb-2">Make Distribution</p>
+          <div className="space-y-2">
+            {sortedMakes.slice(0, 6).map(([make, count]) => (
+              <div key={make}>
+                <div className="flex justify-between text-xs mb-0.5">
+                  <span className="text-slate-300">{make}</span>
+                  <span className="text-slate-400">{count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-blue-500"
+                    style={{ width: `${(count / makeMax) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Recall Alerts ────────────────────────────────────────────── */
+
+function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // Group by make/model/year
+  const groups = new Map<string, NhtsaRecall[]>();
+  for (const r of recalls) {
+    const key = `${r.make}|${r.model}|${r.modelYear}`;
+    const existing = groups.get(key) || [];
+    existing.push(r);
+    groups.set(key, existing);
+  }
+
+  function toggleExpand(key: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+        Vehicle Recall Alerts
+        <span className="ml-auto rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-medium text-rose-300">
+          {recalls.length} recall{recalls.length !== 1 ? "s" : ""}
+        </span>
+      </h3>
+      <div className="space-y-2">
+        {[...groups.entries()].map(([key, groupRecalls]) => {
+          const [make, model, year] = key.split("|");
+          const isOpen = expanded.has(key);
+          return (
+            <div key={key} className="rounded-lg border border-slate-800 bg-slate-950/50">
+              <button
+                onClick={() => toggleExpand(key)}
+                className="flex w-full items-center justify-between px-3 py-2 text-left text-xs"
+              >
+                <span className="text-slate-200 font-medium">
+                  {year} {make} {model}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-rose-500/20 px-1.5 py-0.5 text-[10px] text-rose-300">
+                    {groupRecalls.length}
+                  </span>
+                  <span className="text-slate-500">{isOpen ? "\u25B2" : "\u25BC"}</span>
+                </div>
+              </button>
+              {isOpen && (
+                <div className="border-t border-slate-800 px-3 py-2 space-y-3">
+                  {groupRecalls.map((r, i) => (
+                    <div key={i} className="text-xs">
+                      <p className="text-slate-300 font-medium">
+                        Campaign #{r.nhtsaCampaignNumber}
+                      </p>
+                      <p className="text-slate-500 mt-0.5">
+                        Component: {r.component}
+                      </p>
+                      <p className="text-slate-400 mt-0.5">{r.summary}</p>
+                      {r.remedy && (
+                        <p className="text-slate-500 mt-0.5">
+                          Remedy: {r.remedy}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Fleet Detail Table ───────────────────────────────────────── */
+
+function FleetDetailTable({
+  decodedVehicles,
+}: {
+  decodedVehicles: FleetData["decodedVehicles"];
+}) {
+  if (decodedVehicles.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
+        Fleet Details
+      </h3>
+      <div className="max-h-[32rem] overflow-auto rounded-lg border border-slate-800">
+        <table className="w-full text-left text-xs text-slate-300">
+          <thead className="sticky top-0 bg-slate-900">
+            <tr className="border-b border-slate-700 text-slate-400">
+              <th className="px-3 py-2">VIN</th>
+              <th className="px-3 py-2">Make</th>
+              <th className="px-3 py-2">Model</th>
+              <th className="px-3 py-2">Year</th>
+              <th className="hidden px-3 py-2 sm:table-cell">Body Class</th>
+              <th className="hidden px-3 py-2 md:table-cell">GVWR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {decodedVehicles.map((v, i) => (
+              <tr
+                key={v.vin || i}
+                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+              >
+                <td className="px-3 py-2 font-mono text-slate-500">
+                  {v.vin || "\u2014"}
+                </td>
+                <td className="px-3 py-2">{v.make || "\u2014"}</td>
+                <td className="px-3 py-2">{v.model || "\u2014"}</td>
+                <td className="px-3 py-2">{v.modelYear || "\u2014"}</td>
+                <td className="hidden px-3 py-2 sm:table-cell text-slate-400">
+                  {v.bodyClass || "\u2014"}
+                </td>
+                <td className="hidden px-3 py-2 md:table-cell text-slate-400">
+                  {v.gvwr || "\u2014"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
