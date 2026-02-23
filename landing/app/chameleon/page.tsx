@@ -5,18 +5,22 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const [carrierCount, clusterCount, highRiskCount, lastSync] = await Promise.all([
-    prisma.fmcsaCarrier.count(),
-    prisma.carrierCluster.count(),
-    prisma.carrierRiskScore.count({ where: { compositeScore: { gte: 70 } } }),
-    prisma.syncRun.findFirst({ orderBy: { createdAt: "desc" }, select: { createdAt: true, status: true } }),
-  ]);
-  return {
-    carrierCount,
-    clusterCount,
-    highRiskCount,
-    lastSync: lastSync ? { date: lastSync.createdAt.toISOString(), status: lastSync.status } : null,
-  };
+  try {
+    const [carrierCount, clusterCount, highRiskCount, lastSync] = await Promise.all([
+      prisma.fmcsaCarrier.count(),
+      prisma.carrierCluster.count(),
+      prisma.carrierRiskScore.count({ where: { compositeScore: { gte: 70 } } }),
+      prisma.syncRun.findFirst({ orderBy: { createdAt: "desc" }, select: { createdAt: true, status: true } }),
+    ]);
+    return {
+      carrierCount,
+      clusterCount,
+      highRiskCount,
+      lastSync: lastSync ? { date: lastSync.createdAt.toISOString(), status: lastSync.status } : null,
+    };
+  } catch {
+    return { carrierCount: 0, clusterCount: 0, highRiskCount: 0, lastSync: null };
+  }
 }
 
 export default async function ChameleonPage() {
