@@ -2,28 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design Tokens ──────────────────────────────────────────────── */
+
 :root {
-  --font-sans: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+  --font-sans: "Space Grotesk", "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", "SFMono-Regular", Menlo, monospace;
+
+  /* Surface hierarchy (dark) */
+  --surface-0: #06080d;
+  --surface-1: #0c1018;
+  --surface-2: #111827;
+  --surface-3: #1e293b;
+
+  /* Accent */
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.12);
 }
+
+/* ── Base Resets ─────────────────────────────────────────────────── */
 
 * {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
 }
 
 body {
   min-height: 100vh;
+  background: var(--surface-0);
 }
 
 button {
   font: inherit;
 }
+
+/* ── Scrollbar (Webkit) ─────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.15) transparent;
+}
+
+/* ── Utility Layers ─────────────────────────────────────────────── */
+
+@layer utilities {
+  /* Glass material — frosted panel effect */
+  .glass {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid rgba(148, 163, 184, 0.08);
+  }
+
+  .glass-subtle {
+    background: rgba(15, 23, 42, 0.35);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    border: 1px solid rgba(148, 163, 184, 0.06);
+  }
+
+  /* Elevated card — distinct from background */
+  .card-elevated {
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.08);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.3),
+      0 4px 16px -4px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  }
+
+  /* Shimmer animation for skeleton loading */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.04) 0%,
+      rgba(148, 163, 184, 0.1) 50%,
+      rgba(148, 163, 184, 0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  /* Pulse glow for active/selected states */
+  .glow-ring {
+    box-shadow:
+      0 0 0 1px rgba(59, 130, 246, 0.3),
+      0 0 20px -4px rgba(59, 130, 246, 0.2);
+  }
+
+  /* Severity glow rings */
+  .glow-critical {
+    box-shadow:
+      0 0 0 1px rgba(244, 63, 94, 0.25),
+      0 0 16px -4px rgba(244, 63, 94, 0.15);
+  }
+
+  .glow-warning {
+    box-shadow:
+      0 0 0 1px rgba(245, 158, 11, 0.25),
+      0 0 16px -4px rgba(245, 158, 11, 0.15);
+  }
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-scale {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Reduced Motion ─────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   *,
