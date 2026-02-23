@@ -22,21 +22,19 @@ function scoreBadge(score: number) {
 
 export function CarrierSearch({
   onSelect,
-  initialResults,
 }: {
   onSelect: (dot: number) => void;
-  initialResults: SearchResult[];
 }) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>(initialResults);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [total, setTotal] = useState(initialResults.length);
+  const [total, setTotal] = useState(0);
   const [searched, setSearched] = useState(false);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) {
-      setResults(initialResults);
+      setResults([]);
       setSearched(false);
       return;
     }
@@ -62,7 +60,7 @@ export function CarrierSearch({
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
       <h3 className="text-lg font-semibold text-white">
-        {searched ? "Search Results" : "Top Risk Carriers"}
+        {searched ? "Search Results" : "Carrier Search"}
       </h3>
       <form onSubmit={handleSearch} className="mt-3 flex gap-2">
         <input
@@ -83,6 +81,12 @@ export function CarrierSearch({
 
       {searched && (
         <p className="mt-2 text-xs text-slate-400">{total} results found</p>
+      )}
+
+      {!searched && results.length === 0 && (
+        <p className="mt-4 text-center text-sm text-slate-500">
+          Search for any FMCSA carrier by name or DOT number
+        </p>
       )}
 
       {results.length > 0 && (

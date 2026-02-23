@@ -141,6 +141,17 @@ export function decodeClassdef(classdef: string | undefined | null): string[] {
     .filter(Boolean);
 }
 
+export function isBrokerOnly(classdef: string | undefined | null): boolean {
+  if (!classdef) return false;
+  const upper = classdef.toUpperCase();
+  return (
+    upper.includes("BROKER") &&
+    !upper.includes("AUTHORIZED FOR HIRE") &&
+    !upper.includes("EXEMPT FOR HIRE") &&
+    !upper.includes("PRIVATE")
+  );
+}
+
 export function isBroker(classdef: string | undefined | null): boolean {
   if (!classdef) return false;
   return classdef.toUpperCase().includes("BROKER");

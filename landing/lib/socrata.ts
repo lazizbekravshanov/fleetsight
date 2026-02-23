@@ -8,7 +8,7 @@ const AUTH_HIST_RESOURCE = "9mw4-x3tu";    // dot_number is 8-char zero-padded
 const FLEET_UNIT_RESOURCE = "wt8s-2hbx";   // joined via inspection_id (no dot_number)
 
 /** Zero-pad DOT number to 8 characters for datasets that use that format */
-function padDot(dotNumber: number): string {
+export function padDot(dotNumber: number): string {
   return String(dotNumber).padStart(8, "0");
 }
 
@@ -292,4 +292,32 @@ export async function getPeerBenchmark(
     avgOosRate: 0, // computed client-side from inspections
     carrierCount: parseInt(row.cnt ?? "0", 10) || 0,
   };
+}
+
+/* ── Cross-matching queries ─────────────────────────────────────── */
+
+export async function getInsuranceByPolicy(
+  policyNo: string,
+  limit = 20
+): Promise<SocrataInsurance[]> {
+  return socrataFetch<SocrataInsurance>(INSURANCE_RESOURCE, {
+    $where: `policy_no='${policyNo.replace(/'/g, "''")}'`,
+    $limit: String(limit),
+  });
+}
+
+export async function searchCarriersByAddress(
+  street: string,
+  city: string,
+  state: string,
+  limit = 10
+): Promise<SocrataCarrier[]> {
+  const normStreet = street.trim().replace(/'/g, "''").toUpperCase();
+  const normCity = city.trim().replace(/'/g, "''").toUpperCase();
+  const normState = state.trim().toUpperCase();
+  return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `upper(phy_street)='${normStreet}' AND upper(phy_city)='${normCity}' AND upper(phy_state)='${normState}'`,
+    $limit: String(limit),
+    $order: "add_date DESC",
+  });
 }

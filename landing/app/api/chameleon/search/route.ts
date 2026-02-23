@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/http";
+import { searchCarriers } from "@/lib/socrata";
 
 const querySchema = z.object({
   q: z.string().min(1).max(200),
@@ -17,51 +18,48 @@ export async function GET(req: NextRequest) {
     return jsonError("Invalid search parameters", 400);
   }
 
-  const { q, sort, limit, offset } = parsed.data;
-  const isNumeric = /^\d+$/.test(q.trim());
+  const { q, sort, limit } = parsed.data;
 
-  const where = isNumeric
-    ? { dotNumber: parseInt(q.trim(), 10) }
-    : {
-        OR: [
-          { legalName: { contains: q, mode: "insensitive" as const } },
-          { dbaName: { contains: q, mode: "insensitive" as const } },
-        ],
-      };
+  // Search the full FMCSA census via Socrata API
+  const socrataResults = await searchCarriers(q, limit);
 
-  const orderBy =
-    sort === "name"
-      ? { legalName: "asc" as const }
-      : sort === "dot"
-        ? { dotNumber: "asc" as const }
-        : undefined;
+  // Collect DOT numbers to look up local risk scores
+  const dotNumbers = socrataResults
+    .map((r) => parseInt(r.dot_number, 10))
+    .filter((n) => !isNaN(n));
 
-  const carriers = await prisma.fmcsaCarrier.findMany({
-    where,
-    include: {
-      riskScore: { select: { compositeScore: true, chameleonScore: true, clusterSize: true } },
-    },
-    take: limit,
-    skip: offset,
-    ...(orderBy ? { orderBy } : {}),
+  // Batch-fetch local risk scores for all returned carriers
+  const localScores =
+    dotNumbers.length > 0
+      ? await prisma.carrierRiskScore.findMany({
+          where: { dotNumber: { in: dotNumbers } },
+          select: { dotNumber: true, compositeScore: true, chameleonScore: true, clusterSize: true },
+        })
+      : [];
+
+  const scoreMap = new Map(localScores.map((s) => [s.dotNumber, s]));
+
+  let results = socrataResults.map((r) => {
+    const dot = parseInt(r.dot_number, 10);
+    const score = scoreMap.get(dot);
+    return {
+      dotNumber: dot,
+      legalName: r.legal_name ?? "",
+      dbaName: r.dba_name ?? null,
+      statusCode: r.status_code ?? null,
+      compositeScore: score?.compositeScore ?? 0,
+      chameleonScore: score?.chameleonScore ?? 0,
+      clusterSize: score?.clusterSize ?? 0,
+    };
   });
-
-  // If sorting by risk, we need to sort in memory since riskScore is a relation
-  let results = carriers.map((c) => ({
-    dotNumber: c.dotNumber,
-    legalName: c.legalName,
-    dbaName: c.dbaName,
-    statusCode: c.statusCode,
-    compositeScore: c.riskScore?.compositeScore ?? 0,
-    chameleonScore: c.riskScore?.chameleonScore ?? 0,
-    clusterSize: c.riskScore?.clusterSize ?? 0,
-  }));
 
   if (sort === "risk") {
     results.sort((a, b) => b.compositeScore - a.compositeScore);
+  } else if (sort === "name") {
+    results.sort((a, b) => a.legalName.localeCompare(b.legalName));
+  } else if (sort === "dot") {
+    results.sort((a, b) => a.dotNumber - b.dotNumber);
   }
 
-  const total = await prisma.fmcsaCarrier.count({ where });
-
-  return Response.json({ results, total, limit, offset });
+  return Response.json({ results, total: results.length, limit, offset: 0 });
 }

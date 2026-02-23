@@ -13,22 +13,10 @@ type Stats = {
   lastSync: { date: string; status: string } | null;
 };
 
-type CarrierSummary = {
-  dotNumber: number;
-  legalName: string;
-  dbaName: string | null;
-  statusCode: string | null;
-  compositeScore: number;
-  chameleonScore: number;
-  clusterSize: number;
-};
-
 export function ChameleonDashboard({
   initialStats,
-  initialCarriers,
 }: {
   initialStats: Stats;
-  initialCarriers: CarrierSummary[];
 }) {
   const [selectedDot, setSelectedDot] = useState<number | null>(null);
 
@@ -38,10 +26,7 @@ export function ChameleonDashboard({
 
       <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
         {/* Left: Search */}
-        <CarrierSearch
-          onSelect={setSelectedDot}
-          initialResults={initialCarriers}
-        />
+        <CarrierSearch onSelect={setSelectedDot} />
 
         {/* Right: Detail + Graph */}
         <div className="space-y-6">

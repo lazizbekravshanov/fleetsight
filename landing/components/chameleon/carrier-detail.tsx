@@ -2,6 +2,42 @@
 
 import { useEffect, useState } from "react";
 
+type AnomalyFlag = {
+  id: string;
+  severity: "critical" | "high" | "medium" | "low";
+  label: string;
+  detail: string;
+};
+
+type SignalsData = {
+  anomalyFlags: AnomalyFlag[];
+  authorityMill: {
+    grantCount: number;
+    revokeCount: number;
+    avgDaysBetween: number;
+    isMillPattern: boolean;
+  };
+  brokerReincarnation: {
+    priorDot: number | null;
+    addressMatch: boolean;
+    phoneMatch: boolean;
+    officerMatch: boolean;
+    isReincarnation: boolean;
+  };
+  sharedInsurance: {
+    policyNumber: string;
+    insurerName: string;
+    matchingDots: number[];
+  }[];
+};
+
+const SEVERITY_STYLES: Record<string, string> = {
+  critical: "bg-rose-500/20 text-rose-300 border-rose-500/30",
+  high: "bg-orange-500/20 text-orange-300 border-orange-500/30",
+  medium: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  low: "bg-slate-500/20 text-slate-300 border-slate-500/30",
+};
+
 type CarrierData = {
   carrier: {
     dotNumber: number;
@@ -112,10 +148,13 @@ export function CarrierDetail({
   const [data, setData] = useState<CarrierData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [signals, setSignals] = useState<SignalsData | null>(null);
+  const [signalsLoading, setSignalsLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+    setSignals(null);
     fetch(`/api/chameleon/carriers/${dotNumber}`)
       .then(async (r) => {
         if (!r.ok) throw new Error((await r.json()).error || "Failed to load");
@@ -125,6 +164,19 @@ export function CarrierDetail({
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [dotNumber]);
+
+  useEffect(() => {
+    if (!data) return;
+    setSignalsLoading(true);
+    fetch(`/api/chameleon/carriers/${dotNumber}/signals`)
+      .then(async (r) => {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then((d) => setSignals(d))
+      .catch(() => {})
+      .finally(() => setSignalsLoading(false));
+  }, [data, dotNumber]);
 
   if (loading) {
     return (
@@ -234,6 +286,139 @@ export function CarrierDetail({
           <div className="mt-2 space-y-1 text-sm text-slate-300">
             {carrier.companyOfficer1 && <p>{carrier.companyOfficer1}</p>}
             {carrier.companyOfficer2 && <p>{carrier.companyOfficer2}</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Detection Signals */}
+      {signalsLoading && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 text-sm text-slate-400">
+          Analyzing detection signals...
+        </div>
+      )}
+
+      {signals && signals.anomalyFlags.length > 0 && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
+          <h3 className="text-sm font-semibold text-white">
+            Anomaly Flags ({signals.anomalyFlags.length})
+          </h3>
+          <div className="mt-3 space-y-2">
+            {signals.anomalyFlags.map((flag) => (
+              <div
+                key={flag.id}
+                className={`rounded-lg border px-3 py-2 ${SEVERITY_STYLES[flag.severity] ?? SEVERITY_STYLES.low}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase">
+                    {flag.severity}
+                  </span>
+                  <span className="text-sm font-medium">{flag.label}</span>
+                </div>
+                <p className="mt-0.5 text-xs opacity-80">{flag.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {signals?.authorityMill.isMillPattern && (
+        <div className="rounded-xl border border-orange-500/30 bg-orange-500/5 p-5">
+          <h3 className="text-sm font-semibold text-orange-300">
+            Authority Mill Pattern Detected
+          </h3>
+          <div className="mt-2 grid grid-cols-3 gap-3 text-center text-xs">
+            <div>
+              <p className="text-lg font-bold text-orange-300">
+                {signals.authorityMill.grantCount}
+              </p>
+              <p className="text-slate-400">Grants</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-orange-300">
+                {signals.authorityMill.revokeCount}
+              </p>
+              <p className="text-slate-400">Revocations</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-orange-300">
+                {signals.authorityMill.avgDaysBetween}
+              </p>
+              <p className="text-slate-400">Avg Days/Cycle</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {signals?.brokerReincarnation.isReincarnation && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-5">
+          <h3 className="text-sm font-semibold text-rose-300">
+            Broker Reincarnation Detected
+          </h3>
+          <p className="mt-1 text-xs text-slate-400">
+            Matches prior DOT on multiple fields — possible re-registration under new identity.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs">
+            {signals.brokerReincarnation.priorDot && (
+              <button
+                onClick={() => onSelectDot(signals.brokerReincarnation.priorDot!)}
+                className="rounded bg-rose-500/20 px-2 py-1 text-rose-300 transition hover:bg-rose-500/30"
+              >
+                Prior DOT: {signals.brokerReincarnation.priorDot}
+              </button>
+            )}
+            {signals.brokerReincarnation.addressMatch && (
+              <span className="rounded bg-slate-800 px-2 py-1 text-slate-300">
+                Address Match
+              </span>
+            )}
+            {signals.brokerReincarnation.phoneMatch && (
+              <span className="rounded bg-slate-800 px-2 py-1 text-slate-300">
+                Phone Match
+              </span>
+            )}
+            {signals.brokerReincarnation.officerMatch && (
+              <span className="rounded bg-slate-800 px-2 py-1 text-slate-300">
+                Officer Match
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {signals && signals.sharedInsurance.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
+          <h3 className="text-sm font-semibold text-amber-300">
+            Shared Insurance ({signals.sharedInsurance.length} policies)
+          </h3>
+          <p className="mt-1 text-xs text-slate-400">
+            Other carriers share the same insurance policies — potential chameleon signal.
+          </p>
+          <div className="mt-3 space-y-2">
+            {signals.sharedInsurance.map((si) => (
+              <div
+                key={si.policyNumber}
+                className="rounded-lg border border-slate-700 px-3 py-2"
+              >
+                <p className="text-xs text-slate-300">
+                  <span className="font-medium text-amber-300">
+                    {si.policyNumber}
+                  </span>
+                  {" — "}
+                  {si.insurerName}
+                </p>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {si.matchingDots.map((dot) => (
+                    <button
+                      key={dot}
+                      onClick={() => onSelectDot(dot)}
+                      className="rounded bg-slate-800 px-2 py-0.5 text-xs text-blue-400 transition hover:bg-slate-700"
+                    >
+                      DOT {dot}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

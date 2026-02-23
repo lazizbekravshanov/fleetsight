@@ -19,27 +19,8 @@ async function getStats() {
   };
 }
 
-async function getTopCarriers() {
-  const carriers = await prisma.fmcsaCarrier.findMany({
-    include: {
-      riskScore: { select: { compositeScore: true, chameleonScore: true, clusterSize: true } },
-    },
-    orderBy: { riskScore: { compositeScore: "desc" } },
-    take: 20,
-  });
-  return carriers.map((c) => ({
-    dotNumber: c.dotNumber,
-    legalName: c.legalName,
-    dbaName: c.dbaName,
-    statusCode: c.statusCode,
-    compositeScore: c.riskScore?.compositeScore ?? 0,
-    chameleonScore: c.riskScore?.chameleonScore ?? 0,
-    clusterSize: c.riskScore?.clusterSize ?? 0,
-  }));
-}
-
 export default async function ChameleonPage() {
-  const [stats, topCarriers] = await Promise.all([getStats(), getTopCarriers()]);
+  const stats = await getStats();
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -64,7 +45,7 @@ export default async function ChameleonPage() {
           </p>
         </header>
 
-        <ChameleonDashboard initialStats={stats} initialCarriers={topCarriers} />
+        <ChameleonDashboard initialStats={stats} />
       </div>
     </main>
   );
