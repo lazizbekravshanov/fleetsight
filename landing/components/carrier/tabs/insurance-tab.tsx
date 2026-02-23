@@ -1,4 +1,8 @@
+"use client";
+
 import type { SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
+import { ExportButton, downloadCsv } from "../shared";
+import type { CsvColumn } from "../shared";
 
 export function InsuranceTab({
   insurance,
@@ -9,9 +13,24 @@ export function InsuranceTab({
   authorityHistory: SocrataAuthorityHistory[];
   isHazmat: boolean;
 }) {
+  const csvColumns: CsvColumn<Record<string, unknown>>[] = [
+    { key: "mod_col_1", header: "Type" },
+    { key: "name_company", header: "Company" },
+    { key: "policy_no", header: "Policy #" },
+    { key: "max_cov_amount", header: "Max Coverage" },
+    { key: "underl_lim_amount", header: "Underlying Limit" },
+    { key: "effective_date", header: "Effective Date" },
+    { key: "trans_date", header: "Transaction Date" },
+    { key: "docket_number", header: "Docket" },
+  ];
+
   return (
     <div className="space-y-6">
-      <InsuranceCoverage insurance={insurance} isHazmat={isHazmat} />
+      <InsuranceCoverage
+        insurance={insurance}
+        isHazmat={isHazmat}
+        onExport={() => downloadCsv(insurance as unknown as Record<string, unknown>[], csvColumns, "insurance.csv")}
+      />
       <AuthorityTimeline history={authorityHistory} />
     </div>
   );
@@ -22,9 +41,11 @@ export function InsuranceTab({
 function InsuranceCoverage({
   insurance,
   isHazmat,
+  onExport,
 }: {
   insurance: SocrataInsurance[];
   isHazmat: boolean;
+  onExport: () => void;
 }) {
   // Group by type (mod_col_1)
   const groups = new Map<string, SocrataInsurance[]>();
@@ -61,7 +82,7 @@ function InsuranceCoverage({
         Insurance &amp; Bonds
         {insurance.length > 0 && bipdPolicies.length > 0 && (
           <span
-            className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${
+            className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-medium ${
               bipdCompliant
                 ? "bg-emerald-500/20 text-emerald-300"
                 : "bg-rose-500/20 text-rose-300"
@@ -69,6 +90,9 @@ function InsuranceCoverage({
           >
             {bipdCompliant ? "BIPD Compliant" : "BIPD Below Minimum"}
           </span>
+        )}
+        {insurance.length > 0 && (
+          <ExportButton onClick={onExport} />
         )}
       </h3>
 
@@ -108,6 +132,11 @@ function InsuranceCoverage({
                     {p.effective_date && (
                       <span>
                         Effective: <span className="text-slate-300">{p.effective_date}</span>
+                      </span>
+                    )}
+                    {p.trans_date && (
+                      <span>
+                        Transaction: <span className="text-slate-300">{p.trans_date}</span>
                       </span>
                     )}
                     {p.docket_number && (
@@ -170,6 +199,17 @@ function AuthorityTimeline({ history }: { history: SocrataAuthorityHistory[] }) 
                 ? "bg-emerald-400"
                 : "bg-amber-400";
 
+            // Compute gap between decided and served dates
+            let gapDays: number | null = null;
+            if (h.disp_decided_date && h.disp_served_date) {
+              const decided = new Date(h.disp_decided_date);
+              const served = new Date(h.disp_served_date);
+              const diff = served.getTime() - decided.getTime();
+              if (!isNaN(diff)) {
+                gapDays = Math.round(diff / (1000 * 60 * 60 * 24));
+              }
+            }
+
             return (
               <div key={i} className="relative">
                 <div
@@ -184,11 +224,18 @@ function AuthorityTimeline({ history }: { history: SocrataAuthorityHistory[] }) 
                   </p>
                   <div className="flex flex-wrap gap-x-4 text-slate-400 mt-0.5">
                     {h.mod_col_1 && <span>{h.mod_col_1}</span>}
+                    {h.sub_number && <span>Sub#: {h.sub_number}</span>}
                     {h.orig_served_date && (
                       <span>Granted: {h.orig_served_date}</span>
                     )}
+                    {h.disp_decided_date && (
+                      <span>Decided: {h.disp_decided_date}</span>
+                    )}
                     {h.disp_served_date && (
                       <span>Disposed: {h.disp_served_date}</span>
+                    )}
+                    {gapDays !== null && gapDays > 0 && (
+                      <span className="text-amber-400">({gapDays}d gap)</span>
                     )}
                     {h.docket_number && <span>Docket: {h.docket_number}</span>}
                   </div>

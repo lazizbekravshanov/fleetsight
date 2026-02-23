@@ -1,4 +1,4 @@
-import type { SocrataCarrier } from "@/lib/socrata";
+import type { SocrataCarrier, SocrataInspection, SocrataCrash, SocrataAuthorityHistory } from "@/lib/socrata";
 import {
   decodeStatus,
   decodeOperation,
@@ -15,6 +15,8 @@ export function OverviewTab({
   oos,
   basics,
   inspections,
+  crashes,
+  authorityHistory,
   peerBenchmark,
   onSwitchToSafety,
 }: {
@@ -22,7 +24,9 @@ export function OverviewTab({
   authority: unknown;
   oos: unknown;
   basics: unknown;
-  inspections: { length: number; oosTotal: number };
+  inspections: SocrataInspection[];
+  crashes: SocrataCrash[];
+  authorityHistory: SocrataAuthorityHistory[];
   peerBenchmark: PeerBenchmark | null;
   onSwitchToSafety: () => void;
 }) {
@@ -39,6 +43,9 @@ export function OverviewTab({
     .join(", ");
   const classifications = decodeClassdef(c.classdef);
   const basicScores = parseBasics(basics);
+
+  // MCS-150 staleness
+  const mcs150Staleness = computeMcs150Staleness(c.mcs150_date);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -78,10 +85,17 @@ export function OverviewTab({
             />
           )}
           {c.mcs150_date && (
-            <Row
-              label="MCS-150 Date"
-              value={new Date(c.mcs150_date).toLocaleDateString()}
-            />
+            <div className="flex justify-between gap-4">
+              <dt className="shrink-0 text-slate-400">MCS-150 Date</dt>
+              <dd className="flex items-center gap-2 text-right text-slate-100">
+                {new Date(c.mcs150_date).toLocaleDateString()}
+                {mcs150Staleness && (
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${mcs150Staleness.className}`}>
+                    {mcs150Staleness.label}
+                  </span>
+                )}
+              </dd>
+            </div>
           )}
           {c.mcs150_mileage && (
             <Row
@@ -98,6 +112,18 @@ export function OverviewTab({
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           SAFER Stats
         </h3>
+        {/* Interstate/Intrastate/HazMat badges */}
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          {c.interstate === "Y" && (
+            <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-[10px] font-medium text-blue-300">Interstate</span>
+          )}
+          {c.intrastate === "Y" && (
+            <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-medium text-purple-300">Intrastate</span>
+          )}
+          {c.hm_ind === "Y" && (
+            <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300">HazMat</span>
+          )}
+        </div>
         <dl className="space-y-2 text-sm">
           <Row label="Status" value={decodeStatus(c.status_code)} />
           <Row
@@ -144,10 +170,22 @@ export function OverviewTab({
         <PeerBenchmarkCard
           carrier={c}
           benchmark={peerBenchmark}
-          inspectionCount={inspections.length}
-          oosTotal={inspections.oosTotal}
+          inspections={inspections}
         />
       )}
+
+      {/* Carrier Timeline */}
+      <CarrierTimeline
+        inspections={inspections}
+        crashes={crashes}
+        authorityHistory={authorityHistory}
+      />
+
+      {/* State Distribution */}
+      <StateDistribution
+        inspections={inspections}
+        crashes={crashes}
+      />
 
       {/* Authority Info */}
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
@@ -159,6 +197,23 @@ export function OverviewTab({
       </div>
     </div>
   );
+}
+
+/* ── MCS-150 Staleness ────────────────────────────────────────── */
+
+function computeMcs150Staleness(mcs150Date?: string) {
+  if (!mcs150Date) return null;
+  const date = new Date(mcs150Date);
+  if (isNaN(date.getTime())) return null;
+  const monthsAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+
+  if (monthsAgo > 36) {
+    return { label: "Overdue", className: "bg-rose-500/20 text-rose-300" };
+  }
+  if (monthsAgo > 24) {
+    return { label: "Due for Update", className: "bg-amber-500/20 text-amber-300" };
+  }
+  return { label: "Current", className: "bg-emerald-500/20 text-emerald-300" };
 }
 
 /* ── BASIC Scores Summary Card ────────────────────────────────── */
@@ -225,18 +280,16 @@ function BasicScoresSummary({
 function PeerBenchmarkCard({
   carrier,
   benchmark,
-  inspectionCount,
-  oosTotal,
+  inspections,
 }: {
   carrier: SocrataCarrier;
   benchmark: PeerBenchmark;
-  inspectionCount: number;
-  oosTotal: number;
+  inspections: SocrataInspection[];
 }) {
   const carrierPU = parseInt(carrier.power_units ?? "0", 10);
   const carrierDrivers = parseInt(carrier.total_drivers ?? "0", 10);
-  const carrierOosRate = inspectionCount > 0 ? (oosTotal / inspectionCount) * 100 : 0;
 
+  // Only show Power Units and Drivers — OOS Rate removed (census dataset has no OOS data)
   const metrics = [
     {
       label: "Power Units",
@@ -249,13 +302,6 @@ function PeerBenchmarkCard({
       carrier: carrierDrivers,
       avg: benchmark.avgDrivers,
       format: (v: number) => Math.round(v).toLocaleString(),
-    },
-    {
-      label: "OOS Rate",
-      carrier: carrierOosRate,
-      avg: benchmark.avgOosRate,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      invertColor: true,
     },
   ];
 
@@ -271,7 +317,6 @@ function PeerBenchmarkCard({
       <div className="space-y-3">
         {metrics.map((m) => {
           const above = m.carrier > m.avg;
-          const isGood = m.invertColor ? !above : above;
           return (
             <div key={m.label} className="flex items-center justify-between text-xs">
               <span className="text-slate-400">{m.label}</span>
@@ -279,13 +324,206 @@ function PeerBenchmarkCard({
                 <span className="text-slate-100 font-medium">{m.format(m.carrier)}</span>
                 <span className="text-slate-600">vs</span>
                 <span className="text-slate-400">{m.format(m.avg)} avg</span>
-                <span className={isGood ? "text-emerald-400" : "text-rose-400"}>
+                <span className={above ? "text-emerald-400" : "text-rose-400"}>
                   {above ? "\u2191" : "\u2193"}
                 </span>
               </div>
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Carrier Timeline ─────────────────────────────────────────── */
+
+type TimelineEvent = {
+  date: Date;
+  type: "inspection" | "crash" | "authority" | "insurance";
+  summary: string;
+  severity?: "normal" | "warn" | "critical";
+};
+
+function CarrierTimeline({
+  inspections,
+  crashes,
+  authorityHistory,
+}: {
+  inspections: SocrataInspection[];
+  crashes: SocrataCrash[];
+  authorityHistory: SocrataAuthorityHistory[];
+}) {
+  const events: TimelineEvent[] = [];
+
+  for (const insp of inspections) {
+    if (!insp.insp_date) continue;
+    const viols = parseInt(insp.viol_total ?? "0", 10) || 0;
+    const oos = parseInt(insp.oos_total ?? "0", 10) || 0;
+    events.push({
+      date: new Date(insp.insp_date),
+      type: "inspection",
+      summary: `Inspection in ${insp.report_state ?? "?"} \u2014 ${viols} violations${oos > 0 ? `, ${oos} OOS` : ""}`,
+      severity: oos > 0 ? "warn" : "normal",
+    });
+  }
+
+  for (const cr of crashes) {
+    if (!cr.report_date) continue;
+    const fat = parseInt(cr.fatalities ?? "0", 10) || 0;
+    const inj = parseInt(cr.injuries ?? "0", 10) || 0;
+    events.push({
+      date: new Date(cr.report_date),
+      type: "crash",
+      summary: `Crash in ${cr.report_state ?? "?"}, ${cr.city ?? "unknown"} \u2014 ${fat} fatal, ${inj} injuries`,
+      severity: fat > 0 ? "critical" : inj > 0 ? "warn" : "normal",
+    });
+  }
+
+  for (const ah of authorityHistory) {
+    const dateStr = ah.disp_served_date || ah.orig_served_date;
+    if (!dateStr) continue;
+    const isRevoke = (ah.disp_action_desc ?? "").toUpperCase().includes("REVOK");
+    events.push({
+      date: new Date(dateStr),
+      type: "authority",
+      summary: `${ah.original_action_desc ?? "Action"}${ah.disp_action_desc ? ` \u2192 ${ah.disp_action_desc}` : ""}`,
+      severity: isRevoke ? "critical" : "normal",
+    });
+  }
+
+  events.sort((a, b) => b.date.getTime() - a.date.getTime());
+  const latest = events.slice(0, 30);
+
+  if (latest.length === 0) {
+    return null;
+  }
+
+  const typeConfig: Record<string, { color: string; dot: string }> = {
+    inspection: { color: "text-blue-400", dot: "bg-blue-400" },
+    crash: { color: "text-rose-400", dot: "bg-rose-400" },
+    authority: { color: "text-emerald-400", dot: "bg-emerald-400" },
+    insurance: { color: "text-amber-400", dot: "bg-amber-400" },
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+        Carrier Timeline
+        <span className="ml-auto text-[10px] font-normal normal-case text-slate-600">
+          Latest {latest.length} events
+        </span>
+      </h3>
+      <div className="relative ml-3 border-l border-slate-700 pl-6 space-y-3 max-h-[24rem] overflow-y-auto">
+        {latest.map((ev, i) => {
+          const cfg = typeConfig[ev.type];
+          const severityText =
+            ev.severity === "critical"
+              ? "text-rose-400"
+              : ev.severity === "warn"
+                ? "text-amber-400"
+                : "text-slate-300";
+
+          return (
+            <div key={i} className="relative">
+              <div
+                className={`absolute -left-[1.85rem] top-1 h-2.5 w-2.5 rounded-full ${cfg.dot} ring-2 ring-slate-900`}
+              />
+              <div className="text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500 whitespace-nowrap">
+                    {ev.date.toLocaleDateString()}
+                  </span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.color}`}>
+                    {ev.type}
+                  </span>
+                </div>
+                <p className={`mt-0.5 ${severityText}`}>{ev.summary}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── State Distribution ───────────────────────────────────────── */
+
+function StateDistribution({
+  inspections,
+  crashes,
+}: {
+  inspections: SocrataInspection[];
+  crashes: SocrataCrash[];
+}) {
+  const stateCounts = new Map<string, { inspections: number; crashes: number }>();
+
+  for (const insp of inspections) {
+    if (!insp.report_state) continue;
+    const st = insp.report_state.toUpperCase();
+    const existing = stateCounts.get(st) || { inspections: 0, crashes: 0 };
+    existing.inspections++;
+    stateCounts.set(st, existing);
+  }
+
+  for (const cr of crashes) {
+    if (!cr.report_state) continue;
+    const st = cr.report_state.toUpperCase();
+    const existing = stateCounts.get(st) || { inspections: 0, crashes: 0 };
+    existing.crashes++;
+    stateCounts.set(st, existing);
+  }
+
+  const sorted = [...stateCounts.entries()]
+    .map(([state, counts]) => ({ state, ...counts, total: counts.inspections + counts.crashes }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 10);
+
+  if (sorted.length === 0) return null;
+
+  const maxTotal = sorted[0]?.total ?? 1;
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
+        Geographic Distribution
+      </h3>
+      <div className="space-y-2">
+        {sorted.map(({ state, inspections: insp, crashes: cr, total }) => (
+          <div key={state}>
+            <div className="flex justify-between text-xs mb-0.5">
+              <span className="text-slate-200 font-medium">{state}</span>
+              <span className="text-slate-400">{total}</span>
+            </div>
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-800">
+              {insp > 0 && (
+                <div
+                  className="h-full bg-blue-500"
+                  style={{ width: `${(insp / maxTotal) * 100}%` }}
+                />
+              )}
+              {cr > 0 && (
+                <div
+                  className="h-full bg-rose-500"
+                  style={{ width: `${(cr / maxTotal) * 100}%` }}
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-4 text-[10px] text-slate-500">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-blue-500" />
+          Inspections
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-rose-500" />
+          Crashes
+        </div>
       </div>
     </div>
   );

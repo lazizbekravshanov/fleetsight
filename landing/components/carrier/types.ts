@@ -106,5 +106,7 @@ export type DetectionData = {
     policyNumber: string;
     insurerName: string;
     matchingDots: number[];
+    matchingCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
   }[];
+  addressMatches?: { dotNumber: string; legalName: string; statusCode?: string }[];
 };

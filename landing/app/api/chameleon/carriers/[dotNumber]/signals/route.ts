@@ -6,6 +6,7 @@ import {
   getInsuranceByDot,
   getAuthorityHistoryByDot,
   getInsuranceByPolicy,
+  searchCarriersByAddress,
 } from "@/lib/socrata";
 import type { InsuranceCrossMatch } from "@/lib/detection-signals";
 import { computeAllSignals } from "@/lib/detection-signals";
@@ -53,8 +54,31 @@ export async function GET(
     priorCarrier,
   });
 
+  // Address cross-reference: find other carriers at the same physical address
+  let addressMatches: { dotNumber: string; legalName: string; statusCode?: string }[] = [];
+  if (carrier.phy_street && carrier.phy_city && carrier.phy_state) {
+    try {
+      const addrResults = await searchCarriersByAddress(
+        carrier.phy_street,
+        carrier.phy_city,
+        carrier.phy_state
+      );
+      addressMatches = addrResults
+        .filter((c) => c.dot_number !== String(dotNumber))
+        .map((c) => ({
+          dotNumber: c.dot_number,
+          legalName: c.legal_name,
+          statusCode: c.status_code,
+        }));
+    } catch {
+      // Non-fatal — skip address lookup failures
+    }
+  }
+
   // Shared insurance cross-matching: find other DOTs sharing the same policies
-  const sharedInsurance: InsuranceCrossMatch[] = [];
+  const sharedInsurance: (InsuranceCrossMatch & {
+    matchingCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
+  })[] = [];
 
   // Extract unique policy numbers (cap at 10 to avoid hammering Socrata)
   const policyNumbers = [
@@ -98,6 +122,43 @@ export async function GET(
     if (result) sharedInsurance.push(result);
   }
 
+  // Batch-fetch carrier names for shared insurance DOTs (cap at 20)
+  const allSharedDots = [
+    ...new Set(sharedInsurance.flatMap((si) => si.matchingDots)),
+  ].slice(0, 20);
+
+  const dotToCarrier = new Map<number, { legalName: string; statusCode?: string }>();
+  if (allSharedDots.length > 0) {
+    const carrierResults = await Promise.all(
+      allSharedDots.map(async (dot) => {
+        try {
+          const c = await getCarrierByDot(dot);
+          if (c) {
+            return { dot, legalName: c.legal_name, statusCode: c.status_code };
+          }
+        } catch {
+          // Non-fatal
+        }
+        return null;
+      })
+    );
+    for (const r of carrierResults) {
+      if (r) dotToCarrier.set(r.dot, { legalName: r.legalName, statusCode: r.statusCode });
+    }
+  }
+
+  // Enrich shared insurance entries with carrier names
+  for (const si of sharedInsurance) {
+    si.matchingCarriers = si.matchingDots.map((dot) => {
+      const info = dotToCarrier.get(dot);
+      return {
+        dotNumber: String(dot),
+        legalName: info?.legalName ?? `DOT ${dot}`,
+        statusCode: info?.statusCode,
+      };
+    });
+  }
+
   return Response.json({
     anomalyFlags,
     authorityMill: {
@@ -114,5 +175,6 @@ export async function GET(
       isReincarnation: brokerReincarnation.isReincarnation,
     },
     sharedInsurance,
+    addressMatches,
   });
 }

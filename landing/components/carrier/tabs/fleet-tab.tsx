@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Stat, SkeletonRows } from "../shared";
-import type { FleetData, NhtsaRecall } from "../types";
+import { useState, useMemo } from "react";
+import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import type { CsvColumn } from "../shared";
+import type { FleetData, FleetUnit, NhtsaRecall, NhtsaDecodedVin } from "../types";
 
 export function FleetTab({
   data,
@@ -46,7 +47,7 @@ export function FleetTab({
       <FleetSummary decodedVehicles={decodedVehicles} units={units} />
       <FleetComposition decodedVehicles={decodedVehicles} />
       {recalls.length > 0 && <RecallAlerts recalls={recalls} />}
-      <FleetDetailTable decodedVehicles={decodedVehicles} />
+      <FleetDetailTable decodedVehicles={decodedVehicles} units={units} />
     </div>
   );
 }
@@ -252,6 +253,11 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
                         Component: {r.component}
                       </p>
                       <p className="text-slate-400 mt-0.5">{r.summary}</p>
+                      {r.consequence && (
+                        <p className="text-rose-400 mt-0.5">
+                          Consequence: {r.consequence}
+                        </p>
+                      )}
                       {r.remedy && (
                         <p className="text-slate-500 mt-0.5">
                           Remedy: {r.remedy}
@@ -271,33 +277,82 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
 
 /* ── Fleet Detail Table ───────────────────────────────────────── */
 
+type FleetRow = NhtsaDecodedVin & {
+  _year: number;
+  _license: string;
+  _licenseState: string;
+};
+
 function FleetDetailTable({
   decodedVehicles,
+  units,
 }: {
   decodedVehicles: FleetData["decodedVehicles"];
+  units: FleetUnit[];
 }) {
   if (decodedVehicles.length === 0) return null;
 
+  // Build VIN→unit lookup for license plates
+  const vinToUnit = useMemo(() => {
+    const map = new Map<string, FleetUnit>();
+    for (const u of units) {
+      if (u.insp_unit_vehicle_id_number) {
+        map.set(u.insp_unit_vehicle_id_number.toUpperCase(), u);
+      }
+    }
+    return map;
+  }, [units]);
+
+  const rows: FleetRow[] = decodedVehicles.map((v) => {
+    const unit = v.vin ? vinToUnit.get(v.vin.toUpperCase()) : undefined;
+    return {
+      ...v,
+      _year: parseInt(v.modelYear, 10) || 0,
+      _license: unit?.insp_unit_license ?? "",
+      _licenseState: unit?.insp_unit_license_state ?? "",
+    };
+  });
+
+  const { sorted, sortKey, sortDir, toggle } = useSort<FleetRow>(rows);
+
+  const csvColumns: CsvColumn<FleetRow>[] = [
+    { key: "vin", header: "VIN" },
+    { key: "make", header: "Make" },
+    { key: "model", header: "Model" },
+    { key: "modelYear", header: "Year" },
+    { key: "bodyClass", header: "Body Class" },
+    { key: "vehicleType", header: "Vehicle Type" },
+    { key: "gvwr", header: "GVWR" },
+    { key: "_license", header: "License Plate" },
+    { key: "_licenseState", header: "License State" },
+  ];
+
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
-        Fleet Details
-      </h3>
-      <div className="max-h-[32rem] overflow-auto rounded-lg border border-slate-800">
+      <div className="mb-3 flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
+          Fleet Details
+        </h3>
+        <ExportButton onClick={() => downloadCsv(rows as unknown as Record<string, unknown>[], csvColumns as CsvColumn<Record<string, unknown>>[], "fleet.csv")} />
+      </div>
+      <TruncationWarning count={units.length} limit={200} noun="fleet units" />
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-lg border border-slate-800">
         <table className="w-full text-left text-xs text-slate-300">
           <thead className="sticky top-0 bg-slate-900">
             <tr className="border-b border-slate-700 text-slate-400">
               <th className="px-3 py-2">VIN</th>
-              <th className="px-3 py-2">Make</th>
-              <th className="px-3 py-2">Model</th>
-              <th className="px-3 py-2">Year</th>
+              <SortHeader label="Make" sortKey="make" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
+              <SortHeader label="Model" sortKey="model" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
+              <SortHeader label="Year" sortKey="_year" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <th className="hidden px-3 py-2 sm:table-cell">Body Class</th>
+              <th className="hidden px-3 py-2 lg:table-cell">Vehicle Type</th>
               <th className="hidden px-3 py-2 md:table-cell">GVWR</th>
+              <th className="hidden px-3 py-2 lg:table-cell">License</th>
             </tr>
           </thead>
           <tbody>
-            {decodedVehicles.map((v, i) => (
+            {sorted.map((v, i) => (
               <tr
                 key={v.vin || i}
                 className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
@@ -311,8 +366,16 @@ function FleetDetailTable({
                 <td className="hidden px-3 py-2 sm:table-cell text-slate-400">
                   {v.bodyClass || "\u2014"}
                 </td>
+                <td className="hidden px-3 py-2 lg:table-cell text-slate-400">
+                  {v.vehicleType || "\u2014"}
+                </td>
                 <td className="hidden px-3 py-2 md:table-cell text-slate-400">
                   {v.gvwr || "\u2014"}
+                </td>
+                <td className="hidden px-3 py-2 lg:table-cell text-slate-400">
+                  {v._license
+                    ? `${v._license}${v._licenseState ? ` (${v._licenseState})` : ""}`
+                    : "\u2014"}
                 </td>
               </tr>
             ))}

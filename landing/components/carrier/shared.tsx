@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import type { BasicScore } from "./types";
 
@@ -107,4 +110,148 @@ export function parseBasics(basicsPayload: unknown): BasicScore[] {
     rdDeficient: str(b.rdDeficient) === "Y" || str(b.basicsExceedFlag) === "Y",
     code: str(b.basicsId) || str(b.basicsCode) || str(b.basicCode) || "",
   })).sort((a, b) => b.percentile - a.percentile);
+}
+
+/* ── useSort Hook ─────────────────────────────────────────────── */
+
+export type SortDir = "asc" | "desc";
+
+export function useSort<T>(items: T[], defaultKey?: keyof T & string, defaultDir: SortDir = "asc") {
+  const [sortKey, setSortKey] = useState<string | null>(defaultKey ?? null);
+  const [sortDir, setSortDir] = useState<SortDir>(defaultDir);
+
+  const toggle = (key: string) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  };
+
+  const sorted = useMemo(() => {
+    if (!sortKey) return items;
+    return [...items].sort((a, b) => {
+      const aVal = (a as Record<string, unknown>)[sortKey];
+      const bVal = (b as Record<string, unknown>)[sortKey];
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      let cmp = 0;
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        cmp = aVal - bVal;
+      } else {
+        cmp = String(aVal).localeCompare(String(bVal), undefined, { numeric: true });
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [items, sortKey, sortDir]);
+
+  return { sorted, sortKey, sortDir, toggle };
+}
+
+/* ── SortHeader Component ─────────────────────────────────────── */
+
+export function SortHeader({
+  label,
+  sortKey: columnKey,
+  currentKey,
+  currentDir,
+  onToggle,
+  className,
+}: {
+  label: string;
+  sortKey: string;
+  currentKey: string | null;
+  currentDir: SortDir;
+  onToggle: (key: string) => void;
+  className?: string;
+}) {
+  const active = currentKey === columnKey;
+  const arrow = active ? (currentDir === "asc" ? " \u25B2" : " \u25BC") : " \u25BD";
+  return (
+    <th
+      className={`px-3 py-2 cursor-pointer select-none hover:text-slate-200 transition-colors ${className ?? ""}`}
+      onClick={() => onToggle(columnKey)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onToggle(columnKey); }}
+      tabIndex={0}
+      role="columnheader"
+      aria-sort={active ? (currentDir === "asc" ? "ascending" : "descending") : "none"}
+    >
+      {label}
+      <span className={active ? "text-blue-400" : "text-slate-600"}>{arrow}</span>
+    </th>
+  );
+}
+
+/* ── CSV Export ────────────────────────────────────────────────── */
+
+export type CsvColumn<T> = {
+  key: string;
+  header: string;
+  accessor?: (row: T) => unknown;
+};
+
+export function downloadCsv<T extends Record<string, unknown>>(
+  rows: T[],
+  columns: CsvColumn<T>[],
+  filename: string
+) {
+  const escape = (v: unknown): string => {
+    if (v == null) return "";
+    const s = String(v);
+    if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  };
+
+  const header = columns.map((c) => escape(c.header)).join(",");
+  const body = rows.map((row) =>
+    columns
+      .map((c) => escape(c.accessor ? c.accessor(row) : row[c.key]))
+      .join(",")
+  );
+  const csv = [header, ...body].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function ExportButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="ml-auto flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+    >
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1v7M3 5.5l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 9.5v1h10v-1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Export CSV
+    </button>
+  );
+}
+
+/* ── Truncation Warning ───────────────────────────────────────── */
+
+export function TruncationWarning({
+  count,
+  limit,
+  noun,
+}: {
+  count: number;
+  limit: number;
+  noun: string;
+}) {
+  if (count < limit) return null;
+  return (
+    <p className="text-xs text-amber-400 mt-2">
+      Displaying {count} {noun} (results may be truncated at the {limit}-record API limit)
+    </p>
+  );
 }

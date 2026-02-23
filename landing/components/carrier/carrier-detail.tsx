@@ -65,12 +65,6 @@ export function CarrierDetailView({
       .finally(() => setDetectionLoading(false));
   }, [activeTab, c.dot_number, detectionData, detectionLoading]);
 
-  // Compute OOS total for overview peer benchmark
-  const oosTotal = detail.inspections.reduce(
-    (s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0),
-    0
-  );
-
   const tabs: { key: Tab; label: string; count?: number; group?: "ops" | "compliance" }[] = [
     { key: "overview", label: "Overview", group: "ops" },
     { key: "safety", label: "Safety", group: "ops" },
@@ -162,7 +156,9 @@ export function CarrierDetailView({
               authority={detail.authority}
               oos={detail.oos}
               basics={detail.basics}
-              inspections={{ length: detail.inspections.length, oosTotal }}
+              inspections={detail.inspections}
+              crashes={detail.crashes}
+              authorityHistory={detail.authorityHistory}
               peerBenchmark={detail.peerBenchmark}
               onSwitchToSafety={() => setActiveTab("safety")}
             />
@@ -174,7 +170,10 @@ export function CarrierDetailView({
             />
           )}
           {activeTab === "inspections" && (
-            <InspectionsTab inspections={detail.inspections} />
+            <InspectionsTab
+              inspections={detail.inspections}
+              carrierName={c.legal_name}
+            />
           )}
           {activeTab === "crashes" && (
             <CrashesTab crashes={detail.crashes} />

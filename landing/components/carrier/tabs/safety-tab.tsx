@@ -25,6 +25,9 @@ export function SafetyTab({
 
       {/* Violation Trend Chart */}
       {inspections.length > 0 && <ViolationTrendChart inspections={inspections} />}
+
+      {/* OOS Rate Trend Chart */}
+      {inspections.length > 0 && <OosRateTrendChart inspections={inspections} />}
     </div>
   );
 }
@@ -101,6 +104,9 @@ function BasicGauges({
                 <div className="flex items-center gap-3 text-slate-400">
                   <span>{s.totalViolations} violations</span>
                   <span>{s.totalInspections} inspections</span>
+                  {s.serious > 0 && (
+                    <span className="text-rose-400">{s.serious} serious</span>
+                  )}
                   <span className={`font-semibold ${s.rdDeficient ? "text-rose-400" : "text-slate-100"}`}>
                     {s.percentile}%
                   </span>
@@ -112,6 +118,11 @@ function BasicGauges({
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
                 />
               </div>
+              {s.measureValue > 0 && (
+                <p className="mt-0.5 text-[10px] text-slate-500">
+                  Measure value: {s.measureValue.toFixed(2)}
+                </p>
+              )}
             </div>
           );
         })}
@@ -211,6 +222,12 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
 
 function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
+
+  // Compute dynamic date range label
+  const dates = inspections.filter((i) => i.insp_date).map((i) => new Date(i.insp_date!));
+  const dateRangeLabel = dates.length > 0
+    ? `${d3.timeFormat("%b %Y")(d3.min(dates)!)} \u2013 ${d3.timeFormat("%b %Y")(d3.max(dates)!)}`
+    : "N/A";
 
   useEffect(() => {
     if (!svgRef.current || inspections.length === 0) return;
@@ -340,7 +357,116 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
-        Violation Trend (24 months)
+        Violation Trend ({dateRangeLabel})
+      </h3>
+      <div className="w-full overflow-x-auto">
+        <svg ref={svgRef} className="w-full" style={{ minWidth: 400 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── OOS Rate Trend Chart (d3) ────────────────────────────────── */
+
+function OosRateTrendChart({ inspections }: { inspections: SocrataInspection[] }) {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!svgRef.current || inspections.length === 0) return;
+
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const width = 700;
+    const height = 220;
+    const innerW = width - margin.left - margin.right;
+    const innerH = height - margin.top - margin.bottom;
+
+    const parsed = inspections
+      .filter((i) => i.insp_date)
+      .map((i) => ({
+        date: new Date(i.insp_date!),
+        oos: parseInt(i.oos_total ?? "0", 10) || 0,
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    if (parsed.length === 0) return;
+
+    const grouped = d3.rollups(
+      parsed,
+      (v) => ({
+        total: v.length,
+        oos: d3.sum(v, (d) => (d.oos > 0 ? 1 : 0)),
+      }),
+      (d) => d3.timeMonth(d.date)
+    ).map(([date, vals]) => ({
+      date,
+      rate: vals.total > 0 ? (vals.oos / vals.total) * 100 : 0,
+    }));
+
+    const xScale = d3
+      .scaleTime()
+      .domain(d3.extent(grouped, (d) => d.date) as [Date, Date])
+      .range([0, innerW]);
+
+    const yScale = d3.scaleLinear().domain([0, 100]).range([innerH, 0]);
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll("*").remove();
+
+    const g = svg
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Grid
+    g.append("g")
+      .call(d3.axisLeft(yScale).tickSize(-innerW).tickFormat(() => ""))
+      .call((sel) => sel.select(".domain").remove())
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#1e293b").attr("stroke-dasharray", "2,2"));
+
+    // X axis
+    g.append("g")
+      .attr("transform", `translate(0,${innerH})`)
+      .call(d3.axisBottom(xScale).ticks(6).tickFormat((d) => d3.timeFormat("%b '%y")(d as Date)))
+      .call((sel) => sel.select(".domain").attr("stroke", "#334155"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#334155"));
+
+    // Y axis
+    g.append("g")
+      .call(d3.axisLeft(yScale).ticks(5).tickFormat((d) => `${d}%`))
+      .call((sel) => sel.select(".domain").remove())
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").remove());
+
+    // Line
+    const line = d3.line<typeof grouped[0]>()
+      .x((d) => xScale(d.date))
+      .y((d) => yScale(d.rate))
+      .curve(d3.curveMonotoneX);
+
+    g.append("path")
+      .datum(grouped)
+      .attr("fill", "none")
+      .attr("stroke", "#f43f5e")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    // Dots
+    g.selectAll(".dot-rate")
+      .data(grouped)
+      .enter()
+      .append("circle")
+      .attr("cx", (d) => xScale(d.date))
+      .attr("cy", (d) => yScale(d.rate))
+      .attr("r", 3)
+      .attr("fill", "#f43f5e");
+  }, [inspections]);
+
+  return (
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+        OOS Rate Trend (Monthly %)
       </h3>
       <div className="w-full overflow-x-auto">
         <svg ref={svgRef} className="w-full" style={{ minWidth: 400 }} />

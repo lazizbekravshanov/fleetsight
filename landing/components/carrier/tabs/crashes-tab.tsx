@@ -1,6 +1,17 @@
+"use client";
+
 import type { SocrataCrash } from "@/lib/socrata";
-import { decodeVehicleConfig } from "@/lib/fmcsa-codes";
-import { Stat } from "../shared";
+import { decodeVehicleConfig, decodeCargoBodyType } from "@/lib/fmcsa-codes";
+import { Stat, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import type { CsvColumn } from "../shared";
+
+type CrashRow = SocrataCrash & {
+  _date: number;
+  _fatalities: number;
+  _injuries: number;
+  _towAway: number;
+  _stateRec: string;
+};
 
 export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
   if (crashes.length === 0) {
@@ -11,23 +22,43 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
     );
   }
 
-  const totalFatalities = crashes.reduce(
-    (s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0),
-    0
-  );
-  const totalInjuries = crashes.reduce(
-    (s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0),
-    0
-  );
-  const totalTowAway = crashes.reduce(
-    (s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0),
-    0
-  );
+  const rows: CrashRow[] = crashes.map((cr) => ({
+    ...cr,
+    _date: cr.report_date ? new Date(cr.report_date).getTime() : 0,
+    _fatalities: parseInt(cr.fatalities ?? "0", 10) || 0,
+    _injuries: parseInt(cr.injuries ?? "0", 10) || 0,
+    _towAway: parseInt(cr.tow_away ?? "0", 10) || 0,
+    _stateRec: cr.state_recordable ?? "",
+  }));
+
+  const totalFatalities = rows.reduce((s, c) => s + c._fatalities, 0);
+  const totalInjuries = rows.reduce((s, c) => s + c._injuries, 0);
+  const totalTowAway = rows.reduce((s, c) => s + c._towAway, 0);
+
+  // Severity score: fatal*3 + injury*2 + tow*1
+  const severityScore = totalFatalities * 3 + totalInjuries * 2 + totalTowAway;
+
+  const { sorted, sortKey, sortDir, toggle } = useSort<CrashRow>(rows, "_date", "desc");
+
+  const csvColumns: CsvColumn<CrashRow>[] = [
+    { key: "report_date", header: "Date" },
+    { key: "report_number", header: "Report #" },
+    { key: "report_state", header: "State" },
+    { key: "city", header: "City" },
+    { key: "location", header: "Location" },
+    { key: "truck_bus_ind", header: "Vehicle" },
+    { key: "cargo_body_type_id", header: "Cargo Body Type", accessor: (r) => r.cargo_body_type_id ? decodeCargoBodyType(r.cargo_body_type_id) : "" },
+    { key: "fatalities", header: "Fatalities" },
+    { key: "injuries", header: "Injuries" },
+    { key: "tow_away", header: "Tow Away" },
+    { key: "federal_recordable", header: "Federal Recordable" },
+    { key: "state_recordable", header: "State Recordable" },
+  ];
 
   return (
     <div>
       {/* Summary stats */}
-      <div className="mb-4 flex flex-wrap gap-4">
+      <div className="mb-4 flex flex-wrap items-start gap-4">
         <Stat label="Total Crashes" value={crashes.length} />
         <Stat label="Fatalities" value={totalFatalities} warn />
         <Stat
@@ -36,28 +67,33 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
           warn={totalInjuries > 0}
         />
         <Stat label="Tow-Aways" value={totalTowAway} />
+        <Stat label="Severity Score" value={severityScore} warn={severityScore > 10} />
+        <ExportButton onClick={() => downloadCsv(rows as unknown as Record<string, unknown>[], csvColumns as CsvColumn<Record<string, unknown>>[], "crashes.csv")} />
       </div>
 
+      <TruncationWarning count={crashes.length} limit={50} noun="crashes" />
+
       {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
         <table className="w-full text-left text-xs text-slate-300">
           <thead className="sticky top-0 bg-slate-900">
             <tr className="border-b border-slate-700 text-slate-400">
-              <th className="px-3 py-2">Date</th>
-              <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
-              <th className="px-3 py-2">State</th>
+              <SortHeader label="Date" sortKey="_date" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
+              <SortHeader label="Report #" sortKey="report_number" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="hidden sm:table-cell" />
+              <SortHeader label="State" sortKey="report_state" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <th className="hidden px-3 py-2 sm:table-cell">City</th>
+              <th className="hidden px-3 py-2 sm:table-cell">Location</th>
               <th className="hidden px-3 py-2 md:table-cell">Vehicle</th>
-              <th className="px-3 py-2 text-right">Fatal</th>
-              <th className="px-3 py-2 text-right">Injuries</th>
-              <th className="px-3 py-2 text-right">Tow</th>
-              <th className="hidden px-3 py-2 text-center lg:table-cell">
-                Fed Rec.
-              </th>
+              <th className="hidden px-3 py-2 md:table-cell">Cargo</th>
+              <SortHeader label="Fatal" sortKey="_fatalities" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="text-right" />
+              <SortHeader label="Injuries" sortKey="_injuries" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="text-right" />
+              <SortHeader label="Tow" sortKey="_towAway" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="text-right" />
+              <th className="hidden px-3 py-2 text-center lg:table-cell">Fed Rec.</th>
+              <th className="hidden px-3 py-2 text-center lg:table-cell">State Rec.</th>
             </tr>
           </thead>
           <tbody>
-            {crashes.map((cr, i) => (
+            {sorted.map((cr, i) => (
               <tr
                 key={cr.crash_id ?? i}
                 className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
@@ -79,6 +115,9 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                 <td className="hidden px-3 py-2 sm:table-cell">
                   {cr.city ?? "\u2014"}
                 </td>
+                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                  {cr.location ?? "\u2014"}
+                </td>
                 <td
                   className="hidden px-3 py-2 md:table-cell text-slate-400"
                   title={
@@ -98,15 +137,20 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                     </span>
                   )}
                 </td>
+                <td className="hidden px-3 py-2 md:table-cell text-slate-500">
+                  {cr.cargo_body_type_id
+                    ? decodeCargoBodyType(cr.cargo_body_type_id)
+                    : "\u2014"}
+                </td>
                 <td className="px-3 py-2 text-right">
-                  {parseInt(cr.fatalities ?? "0", 10) > 0 ? (
+                  {cr._fatalities > 0 ? (
                     <span className="text-rose-400">{cr.fatalities}</span>
                   ) : (
                     "0"
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {parseInt(cr.injuries ?? "0", 10) > 0 ? (
+                  {cr._injuries > 0 ? (
                     <span className="text-amber-400">{cr.injuries}</span>
                   ) : (
                     "0"
@@ -121,6 +165,17 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                       Yes
                     </span>
                   ) : cr.federal_recordable === "N" ? (
+                    <span className="text-slate-600">No</span>
+                  ) : (
+                    <span className="text-slate-600">{"\u2014"}</span>
+                  )}
+                </td>
+                <td className="hidden px-3 py-2 text-center lg:table-cell">
+                  {cr.state_recordable === "Y" ? (
+                    <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-xs font-medium text-purple-300">
+                      Yes
+                    </span>
+                  ) : cr.state_recordable === "N" ? (
                     <span className="text-slate-600">No</span>
                   ) : (
                     <span className="text-slate-600">{"\u2014"}</span>
