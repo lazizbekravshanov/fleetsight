@@ -60,11 +60,11 @@ export function CarrierLookup() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+      <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl px-4 py-3 sm:px-6">
-          <p className="text-sm font-semibold tracking-wide text-blue-400">
+          <p className="text-sm font-semibold tracking-wide text-indigo-600">
             FleetSight
           </p>
         </div>
@@ -72,12 +72,11 @@ export function CarrierLookup() {
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* Search */}
-        <div className="relative text-center">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-          <h1 className="relative text-4xl font-semibold sm:text-5xl bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
+        <div className="text-center">
+          <h1 className="text-4xl font-semibold text-gray-900 sm:text-5xl">
             FMCSA Carrier Lookup
           </h1>
-          <p className="relative mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-gray-500">
             Search 4.4M FMCSA-registered carriers, brokers &amp; freight
             forwarders by name or DOT number
           </p>
@@ -89,7 +88,7 @@ export function CarrierLookup() {
         >
           <div className="relative flex-1">
             <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -106,18 +105,16 @@ export function CarrierLookup() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="DOT number or company name..."
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 py-3 pl-11 pr-3 text-base text-slate-100 outline-none placeholder:text-slate-500 transition-shadow focus:shadow-glow"
+              className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
-          <motion.button
+          <button
             type="submit"
             disabled={searching}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition-shadow hover:shadow-glow disabled:opacity-60"
+            className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
           >
             {searching ? "Searching..." : "Search"}
-          </motion.button>
+          </button>
         </form>
 
         {/* Results */}
@@ -125,7 +122,7 @@ export function CarrierLookup() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-10 text-center text-base text-slate-500 tracking-wide"
+            className="mt-10 text-center text-base text-gray-500 tracking-wide"
           >
             No carriers found. Try a different search term.
           </motion.p>
@@ -133,7 +130,7 @@ export function CarrierLookup() {
 
         {results.length > 0 && (
           <div className="mx-auto mt-6 max-w-2xl">
-            <p className="mb-2 text-xs text-slate-400">
+            <p className="mb-2 text-xs text-gray-500">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
             <motion.ul
@@ -155,26 +152,25 @@ export function CarrierLookup() {
                       hidden: { opacity: 0, y: 12 },
                       visible: { opacity: 1, y: 0 },
                     }}
-                    whileHover={{ scale: 1.01 }}
                   >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition hover:bg-slate-800/60 hover:shadow-panel ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition-colors hover:bg-gray-100 ${
                         selectedDot === r.dotNumber
-                          ? "bg-slate-800/60 ring-1 ring-blue-500/40"
+                          ? "bg-gray-100 ring-1 ring-indigo-500/40"
                           : ""
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-100">
+                        <p className="truncate text-sm font-medium text-gray-900">
                           {r.legalName}
                           {r.dbaName && (
-                            <span className="ml-2 text-slate-500">
+                            <span className="ml-2 text-gray-400">
                               DBA {r.dbaName}
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-gray-500">
                           DOT {r.dotNumber}
                           {r.phyState && (
                             <span className="ml-2">{r.phyState}</span>
@@ -199,8 +195,8 @@ export function CarrierLookup() {
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                               r.statusCode === "A"
-                                ? "bg-emerald-500/20 text-emerald-300"
-                                : "bg-rose-500/20 text-rose-300"
+                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                                : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                             }`}
                           >
                             {decodeStatus(r.statusCode)}
@@ -226,7 +222,7 @@ export function CarrierLookup() {
           >
             {detailLoading && <SkeletonRows />}
             {detailError && (
-              <p className="text-center text-sm text-rose-400">
+              <p className="text-center text-sm text-rose-600">
                 {detailError}
               </p>
             )}

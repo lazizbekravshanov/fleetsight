@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
+import defaultTheme from "tailwindcss/defaultTheme";
 
 const config: Config = {
-  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,28 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0F172A",
-        "ink-soft": "#334155",
-        "line-blue": "#D7E7FF",
-        glow: "#4BA3FF",
+        ink: "#111827",
+        "ink-soft": "#6b7280",
         // Semantic surface hierarchy
         surface: {
-          0: "#06080d",
-          1: "#0c1018",
-          2: "#111827",
-          3: "#1e293b",
+          0: "#ffffff",
+          1: "#f9fafb",
+          2: "#f3f4f6",
+          3: "#e5e7eb",
         },
+        accent: "#4f46e5",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["Inter", ...defaultTheme.fontFamily.sans],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        panel: "0 20px 60px -35px rgba(12, 84, 199, 0.45)",
-        glow: "0 0 0 1px rgba(75,163,255,0.24), 0 14px 40px -20px rgba(10,89,220,0.35)",
-        "card-sm": "0 1px 3px rgba(0,0,0,0.3), 0 2px 8px -2px rgba(0,0,0,0.15)",
-        "card-md": "0 2px 6px rgba(0,0,0,0.3), 0 8px 24px -8px rgba(0,0,0,0.2)",
-        "inner-glow": "inset 0 1px 0 rgba(255,255,255,0.03)",
+        panel: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "card-sm": "0 1px 2px rgb(0 0 0 / 0.05)",
+        "card-md": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
       },
       animation: {
         "fade-in": "fade-in 0.3s ease-out",

@@ -5,17 +5,17 @@ import { motion } from "framer-motion";
 import type { BasicScore } from "./types";
 
 export const BADGE_COLORS = {
-  blue: "bg-blue-500/20 text-blue-300",
-  purple: "bg-purple-500/20 text-purple-300",
-  amber: "bg-amber-500/20 text-amber-300",
-  slate: "bg-slate-500/20 text-slate-300",
+  blue: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
+  purple: "bg-purple-50 text-purple-700 ring-1 ring-purple-600/20",
+  amber: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  slate: "bg-gray-100 text-gray-700 ring-1 ring-gray-400/20",
 } as const;
 
 export const BORDER_COLORS = {
-  blue: "border-l-blue-500",
+  blue: "border-l-indigo-500",
   purple: "border-l-purple-500",
   amber: "border-l-amber-500",
-  slate: "border-l-slate-500",
+  slate: "border-l-gray-400",
 } as const;
 
 export function SkeletonRows({ count = 3 }: { count?: number }) {
@@ -27,11 +27,11 @@ export function SkeletonRows({ count = 3 }: { count?: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
-          className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-5"
+          className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5"
         >
-          <div className="h-3 w-2/5 rounded-full bg-slate-800" />
-          <div className="h-3 w-1/5 rounded-full bg-slate-800" />
-          <div className="ml-auto h-3 w-1/6 rounded-full bg-slate-800" />
+          <div className="h-3 w-2/5 rounded-full bg-gray-200" />
+          <div className="h-3 w-1/5 rounded-full bg-gray-200" />
+          <div className="ml-auto h-3 w-1/6 rounded-full bg-gray-200" />
         </motion.div>
       ))}
     </div>
@@ -41,8 +41,8 @@ export function SkeletonRows({ count = 3 }: { count?: number }) {
 export function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="shrink-0 text-slate-400">{label}</dt>
-      <dd className="text-right text-slate-100">{value}</dd>
+      <dt className="shrink-0 text-gray-500">{label}</dt>
+      <dd className="text-right text-gray-900">{value}</dd>
     </div>
   );
 }
@@ -57,13 +57,13 @@ export function Stat({
   warn?: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/70">
-      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-blue-500"}`} />
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-indigo-500"}`} />
       <div className="px-4 py-2">
-        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-xs text-gray-500">{label}</p>
         <p
           className={`text-xl font-semibold ${
-            warn ? "text-rose-400" : "text-slate-100"
+            warn ? "text-rose-600" : "text-gray-900"
           }`}
         >
           {value}
@@ -171,7 +171,7 @@ export function SortHeader({
   const arrow = active ? (currentDir === "asc" ? " \u25B2" : " \u25BC") : " \u25BD";
   return (
     <th
-      className={`px-3 py-2 cursor-pointer select-none hover:text-slate-200 transition-colors ${className ?? ""}`}
+      className={`px-3 py-2 cursor-pointer select-none hover:text-gray-700 transition-colors ${className ?? ""}`}
       onClick={() => onToggle(columnKey)}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onToggle(columnKey); }}
       tabIndex={0}
@@ -179,7 +179,7 @@ export function SortHeader({
       aria-sort={active ? (currentDir === "asc" ? "ascending" : "descending") : "none"}
     >
       {label}
-      <span className={active ? "text-blue-400" : "text-slate-600"}>{arrow}</span>
+      <span className={active ? "text-indigo-600" : "text-gray-400"}>{arrow}</span>
     </th>
   );
 }
@@ -226,7 +226,7 @@ export function ExportButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="ml-auto flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/50 px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+      className="ml-auto flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
     >
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path d="M6 1v7M3 5.5l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
@@ -250,7 +250,7 @@ export function TruncationWarning({
 }) {
   if (count < limit) return null;
   return (
-    <p className="text-xs text-amber-400 mt-2">
+    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
       Displaying {count} {noun} (results may be truncated at the {limit}-record API limit)
     </p>
   );

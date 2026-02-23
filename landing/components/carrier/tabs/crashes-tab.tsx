@@ -16,7 +16,7 @@ type CrashRow = SocrataCrash & {
 export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
   if (crashes.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         No crash records found.
       </p>
     );
@@ -74,10 +74,10 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
       <TruncationWarning count={crashes.length} limit={50} noun="crashes" />
 
       {/* Table */}
-      <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="sticky top-0 bg-slate-900">
-            <tr className="border-b border-slate-700 text-slate-400">
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
+        <table className="w-full text-left text-xs text-gray-700">
+          <thead className="sticky top-0 bg-gray-50">
+            <tr className="border-b border-gray-200 text-gray-500">
               <SortHeader label="Date" sortKey="_date" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Report #" sortKey="report_number" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="hidden sm:table-cell" />
               <SortHeader label="State" sortKey="report_state" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -96,30 +96,30 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
             {sorted.map((cr, i) => (
               <tr
                 key={cr.crash_id ?? i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {cr.report_date
                     ? new Date(cr.report_date).toLocaleDateString()
                     : "\u2014"}
                   {cr.report_time && (
-                    <span className="ml-1 text-slate-600">
+                    <span className="ml-1 text-gray-400">
                       {cr.report_time}
                     </span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
                   {cr.report_number ?? "\u2014"}
                 </td>
                 <td className="px-3 py-2">{cr.report_state ?? "\u2014"}</td>
                 <td className="hidden px-3 py-2 sm:table-cell">
                   {cr.city ?? "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
                   {cr.location ?? "\u2014"}
                 </td>
                 <td
-                  className="hidden px-3 py-2 md:table-cell text-slate-400"
+                  className="hidden px-3 py-2 md:table-cell text-gray-500"
                   title={
                     cr.vehicle_configuration_id
                       ? decodeVehicleConfig(cr.vehicle_configuration_id)
@@ -132,26 +132,26 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                       ? "Bus"
                       : cr.truck_bus_ind ?? "\u2014"}
                   {cr.vehicle_configuration_id && (
-                    <span className="ml-1 text-slate-600">
+                    <span className="ml-1 text-gray-400">
                       ({decodeVehicleConfig(cr.vehicle_configuration_id)})
                     </span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 md:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 md:table-cell text-gray-400">
                   {cr.cargo_body_type_id
                     ? decodeCargoBodyType(cr.cargo_body_type_id)
                     : "\u2014"}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {cr._fatalities > 0 ? (
-                    <span className="text-rose-400">{cr.fatalities}</span>
+                    <span className="text-rose-600">{cr.fatalities}</span>
                   ) : (
                     "0"
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {cr._injuries > 0 ? (
-                    <span className="text-amber-400">{cr.injuries}</span>
+                    <span className="text-amber-600">{cr.injuries}</span>
                   ) : (
                     "0"
                   )}
@@ -161,24 +161,24 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                 </td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.federal_recordable === "Y" ? (
-                    <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">
+                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">
                       Yes
                     </span>
                   ) : cr.federal_recordable === "N" ? (
-                    <span className="text-slate-600">No</span>
+                    <span className="text-gray-400">No</span>
                   ) : (
-                    <span className="text-slate-600">{"\u2014"}</span>
+                    <span className="text-gray-400">{"\u2014"}</span>
                   )}
                 </td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.state_recordable === "Y" ? (
-                    <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-xs font-medium text-purple-300">
+                    <span className="rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 ring-1 ring-purple-600/20">
                       Yes
                     </span>
                   ) : cr.state_recordable === "N" ? (
-                    <span className="text-slate-600">No</span>
+                    <span className="text-gray-400">No</span>
                   ) : (
-                    <span className="text-slate-600">{"\u2014"}</span>
+                    <span className="text-gray-400">{"\u2014"}</span>
                   )}
                 </td>
               </tr>

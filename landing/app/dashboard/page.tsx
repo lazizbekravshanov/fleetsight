@@ -22,14 +22,14 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-gray-50 text-gray-900">
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-blue-300">Dashboard</p>
-            <h1 className="mt-2 text-3xl font-semibold">{user.profile.companyName}</h1>
-            <p className="mt-1 text-sm text-slate-300">{user.email}</p>
-            <p className="text-sm text-slate-300">USDOT: {user.profile.usdotNumber}</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-indigo-600">Dashboard</p>
+            <h1 className="mt-2 text-3xl font-semibold text-gray-900">{user.profile.companyName}</h1>
+            <p className="mt-1 text-sm text-gray-500">{user.email}</p>
+            <p className="text-sm text-gray-500">USDOT: {user.profile.usdotNumber}</p>
           </div>
           <SignOutButton />
         </header>
@@ -39,14 +39,14 @@ export default async function DashboardPage() {
           <OpenClawConnectCard />
           <Link
             href="/"
-            className="group rounded-xl border border-slate-800 bg-slate-900/70 p-5 transition hover:border-blue-500/40 hover:bg-slate-900"
+            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
           >
-            <h3 className="text-lg font-semibold text-white">Carrier Detection</h3>
-            <p className="mt-2 text-sm text-slate-400">
+            <h3 className="text-lg font-semibold text-gray-900">Carrier Detection</h3>
+            <p className="mt-2 text-sm text-gray-500">
               Detect reincarnated carriers using shared addresses, phones, officers,
               VINs, and prior-revocation links from FMCSA data.
             </p>
-            <p className="mt-3 text-sm font-medium text-blue-400 transition group-hover:text-blue-300">
+            <p className="mt-3 text-sm font-medium text-indigo-600 transition group-hover:text-indigo-500">
               Search carriers &rarr;
             </p>
           </Link>

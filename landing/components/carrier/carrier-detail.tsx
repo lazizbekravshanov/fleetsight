@@ -78,18 +78,18 @@ export function CarrierDetailView({
   return (
     <div className="mx-auto max-w-5xl">
       {/* Carrier Header */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70 shadow-panel">
-        <div className="h-0.5 bg-gradient-to-r from-blue-500 to-blue-400" />
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-400" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-gray-900">
                 {c.legal_name}
               </h2>
               {c.dba_name && (
-                <p className="text-sm text-slate-400">DBA {c.dba_name}</p>
+                <p className="text-sm text-gray-500">DBA {c.dba_name}</p>
               )}
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-gray-400">
                 USDOT {c.dot_number}
               </p>
             </div>
@@ -102,8 +102,8 @@ export function CarrierDetailView({
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${
                   c.status_code === "A"
-                    ? "bg-emerald-500/20 text-emerald-300"
-                    : "bg-rose-500/20 text-rose-300"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                 }`}
               >
                 {decodeStatus(c.status_code)}
@@ -114,24 +114,24 @@ export function CarrierDetailView({
       </div>
 
       {/* Tabs */}
-      <div className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide border-b border-slate-800">
+      <div className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide border-b border-gray-200">
         {tabs.map((t, i) => (
           <span key={t.key} className="flex items-center">
             {/* Separator between ops and compliance groups */}
             {i > 0 && tabs[i - 1].group !== t.group && (
-              <span className="mx-1 h-4 w-px bg-slate-700" />
+              <span className="mx-1 h-4 w-px bg-gray-300" />
             )}
             <button
               onClick={() => setActiveTab(t.key)}
               className={`whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition ${
                 activeTab === t.key
-                  ? "border-b-2 border-blue-500 text-blue-400"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "border-b-2 border-indigo-500 text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
             >
               {t.label}
               {t.count != null && (
-                <span className="ml-1.5 text-xs text-slate-500">
+                <span className="ml-1.5 text-xs text-gray-400">
                   ({t.count})
                 </span>
               )}

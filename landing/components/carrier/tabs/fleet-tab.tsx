@@ -20,13 +20,13 @@ export function FleetTab({
 
   if (error) {
     return (
-      <p className="py-12 text-center text-sm text-rose-400">{error}</p>
+      <p className="py-12 text-center text-sm text-rose-600">{error}</p>
     );
   }
 
   if (!data) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         Fleet data will load when this tab is selected.
       </p>
     );
@@ -36,7 +36,7 @@ export function FleetTab({
 
   if (units.length === 0 && decodedVehicles.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         No fleet unit records found for this carrier.
       </p>
     );
@@ -83,9 +83,9 @@ function FleetSummary({
     .slice(0, 3);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
         Fleet Summary
       </h3>
       <div className="flex flex-wrap gap-4 mb-4">
@@ -94,13 +94,13 @@ function FleetSummary({
         {avgAge !== null && <Stat label="Avg Fleet Age" value={`${avgAge} yr`} />}
       </div>
       {topMakes.length > 0 && (
-        <div className="text-xs text-slate-400">
-          <span className="text-slate-500">Top makes: </span>
+        <div className="text-xs text-gray-500">
+          <span className="text-gray-400">Top makes: </span>
           {topMakes.map(([make, count], i) => (
             <span key={make}>
               {i > 0 && ", "}
-              <span className="text-slate-200">{make}</span>{" "}
-              <span className="text-slate-500">({count})</span>
+              <span className="text-gray-700">{make}</span>{" "}
+              <span className="text-gray-400">({count})</span>
             </span>
           ))}
         </div>
@@ -138,23 +138,23 @@ function FleetComposition({
   const makeMax = sortedMakes[0]?.[1] ?? 1;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
         Fleet Composition
       </h3>
       <div className="grid gap-6 md:grid-cols-2">
         {/* GVWR Breakdown */}
         <div>
-          <p className="text-xs text-slate-500 mb-2">GVWR Class</p>
+          <p className="text-xs text-gray-400 mb-2">GVWR Class</p>
           <div className="space-y-2">
             {sortedGvwr.slice(0, 6).map(([cls, count]) => (
               <div key={cls}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-slate-300 truncate max-w-[70%]">{cls}</span>
-                  <span className="text-slate-400">{count}</span>
+                  <span className="text-gray-700 truncate max-w-[70%]">{cls}</span>
+                  <span className="text-gray-500">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
                     className="h-full rounded-full bg-emerald-500"
                     style={{ width: `${(count / gvwrMax) * 100}%` }}
@@ -167,17 +167,17 @@ function FleetComposition({
 
         {/* Make Distribution */}
         <div>
-          <p className="text-xs text-slate-500 mb-2">Make Distribution</p>
+          <p className="text-xs text-gray-400 mb-2">Make Distribution</p>
           <div className="space-y-2">
             {sortedMakes.slice(0, 6).map(([make, count]) => (
               <div key={make}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-slate-300">{make}</span>
-                  <span className="text-slate-400">{count}</span>
+                  <span className="text-gray-700">{make}</span>
+                  <span className="text-gray-500">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
-                    className="h-full rounded-full bg-blue-500"
+                    className="h-full rounded-full bg-indigo-500"
                     style={{ width: `${(count / makeMax) * 100}%` }}
                   />
                 </div>
@@ -214,11 +214,11 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
         Vehicle Recall Alerts
-        <span className="ml-auto rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-medium text-rose-300">
+        <span className="ml-auto rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
           {recalls.length} recall{recalls.length !== 1 ? "s" : ""}
         </span>
       </h3>
@@ -227,39 +227,39 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
           const [make, model, year] = key.split("|");
           const isOpen = expanded.has(key);
           return (
-            <div key={key} className="rounded-lg border border-slate-800 bg-slate-950/50">
+            <div key={key} className="rounded-lg border border-gray-100 bg-gray-50">
               <button
                 onClick={() => toggleExpand(key)}
                 className="flex w-full items-center justify-between px-3 py-2 text-left text-xs"
               >
-                <span className="text-slate-200 font-medium">
+                <span className="text-gray-700 font-medium">
                   {year} {make} {model}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="rounded-full bg-rose-500/20 px-1.5 py-0.5 text-[10px] text-rose-300">
+                  <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] text-rose-700 ring-1 ring-rose-600/20">
                     {groupRecalls.length}
                   </span>
-                  <span className="text-slate-500">{isOpen ? "\u25B2" : "\u25BC"}</span>
+                  <span className="text-gray-400">{isOpen ? "\u25B2" : "\u25BC"}</span>
                 </div>
               </button>
               {isOpen && (
-                <div className="border-t border-slate-800 px-3 py-2 space-y-3">
+                <div className="border-t border-gray-200 px-3 py-2 space-y-3">
                   {groupRecalls.map((r, i) => (
                     <div key={i} className="text-xs">
-                      <p className="text-slate-300 font-medium">
+                      <p className="text-gray-700 font-medium">
                         Campaign #{r.nhtsaCampaignNumber}
                       </p>
-                      <p className="text-slate-500 mt-0.5">
+                      <p className="text-gray-400 mt-0.5">
                         Component: {r.component}
                       </p>
-                      <p className="text-slate-400 mt-0.5">{r.summary}</p>
+                      <p className="text-gray-500 mt-0.5">{r.summary}</p>
                       {r.consequence && (
-                        <p className="text-rose-400 mt-0.5">
+                        <p className="text-rose-600 mt-0.5">
                           Consequence: {r.consequence}
                         </p>
                       )}
                       {r.remedy && (
-                        <p className="text-slate-500 mt-0.5">
+                        <p className="text-gray-400 mt-0.5">
                           Remedy: {r.remedy}
                         </p>
                       )}
@@ -328,19 +328,19 @@ function FleetDetailTable({
   ];
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
           Fleet Details
         </h3>
         <ExportButton onClick={() => downloadCsv(rows as unknown as Record<string, unknown>[], csvColumns as CsvColumn<Record<string, unknown>>[], "fleet.csv")} />
       </div>
       <TruncationWarning count={units.length} limit={200} noun="fleet units" />
-      <div className="mt-2 max-h-[32rem] overflow-auto rounded-lg border border-slate-800">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="sticky top-0 bg-slate-900">
-            <tr className="border-b border-slate-700 text-slate-400">
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-lg border border-gray-200">
+        <table className="w-full text-left text-xs text-gray-700">
+          <thead className="sticky top-0 bg-gray-50">
+            <tr className="border-b border-gray-200 text-gray-500">
               <th className="px-3 py-2">VIN</th>
               <SortHeader label="Make" sortKey="make" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Model" sortKey="model" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -355,24 +355,24 @@ function FleetDetailTable({
             {sorted.map((v, i) => (
               <tr
                 key={v.vin || i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
               >
-                <td className="px-3 py-2 font-mono text-slate-500">
+                <td className="px-3 py-2 font-mono text-gray-400">
                   {v.vin || "\u2014"}
                 </td>
                 <td className="px-3 py-2">{v.make || "\u2014"}</td>
                 <td className="px-3 py-2">{v.model || "\u2014"}</td>
                 <td className="px-3 py-2">{v.modelYear || "\u2014"}</td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-400">
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-500">
                   {v.bodyClass || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 lg:table-cell text-slate-400">
+                <td className="hidden px-3 py-2 lg:table-cell text-gray-500">
                   {v.vehicleType || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 md:table-cell text-slate-400">
+                <td className="hidden px-3 py-2 md:table-cell text-gray-500">
                   {v.gvwr || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 lg:table-cell text-slate-400">
+                <td className="hidden px-3 py-2 lg:table-cell text-gray-500">
                   {v._license
                     ? `${v._license}${v._licenseState ? ` (${v._licenseState})` : ""}`
                     : "\u2014"}

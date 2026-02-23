@@ -41,7 +41,7 @@ export function InspectionsTab({
 }) {
   if (inspections.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         No inspection records found.
       </p>
     );
@@ -107,18 +107,18 @@ export function InspectionsTab({
 
       {/* Level Distribution */}
       {sortedLevels.length > 1 && (
-        <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Inspection Level Distribution</p>
+        <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Inspection Level Distribution</p>
           <div className="space-y-1.5">
             {sortedLevels.map(([level, count]) => (
               <div key={level}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-slate-300">{level}</span>
-                  <span className="text-slate-400">{count}</span>
+                  <span className="text-gray-700">{level}</span>
+                  <span className="text-gray-500">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
-                    className="h-full rounded-full bg-blue-500"
+                    className="h-full rounded-full bg-indigo-500"
                     style={{ width: `${(count / levelMax) * 100}%` }}
                   />
                 </div>
@@ -129,10 +129,10 @@ export function InspectionsTab({
       )}
 
       {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="sticky top-0 bg-slate-900">
-            <tr className="border-b border-slate-700 text-slate-400">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
+        <table className="w-full text-left text-xs text-gray-700">
+          <thead className="sticky top-0 bg-gray-50">
+            <tr className="border-b border-gray-200 text-gray-500">
               <SortHeader label="Date" sortKey="_date" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Report #" sortKey="report_number" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="hidden sm:table-cell" />
               <SortHeader label="State" sortKey="report_state" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -161,14 +161,14 @@ export function InspectionsTab({
               return (
                 <tr
                   key={insp.inspection_id ?? i}
-                  className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                  className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
                 >
                   <td className="px-3 py-2 whitespace-nowrap">
                     {insp.insp_date
                       ? new Date(insp.insp_date).toLocaleDateString()
                       : "\u2014"}
                   </td>
-                  <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                  <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
                     {insp.report_number ?? "\u2014"}
                   </td>
                   <td className="px-3 py-2">{insp.report_state ?? "\u2014"}</td>
@@ -178,35 +178,35 @@ export function InspectionsTab({
                   </td>
                   <td className="px-3 py-2 text-right">
                     {insp._oos > 0 ? (
-                      <span className="text-rose-400">{insp.oos_total}</span>
+                      <span className="text-rose-600">{insp.oos_total}</span>
                     ) : (
                       "0"
                     )}
                   </td>
-                  <td className={`hidden px-3 py-2 md:table-cell text-right ${isShortL1 ? "text-rose-400" : "text-slate-500"}`}>
+                  <td className={`hidden px-3 py-2 md:table-cell text-right ${isShortL1 ? "text-rose-600" : "text-gray-400"}`}>
                     {insp._duration !== null
                       ? `${insp._duration} min`
                       : "\u2014"}
                   </td>
-                  <td className={`hidden px-3 py-2 lg:table-cell ${namesDiffer ? "text-amber-400" : "text-slate-500"}`}>
+                  <td className={`hidden px-3 py-2 lg:table-cell ${namesDiffer ? "text-amber-600" : "text-gray-400"}`}>
                     {insp.insp_carrier_name ?? "\u2014"}
                   </td>
                   <td className="hidden px-3 py-2 text-center md:table-cell">
                     {insp.post_acc_ind === "Y" ? (
-                      <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-600/20">
                         Yes
                       </span>
                     ) : (
-                      <span className="text-slate-600">{"\u2014"}</span>
+                      <span className="text-gray-400">{"\u2014"}</span>
                     )}
                   </td>
-                  <td className="hidden px-3 py-2 text-right lg:table-cell text-slate-500">
+                  <td className="hidden px-3 py-2 text-right lg:table-cell text-gray-400">
                     {insp.gross_comb_veh_wt
                       ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString()
                       : "\u2014"}
                   </td>
                   <td
-                    className="hidden px-3 py-2 sm:table-cell text-slate-500"
+                    className="hidden px-3 py-2 sm:table-cell text-gray-400"
                     title={insp.insp_facility ?? undefined}
                   >
                     {insp.location_desc ?? "\u2014"}

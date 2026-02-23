@@ -5,18 +5,18 @@
 /* ── Design Tokens ──────────────────────────────────────────────── */
 
 :root {
-  --font-sans: "Space Grotesk", "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif;
+  --font-sans: "Inter", "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", "SFMono-Regular", Menlo, monospace;
 
-  /* Surface hierarchy (dark) */
-  --surface-0: #06080d;
-  --surface-1: #0c1018;
-  --surface-2: #111827;
-  --surface-3: #1e293b;
+  /* Surface hierarchy (light) */
+  --surface-0: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+  --surface-3: #e5e7eb;
 
   /* Accent */
-  --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.12);
+  --accent: #4f46e5;
+  --accent-soft: rgba(79, 70, 229, 0.08);
 }
 
 /* ── Base Resets ─────────────────────────────────────────────────── */
@@ -51,78 +51,47 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.15);
+  background: rgba(156, 163, 175, 0.3);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.3);
+  background: rgba(156, 163, 175, 0.5);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.15) transparent;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
 }
 
 /* ── Utility Layers ─────────────────────────────────────────────── */
 
 @layer utilities {
-  /* Glass material — frosted panel effect */
-  .glass {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
-    border: 1px solid rgba(148, 163, 184, 0.08);
-  }
-
-  .glass-subtle {
-    background: rgba(15, 23, 42, 0.35);
-    backdrop-filter: blur(16px) saturate(1.2);
-    -webkit-backdrop-filter: blur(16px) saturate(1.2);
-    border: 1px solid rgba(148, 163, 184, 0.06);
-  }
-
-  /* Elevated card — distinct from background */
-  .card-elevated {
-    background: rgba(17, 24, 39, 0.7);
-    border: 1px solid rgba(148, 163, 184, 0.08);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.3),
-      0 4px 16px -4px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  /* Card — clean elevated panel */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
   }
 
   /* Shimmer animation for skeleton loading */
   .shimmer {
     background: linear-gradient(
       90deg,
-      rgba(148, 163, 184, 0.04) 0%,
-      rgba(148, 163, 184, 0.1) 50%,
-      rgba(148, 163, 184, 0.04) 100%
+      rgba(229, 231, 235, 0.4) 0%,
+      rgba(229, 231, 235, 0.8) 50%,
+      rgba(229, 231, 235, 0.4) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.8s ease-in-out infinite;
   }
 
-  /* Pulse glow for active/selected states */
-  .glow-ring {
-    box-shadow:
-      0 0 0 1px rgba(59, 130, 246, 0.3),
-      0 0 20px -4px rgba(59, 130, 246, 0.2);
+  /* Scrollbar hide utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-
-  /* Severity glow rings */
-  .glow-critical {
-    box-shadow:
-      0 0 0 1px rgba(244, 63, 94, 0.25),
-      0 0 16px -4px rgba(244, 63, 94, 0.15);
-  }
-
-  .glow-warning {
-    box-shadow:
-      0 0 0 1px rgba(245, 158, 11, 0.25),
-      0 0 16px -4px rgba(245, 158, 11, 0.15);
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
 

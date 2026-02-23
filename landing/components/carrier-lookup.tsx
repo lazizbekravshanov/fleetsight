@@ -38,17 +38,17 @@ type CarrierDetail = {
 type Tab = "overview" | "inspections" | "crashes";
 
 const BADGE_COLORS = {
-  blue: "bg-blue-500/20 text-blue-300",
-  purple: "bg-purple-500/20 text-purple-300",
-  amber: "bg-amber-500/20 text-amber-300",
-  slate: "bg-slate-500/20 text-slate-300",
+  blue: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
+  purple: "bg-purple-50 text-purple-700 ring-1 ring-purple-600/20",
+  amber: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  slate: "bg-gray-100 text-gray-700 ring-1 ring-gray-400/20",
 } as const;
 
 const BORDER_COLORS = {
-  blue: "border-l-blue-500",
+  blue: "border-l-indigo-500",
   purple: "border-l-purple-500",
   amber: "border-l-amber-500",
-  slate: "border-l-slate-500",
+  slate: "border-l-gray-400",
 } as const;
 
 /* ── Skeleton Loading ──────────────────────────────────────────── */
@@ -62,11 +62,11 @@ function SkeletonRows({ count = 3 }: { count?: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
-          className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-5"
+          className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5"
         >
-          <div className="h-3 w-2/5 rounded-full bg-slate-800" />
-          <div className="h-3 w-1/5 rounded-full bg-slate-800" />
-          <div className="ml-auto h-3 w-1/6 rounded-full bg-slate-800" />
+          <div className="h-3 w-2/5 rounded-full bg-gray-200" />
+          <div className="h-3 w-1/5 rounded-full bg-gray-200" />
+          <div className="ml-auto h-3 w-1/6 rounded-full bg-gray-200" />
         </motion.div>
       ))}
     </div>
@@ -126,11 +126,11 @@ export function CarrierLookup() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+      <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl px-4 py-3 sm:px-6">
-          <p className="text-sm font-semibold tracking-wide text-blue-400">
+          <p className="text-sm font-semibold tracking-wide text-indigo-600">
             FleetSight
           </p>
         </div>
@@ -139,12 +139,10 @@ export function CarrierLookup() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* Search */}
         <div className="relative text-center">
-          {/* Radial glow orb */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
-          <h1 className="relative text-4xl font-semibold sm:text-5xl bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-semibold sm:text-5xl text-gray-900">
             FMCSA Carrier Lookup
           </h1>
-          <p className="relative mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-gray-500">
             Search 4.4M FMCSA-registered carriers, brokers &amp; freight forwarders by name or DOT number
           </p>
         </div>
@@ -155,7 +153,7 @@ export function CarrierLookup() {
         >
           <div className="relative flex-1">
             <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -172,18 +170,16 @@ export function CarrierLookup() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="DOT number or company name..."
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 py-3 pl-11 pr-3 text-base text-slate-100 outline-none placeholder:text-slate-500 transition-shadow focus:shadow-glow"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:ring-2 focus:ring-indigo-500/40"
             />
           </div>
-          <motion.button
+          <button
             type="submit"
             disabled={searching}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition-shadow hover:shadow-glow disabled:opacity-60"
+            className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-gray-900 transition hover:bg-indigo-700 disabled:opacity-60"
           >
             {searching ? "Searching..." : "Search"}
-          </motion.button>
+          </button>
         </form>
 
         {/* Results */}
@@ -191,7 +187,7 @@ export function CarrierLookup() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-10 text-center text-base text-slate-500 tracking-wide"
+            className="mt-10 text-center text-base text-gray-400 tracking-wide"
           >
             No carriers found. Try a different search term.
           </motion.p>
@@ -199,7 +195,7 @@ export function CarrierLookup() {
 
         {results.length > 0 && (
           <div className="mx-auto mt-6 max-w-2xl">
-            <p className="mb-2 text-xs text-slate-400">
+            <p className="mb-2 text-xs text-gray-500">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
             <motion.ul
@@ -221,26 +217,25 @@ export function CarrierLookup() {
                       hidden: { opacity: 0, y: 12 },
                       visible: { opacity: 1, y: 0 },
                     }}
-                    whileHover={{ scale: 1.01 }}
                   >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition hover:bg-slate-800/60 hover:shadow-panel ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition hover:bg-gray-100 hover:shadow-sm ${
                         selectedDot === r.dotNumber
-                          ? "bg-slate-800/60 ring-1 ring-blue-500/40"
+                          ? "bg-gray-100 ring-1 ring-indigo-500/40"
                           : ""
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-100">
+                        <p className="truncate text-sm font-medium text-gray-900">
                           {r.legalName}
                           {r.dbaName && (
-                            <span className="ml-2 text-slate-500">
+                            <span className="ml-2 text-gray-400">
                               DBA {r.dbaName}
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-gray-500">
                           DOT {r.dotNumber}
                           {r.phyState && (
                             <span className="ml-2">{r.phyState}</span>
@@ -265,8 +260,8 @@ export function CarrierLookup() {
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                               r.statusCode === "A"
-                                ? "bg-emerald-500/20 text-emerald-300"
-                                : "bg-rose-500/20 text-rose-300"
+                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                                : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                             }`}
                           >
                             {decodeStatus(r.statusCode)}
@@ -292,7 +287,7 @@ export function CarrierLookup() {
           >
             {detailLoading && <SkeletonRows />}
             {detailError && (
-              <p className="text-center text-sm text-rose-400">{detailError}</p>
+              <p className="text-center text-sm text-rose-600">{detailError}</p>
             )}
             {detail && <CarrierDetailView detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
           </motion.div>
@@ -324,18 +319,18 @@ function CarrierDetailView({
   return (
     <div className="mx-auto max-w-5xl">
       {/* Carrier Header */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70 shadow-panel">
-        <div className="h-0.5 bg-gradient-to-r from-blue-500 to-blue-400" />
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-400" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-gray-900">
                 {c.legal_name}
               </h2>
               {c.dba_name && (
-                <p className="text-sm text-slate-400">DBA {c.dba_name}</p>
+                <p className="text-sm text-gray-500">DBA {c.dba_name}</p>
               )}
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-gray-400">
                 USDOT {c.dot_number}
               </p>
             </div>
@@ -348,8 +343,8 @@ function CarrierDetailView({
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${
                   c.status_code === "A"
-                    ? "bg-emerald-500/20 text-emerald-300"
-                    : "bg-rose-500/20 text-rose-300"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                 }`}
               >
                 {decodeStatus(c.status_code)}
@@ -360,20 +355,20 @@ function CarrierDetailView({
       </div>
 
       {/* Tabs */}
-      <div className="mt-4 flex gap-1 border-b border-slate-800">
+      <div className="mt-4 flex gap-1 border-b border-gray-200">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
             className={`rounded-t-lg px-4 py-2 text-sm font-medium transition ${
               activeTab === t.key
-                ? "border-b-2 border-blue-500 text-blue-400"
-                : "text-slate-400 hover:text-slate-200"
+                ? "border-b-2 border-indigo-500 text-indigo-600"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             {t.label}
             {t.count != null && (
-              <span className="ml-1.5 text-xs text-slate-500">({t.count})</span>
+              <span className="ml-1.5 text-xs text-gray-400">({t.count})</span>
             )}
           </button>
         ))}
@@ -414,9 +409,9 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Company Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
           Company Info
         </h3>
         <dl className="space-y-2 text-sm">
@@ -464,8 +459,8 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
       </div>
 
       {/* SAFER Stats */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           SAFER Stats
         </h3>
@@ -509,8 +504,8 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
       </div>
 
       {/* Authority Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Authority &amp; Operating Status
         </h3>
@@ -528,7 +523,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
     return (
-      <p className="text-sm text-slate-500 tracking-wide">
+      <p className="text-sm text-gray-400 tracking-wide">
         Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.
       </p>
     );
@@ -538,9 +533,9 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
     <div className="space-y-4">
       {authorityRecords.length > 0 && (
         <div className="max-h-[32rem] overflow-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="sticky top-0 bg-slate-900">
-              <tr className="border-b border-slate-700 text-slate-400">
+          <table className="w-full text-left text-xs text-gray-700">
+            <thead className="sticky top-0 bg-gray-50">
+              <tr className="border-b border-gray-200 text-gray-500">
                 <th className="px-3 py-2">Authority Type</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Granted Date</th>
@@ -549,13 +544,13 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
             </thead>
             <tbody>
               {authorityRecords.map((a, i) => (
-                <tr key={i} className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30">
+                <tr key={i} className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50">
                   <td className="px-3 py-2">{str(a.authorityType) || str(a.authTypDesc) || "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
-                        ? "bg-emerald-500/20 text-emerald-300"
-                        : "bg-rose-500/20 text-rose-300"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                        : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                     }`}>
                       {str(a.authStatusDesc) || str(a.authStatus) || "—"}
                     </span>
@@ -575,13 +570,13 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
       {oosRecords.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
             Out-of-Service Orders
           </h4>
           <div className="max-h-[32rem] overflow-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="sticky top-0 bg-slate-900">
-                <tr className="border-b border-slate-700 text-slate-400">
+            <table className="w-full text-left text-xs text-gray-700">
+              <thead className="sticky top-0 bg-gray-50">
+                <tr className="border-b border-gray-200 text-gray-500">
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Effective Date</th>
                   <th className="px-3 py-2">Reason</th>
@@ -589,12 +584,12 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
               </thead>
               <tbody>
                 {oosRecords.map((o, i) => (
-                  <tr key={i} className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30">
+                  <tr key={i} className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50">
                     <td className="px-3 py-2">{str(o.oosType) || str(o.oosTypeDesc) || "—"}</td>
                     <td className="px-3 py-2">
                       {str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-3 py-2 text-slate-400">
+                    <td className="px-3 py-2 text-gray-500">
                       {str(o.oosReason) || str(o.oosReasonDesc) || "—"}
                     </td>
                   </tr>
@@ -605,7 +600,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
         </div>
       )}
 
-      <p className="text-xs text-slate-600">
+      <p className="text-xs text-gray-400">
         Insurance details (BIPD, cargo, bond) are not available via public API.
       </p>
     </div>
@@ -638,8 +633,8 @@ function str(v: unknown): string | null {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="shrink-0 text-slate-400">{label}</dt>
-      <dd className="text-right text-slate-100">{value}</dd>
+      <dt className="shrink-0 text-gray-500">{label}</dt>
+      <dd className="text-right text-gray-900">{value}</dd>
     </div>
   );
 }
@@ -653,7 +648,7 @@ function InspectionsTab({
 }) {
   if (inspections.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         No inspection records found.
       </p>
     );
@@ -686,10 +681,10 @@ function InspectionsTab({
       </div>
 
       {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="sticky top-0 bg-slate-900">
-            <tr className="border-b border-slate-700 text-slate-400">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
+        <table className="w-full text-left text-xs text-gray-700">
+          <thead className="sticky top-0 bg-gray-50">
+            <tr className="border-b border-gray-200 text-gray-500">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
@@ -705,14 +700,14 @@ function InspectionsTab({
             {inspections.map((insp, i) => (
               <tr
                 key={insp.inspection_id ?? i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {insp.insp_date
                     ? new Date(insp.insp_date).toLocaleDateString()
                     : "—"}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
                   {insp.report_number ?? "—"}
                 </td>
                 <td className="px-3 py-2">{insp.report_state ?? "—"}</td>
@@ -724,26 +719,26 @@ function InspectionsTab({
                 </td>
                 <td className="px-3 py-2 text-right">
                   {parseInt(insp.oos_total ?? "0", 10) > 0 ? (
-                    <span className="text-rose-400">{insp.oos_total}</span>
+                    <span className="text-rose-600">{insp.oos_total}</span>
                   ) : (
                     "0"
                   )}
                 </td>
                 <td className="hidden px-3 py-2 text-center md:table-cell">
                   {insp.post_acc_ind === "Y" ? (
-                    <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-medium text-amber-300">
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-600/20">
                       Yes
                     </span>
                   ) : (
-                    <span className="text-slate-600">—</span>
+                    <span className="text-gray-400">—</span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 text-right lg:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 text-right lg:table-cell text-gray-400">
                   {insp.gross_comb_veh_wt
                     ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString()
                     : "—"}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500" title={insp.insp_facility ?? undefined}>
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-400" title={insp.insp_facility ?? undefined}>
                   {insp.location_desc ?? "—"}
                 </td>
               </tr>
@@ -760,7 +755,7 @@ function InspectionsTab({
 function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
   if (crashes.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-slate-500 tracking-wide">
+      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
         No crash records found.
       </p>
     );
@@ -790,10 +785,10 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
       </div>
 
       {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-slate-800">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="sticky top-0 bg-slate-900">
-            <tr className="border-b border-slate-700 text-slate-400">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
+        <table className="w-full text-left text-xs text-gray-700">
+          <thead className="sticky top-0 bg-gray-50">
+            <tr className="border-b border-gray-200 text-gray-500">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
@@ -809,45 +804,45 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
             {crashes.map((cr, i) => (
               <tr
                 key={cr.crash_id ?? i}
-                className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {cr.report_date
                     ? new Date(cr.report_date).toLocaleDateString()
                     : "—"}
                   {cr.report_time && (
-                    <span className="ml-1 text-slate-600">{cr.report_time}</span>
+                    <span className="ml-1 text-gray-400">{cr.report_time}</span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-slate-500">
+                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
                   {cr.report_number ?? "—"}
                 </td>
                 <td className="px-3 py-2">{cr.report_state ?? "—"}</td>
                 <td className="hidden px-3 py-2 sm:table-cell">
                   {cr.city ?? "—"}
                 </td>
-                <td className="hidden px-3 py-2 md:table-cell text-slate-400" title={cr.vehicle_configuration_id ? decodeVehicleConfig(cr.vehicle_configuration_id) : undefined}>
+                <td className="hidden px-3 py-2 md:table-cell text-gray-500" title={cr.vehicle_configuration_id ? decodeVehicleConfig(cr.vehicle_configuration_id) : undefined}>
                   {cr.truck_bus_ind === "TRUCK"
                     ? "Truck"
                     : cr.truck_bus_ind === "BUS"
                       ? "Bus"
                       : cr.truck_bus_ind ?? "—"}
                   {cr.vehicle_configuration_id && (
-                    <span className="ml-1 text-slate-600">
+                    <span className="ml-1 text-gray-400">
                       ({decodeVehicleConfig(cr.vehicle_configuration_id)})
                     </span>
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {parseInt(cr.fatalities ?? "0", 10) > 0 ? (
-                    <span className="text-rose-400">{cr.fatalities}</span>
+                    <span className="text-rose-600">{cr.fatalities}</span>
                   ) : (
                     "0"
                   )}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {parseInt(cr.injuries ?? "0", 10) > 0 ? (
-                    <span className="text-amber-400">{cr.injuries}</span>
+                    <span className="text-amber-600">{cr.injuries}</span>
                   ) : (
                     "0"
                   )}
@@ -857,13 +852,13 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                 </td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.federal_recordable === "Y" ? (
-                    <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-300">
+                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">
                       Yes
                     </span>
                   ) : cr.federal_recordable === "N" ? (
-                    <span className="text-slate-600">No</span>
+                    <span className="text-gray-400">No</span>
                   ) : (
-                    <span className="text-slate-600">—</span>
+                    <span className="text-gray-400">—</span>
                   )}
                 </td>
               </tr>
@@ -887,13 +882,13 @@ function Stat({
   warn?: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900/70">
-      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-blue-500"}`} />
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-indigo-500"}`} />
       <div className="px-4 py-2">
-        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-xs text-gray-500">{label}</p>
         <p
           className={`text-xl font-semibold ${
-            warn ? "text-rose-400" : "text-slate-100"
+            warn ? "text-rose-600" : "text-gray-900"
           }`}
         >
           {value}

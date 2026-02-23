@@ -70,24 +70,24 @@ export function OnboardingForm({ initialEmail }: { initialEmail: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-      <p className="text-sm text-slate-300">Signed in as {initialEmail}</p>
-      <label className="block text-sm text-slate-100">
+    <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <p className="text-sm text-gray-500">Signed in as {initialEmail}</p>
+      <label className="block text-sm text-gray-700">
         Company Name
         <input
           required
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 outline-none ring-blue-500 focus:ring"
+          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
         />
       </label>
-      <label className="block text-sm text-slate-100">
+      <label className="block text-sm text-gray-700">
         USDOT Number
         <input
           required
           value={usdotNumber}
           onChange={(e) => setUsdotNumber(e.target.value.replace(/\D/g, ""))}
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 outline-none ring-blue-500 focus:ring"
+          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
         />
       </label>
       <div className="flex gap-3">
@@ -95,25 +95,25 @@ export function OnboardingForm({ initialEmail }: { initialEmail: string }) {
           type="button"
           onClick={validateUsdDot}
           disabled={validating || !usdotNumber}
-          className="rounded-lg border border-blue-400/40 px-4 py-2 text-sm text-blue-200 disabled:opacity-60"
+          className="rounded-lg border border-indigo-200 px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
         >
           {validating ? "Validating..." : "Validate USDOT"}
         </button>
         <button
           type="submit"
           disabled={loading || !companyName || !usdotNumber}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
         >
           {loading ? "Saving..." : "Finish onboarding"}
         </button>
       </div>
       {carrierName ? (
-        <p className="rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
           FMCSA match found: {carrierName}
         </p>
       ) : null}
       {error ? (
-        <p className="rounded-lg border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
           {error}
         </p>
       ) : null}

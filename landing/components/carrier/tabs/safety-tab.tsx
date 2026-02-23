@@ -43,12 +43,12 @@ function BasicGauges({
 }) {
   if (!basicsAvailable) {
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
           BASIC Safety Scores
         </h3>
-        <p className="text-sm text-slate-500 tracking-wide">
+        <p className="text-sm text-gray-400 tracking-wide">
           Safety scores unavailable &mdash; FMCSA WEBKEY not configured
         </p>
       </div>
@@ -57,12 +57,12 @@ function BasicGauges({
 
   if (scores.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
           BASIC Safety Scores
         </h3>
-        <p className="text-sm text-slate-500 tracking-wide">
+        <p className="text-sm text-gray-400 tracking-wide">
           No BASIC scores available for this carrier.
         </p>
       </div>
@@ -72,13 +72,13 @@ function BasicGauges({
   const hasAlert = scores.some((s) => s.rdDeficient);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
         BASIC Safety Scores
       </h3>
       {hasAlert && (
-        <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
           One or more BASICs exceed the intervention threshold
         </div>
       )}
@@ -94,32 +94,32 @@ function BasicGauges({
             <div key={s.code || s.name}>
               <div className="flex items-center justify-between text-xs mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-200 font-medium">{s.name}</span>
+                  <span className="text-gray-700 font-medium">{s.name}</span>
                   {s.rdDeficient && (
-                    <span className="rounded-full bg-rose-500/20 px-1.5 py-0.5 text-[10px] font-medium text-rose-300">
+                    <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
                       ALERT
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-slate-400">
+                <div className="flex items-center gap-3 text-gray-500">
                   <span>{s.totalViolations} violations</span>
                   <span>{s.totalInspections} inspections</span>
                   {s.serious > 0 && (
-                    <span className="text-rose-400">{s.serious} serious</span>
+                    <span className="text-rose-600">{s.serious} serious</span>
                   )}
-                  <span className={`font-semibold ${s.rdDeficient ? "text-rose-400" : "text-slate-100"}`}>
+                  <span className={`font-semibold ${s.rdDeficient ? "text-rose-600" : "text-gray-900"}`}>
                     {s.percentile}%
                   </span>
                 </div>
               </div>
-              <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-3 overflow-hidden rounded-full bg-gray-200">
                 <div
                   className={`h-full rounded-full ${color} transition-all`}
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
                 />
               </div>
               {s.measureValue > 0 && (
-                <p className="mt-0.5 text-[10px] text-slate-500">
+                <p className="mt-0.5 text-[10px] text-gray-400">
                   Measure value: {s.measureValue.toFixed(2)}
                 </p>
               )}
@@ -136,12 +136,12 @@ function BasicGauges({
 function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] }) {
   if (inspections.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Violation Breakdown
         </h3>
-        <p className="text-sm text-slate-500 tracking-wide">No inspection records found.</p>
+        <p className="text-sm text-gray-400 tracking-wide">No inspection records found.</p>
       </div>
     );
   }
@@ -175,8 +175,8 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
   const topCat = categories[0]?.name ?? "N/A";
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
         Violation Breakdown
       </h3>
@@ -190,16 +190,16 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
           {categories.map(({ name, total, oos }) => (
             <div key={name}>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-slate-300">{name}</span>
-                <div className="flex items-center gap-2 text-slate-400">
+                <span className="text-gray-700">{name}</span>
+                <div className="flex items-center gap-2 text-gray-500">
                   <span>{total} total</span>
-                  {oos > 0 && <span className="text-rose-400">{oos} OOS</span>}
+                  {oos > 0 && <span className="text-rose-600">{oos} OOS</span>}
                 </div>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
                 <div className="flex h-full">
                   <div
-                    className="h-full rounded-l-full bg-blue-500 transition-all"
+                    className="h-full rounded-l-full bg-indigo-500 transition-all"
                     style={{ width: `${((total - oos) / maxCount) * 100}%` }}
                   />
                   {oos > 0 && (
@@ -284,21 +284,21 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
         d3.axisLeft(yScale).tickSize(-innerW).tickFormat(() => "")
       )
       .call((sel) => sel.select(".domain").remove())
-      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#1e293b").attr("stroke-dasharray", "2,2"));
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#e5e7eb").attr("stroke-dasharray", "2,2"));
 
     // X axis
     g.append("g")
       .attr("transform", `translate(0,${innerH})`)
       .call(d3.axisBottom(xScale).ticks(6).tickFormat((d) => d3.timeFormat("%b '%y")(d as Date)))
-      .call((sel) => sel.select(".domain").attr("stroke", "#334155"))
-      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
-      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#334155"));
+      .call((sel) => sel.select(".domain").attr("stroke", "#d1d5db"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#6b7280").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#d1d5db"));
 
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale).ticks(5))
       .call((sel) => sel.select(".domain").remove())
-      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#6b7280").attr("font-size", "10px"))
       .call((sel) => sel.selectAll(".tick line").remove());
 
     // Lines
@@ -315,7 +315,7 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
     g.append("path")
       .datum(grouped)
       .attr("fill", "none")
-      .attr("stroke", "#3b82f6")
+      .attr("stroke", "#4f46e5")
       .attr("stroke-width", 2)
       .attr("d", violationLine);
 
@@ -334,7 +334,7 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
       .attr("cx", (d) => xScale(d.date))
       .attr("cy", (d) => yScale(d.violations))
       .attr("r", 3)
-      .attr("fill", "#3b82f6");
+      .attr("fill", "#4f46e5");
 
     g.selectAll(".dot-oos")
       .data(grouped)
@@ -347,16 +347,16 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
 
     // Legend
     const legend = g.append("g").attr("transform", `translate(${innerW - 140}, -10)`);
-    legend.append("line").attr("x1", 0).attr("x2", 16).attr("y1", 4).attr("y2", 4).attr("stroke", "#3b82f6").attr("stroke-width", 2);
-    legend.append("text").attr("x", 20).attr("y", 8).text("Violations").attr("fill", "#94a3b8").attr("font-size", "10px");
+    legend.append("line").attr("x1", 0).attr("x2", 16).attr("y1", 4).attr("y2", 4).attr("stroke", "#4f46e5").attr("stroke-width", 2);
+    legend.append("text").attr("x", 20).attr("y", 8).text("Violations").attr("fill", "#6b7280").attr("font-size", "10px");
     legend.append("line").attr("x1", 80).attr("x2", 96).attr("y1", 4).attr("y2", 4).attr("stroke", "#ef4444").attr("stroke-width", 2);
-    legend.append("text").attr("x", 100).attr("y", 8).text("OOS").attr("fill", "#94a3b8").attr("font-size", "10px");
+    legend.append("text").attr("x", 100).attr("y", 8).text("OOS").attr("fill", "#6b7280").attr("font-size", "10px");
   }, [inspections]);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
         Violation Trend ({dateRangeLabel})
       </h3>
       <div className="w-full overflow-x-auto">
@@ -421,21 +421,21 @@ function OosRateTrendChart({ inspections }: { inspections: SocrataInspection[] }
     g.append("g")
       .call(d3.axisLeft(yScale).tickSize(-innerW).tickFormat(() => ""))
       .call((sel) => sel.select(".domain").remove())
-      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#1e293b").attr("stroke-dasharray", "2,2"));
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#e5e7eb").attr("stroke-dasharray", "2,2"));
 
     // X axis
     g.append("g")
       .attr("transform", `translate(0,${innerH})`)
       .call(d3.axisBottom(xScale).ticks(6).tickFormat((d) => d3.timeFormat("%b '%y")(d as Date)))
-      .call((sel) => sel.select(".domain").attr("stroke", "#334155"))
-      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
-      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#334155"));
+      .call((sel) => sel.select(".domain").attr("stroke", "#d1d5db"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#6b7280").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#d1d5db"));
 
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale).ticks(5).tickFormat((d) => `${d}%`))
       .call((sel) => sel.select(".domain").remove())
-      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#6b7280").attr("font-size", "10px"))
       .call((sel) => sel.selectAll(".tick line").remove());
 
     // Line
@@ -463,9 +463,9 @@ function OosRateTrendChart({ inspections }: { inspections: SocrataInspection[] }
   }, [inspections]);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
         OOS Rate Trend (Monthly %)
       </h3>
       <div className="w-full overflow-x-auto">

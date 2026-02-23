@@ -19,11 +19,11 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-gray-50 text-gray-900">
       <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-blue-300">Onboarding</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-indigo-600">Onboarding</p>
         <h1 className="mt-3 text-3xl font-semibold">Complete customer setup</h1>
-        <p className="mt-2 text-slate-300">
+        <p className="mt-2 text-gray-500">
           We validate your USDOT against FMCSA before unlocking the dashboard.
         </p>
         <OnboardingForm initialEmail={session.user.email} />

@@ -51,18 +51,18 @@ export function SignupForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/70 p-5">
-      <label className="block text-sm font-medium text-slate-200">
+    <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <label className="block text-sm font-medium text-gray-700">
         Work Email
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none ring-blue-500 focus:ring"
+          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
         />
       </label>
-      <label className="block text-sm font-medium text-slate-200">
+      <label className="block text-sm font-medium text-gray-700">
         Password
         <input
           type="password"
@@ -70,23 +70,23 @@ export function SignupForm() {
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none ring-blue-500 focus:ring"
+          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
         />
       </label>
       {error ? (
-        <div className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
           {error}
         </div>
       ) : null}
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70"
+        className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading ? "Creating account..." : "Create account"}
       </button>
-      <p className="text-sm text-slate-300">
-        Already registered? <Link href="/login" className="text-blue-300 underline">Sign in</Link>
+      <p className="text-sm text-gray-500">
+        Already registered? <Link href="/login" className="text-indigo-600 underline">Sign in</Link>
       </p>
     </form>
   );

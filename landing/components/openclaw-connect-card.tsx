@@ -35,23 +35,23 @@ export function OpenClawConnectCard() {
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-      <h3 className="text-lg font-semibold text-white">Connect OpenClaw</h3>
-      <p className="mt-2 text-sm text-slate-300">
+    <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <h3 className="text-lg font-semibold text-gray-900">Connect OpenClaw</h3>
+      <p className="mt-2 text-sm text-gray-500">
         Generate a customer-scoped token to allow OpenClaw to call FleetSight carrier endpoints.
       </p>
       <button
         onClick={connect}
         disabled={loading}
-        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
       >
         {loading ? "Generating token..." : "Connect OpenClaw"}
       </button>
 
-      {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
+      {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
 
       {tokenData ? (
-        <div className="mt-4 space-y-2 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-3 text-sm text-emerald-100">
+        <div className="mt-4 space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
           <p><span className="font-semibold">Token:</span> {tokenData.token}</p>
           <p><span className="font-semibold">Scope:</span> {tokenData.scope}</p>
           <p><span className="font-semibold">Expires:</span> {new Date(tokenData.expiresAt).toLocaleString()}</p>

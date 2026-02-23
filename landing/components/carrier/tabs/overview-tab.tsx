@@ -50,9 +50,9 @@ export function OverviewTab({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Company Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
           Company Info
         </h3>
         <dl className="space-y-2 text-sm">
@@ -86,8 +86,8 @@ export function OverviewTab({
           )}
           {c.mcs150_date && (
             <div className="flex justify-between gap-4">
-              <dt className="shrink-0 text-slate-400">MCS-150 Date</dt>
-              <dd className="flex items-center gap-2 text-right text-slate-100">
+              <dt className="shrink-0 text-gray-500">MCS-150 Date</dt>
+              <dd className="flex items-center gap-2 text-right text-gray-900">
                 {new Date(c.mcs150_date).toLocaleDateString()}
                 {mcs150Staleness && (
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${mcs150Staleness.className}`}>
@@ -107,21 +107,21 @@ export function OverviewTab({
       </div>
 
       {/* SAFER Stats */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
           SAFER Stats
         </h3>
         {/* Interstate/Intrastate/HazMat badges */}
         <div className="mb-3 flex flex-wrap gap-1.5">
           {c.interstate === "Y" && (
-            <span className="rounded-full bg-blue-500/20 px-2.5 py-0.5 text-[10px] font-medium text-blue-300">Interstate</span>
+            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-indigo-600/20">Interstate</span>
           )}
           {c.intrastate === "Y" && (
-            <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-medium text-purple-300">Intrastate</span>
+            <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-purple-600/20">Intrastate</span>
           )}
           {c.hm_ind === "Y" && (
-            <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-300">HazMat</span>
+            <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-600/20">HazMat</span>
           )}
         </div>
         <dl className="space-y-2 text-sm">
@@ -188,8 +188,8 @@ export function OverviewTab({
       />
 
       {/* Authority Info */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Authority &amp; Operating Status
         </h3>
@@ -208,12 +208,12 @@ function computeMcs150Staleness(mcs150Date?: string) {
   const monthsAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
 
   if (monthsAgo > 36) {
-    return { label: "Overdue", className: "bg-rose-500/20 text-rose-300" };
+    return { label: "Overdue", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20" };
   }
   if (monthsAgo > 24) {
-    return { label: "Due for Update", className: "bg-amber-500/20 text-amber-300" };
+    return { label: "Due for Update", className: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20" };
   }
-  return { label: "Current", className: "bg-emerald-500/20 text-emerald-300" };
+  return { label: "Current", className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" };
 }
 
 /* ── BASIC Scores Summary Card ────────────────────────────────── */
@@ -229,13 +229,13 @@ function BasicScoresSummary({
   const top3 = scores.slice(0, 3);
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
         BASIC Safety Scores
       </h3>
       {hasAlert && (
-        <div className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
+        <div className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
           One or more BASICs exceed the intervention threshold
         </div>
       )}
@@ -250,12 +250,12 @@ function BasicScoresSummary({
           return (
             <div key={s.code || s.name}>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-300">{s.name}</span>
-                <span className={`font-medium ${s.rdDeficient ? "text-rose-400" : "text-slate-100"}`}>
+                <span className="text-gray-700">{s.name}</span>
+                <span className={`font-medium ${s.rdDeficient ? "text-rose-600" : "text-gray-900"}`}>
                   {s.percentile}%
                 </span>
               </div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-200">
                 <div
                   className={`h-full rounded-full ${color} transition-all`}
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
@@ -267,7 +267,7 @@ function BasicScoresSummary({
       </div>
       <button
         onClick={onViewAll}
-        className="mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+        className="mt-3 text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
       >
         View all safety scores &rarr;
       </button>
@@ -306,11 +306,11 @@ function PeerBenchmarkCard({
   ];
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
         Peer Comparison
-        <span className="ml-auto text-[10px] font-normal normal-case text-slate-600">
+        <span className="ml-auto text-[10px] font-normal normal-case text-gray-400">
           vs {benchmark.carrierCount.toLocaleString()} similar-sized carriers
         </span>
       </h3>
@@ -319,12 +319,12 @@ function PeerBenchmarkCard({
           const above = m.carrier > m.avg;
           return (
             <div key={m.label} className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">{m.label}</span>
+              <span className="text-gray-500">{m.label}</span>
               <div className="flex items-center gap-2">
-                <span className="text-slate-100 font-medium">{m.format(m.carrier)}</span>
-                <span className="text-slate-600">vs</span>
-                <span className="text-slate-400">{m.format(m.avg)} avg</span>
-                <span className={above ? "text-emerald-400" : "text-rose-400"}>
+                <span className="text-gray-900 font-medium">{m.format(m.carrier)}</span>
+                <span className="text-gray-400">vs</span>
+                <span className="text-gray-500">{m.format(m.avg)} avg</span>
+                <span className={above ? "text-emerald-600" : "text-rose-600"}>
                   {above ? "\u2191" : "\u2193"}
                 </span>
               </div>
@@ -400,39 +400,39 @@ function CarrierTimeline({
   }
 
   const typeConfig: Record<string, { color: string; dot: string }> = {
-    inspection: { color: "text-blue-400", dot: "bg-blue-400" },
-    crash: { color: "text-rose-400", dot: "bg-rose-400" },
-    authority: { color: "text-emerald-400", dot: "bg-emerald-400" },
-    insurance: { color: "text-amber-400", dot: "bg-amber-400" },
+    inspection: { color: "text-indigo-600", dot: "bg-indigo-600" },
+    crash: { color: "text-rose-600", dot: "bg-rose-600" },
+    authority: { color: "text-emerald-600", dot: "bg-emerald-600" },
+    insurance: { color: "text-amber-600", dot: "bg-amber-600" },
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel md:col-span-2">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-400" />
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
         Carrier Timeline
-        <span className="ml-auto text-[10px] font-normal normal-case text-slate-600">
+        <span className="ml-auto text-[10px] font-normal normal-case text-gray-400">
           Latest {latest.length} events
         </span>
       </h3>
-      <div className="relative ml-3 border-l border-slate-700 pl-6 space-y-3 max-h-[24rem] overflow-y-auto">
+      <div className="relative ml-3 border-l border-gray-300 pl-6 space-y-3 max-h-[24rem] overflow-y-auto">
         {latest.map((ev, i) => {
           const cfg = typeConfig[ev.type];
           const severityText =
             ev.severity === "critical"
-              ? "text-rose-400"
+              ? "text-rose-600"
               : ev.severity === "warn"
-                ? "text-amber-400"
-                : "text-slate-300";
+                ? "text-amber-600"
+                : "text-gray-700";
 
           return (
             <div key={i} className="relative">
               <div
-                className={`absolute -left-[1.85rem] top-1 h-2.5 w-2.5 rounded-full ${cfg.dot} ring-2 ring-slate-900`}
+                className={`absolute -left-[1.85rem] top-1 h-2.5 w-2.5 rounded-full ${cfg.dot} ring-2 ring-white`}
               />
               <div className="text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500 whitespace-nowrap">
+                  <span className="text-gray-400 whitespace-nowrap">
                     {ev.date.toLocaleDateString()}
                   </span>
                   <span className={`text-[10px] font-semibold uppercase tracking-wider ${cfg.color}`}>
@@ -486,8 +486,8 @@ function StateDistribution({
   const maxTotal = sorted[0]?.total ?? 1;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
         Geographic Distribution
       </h3>
@@ -495,13 +495,13 @@ function StateDistribution({
         {sorted.map(({ state, inspections: insp, crashes: cr, total }) => (
           <div key={state}>
             <div className="flex justify-between text-xs mb-0.5">
-              <span className="text-slate-200 font-medium">{state}</span>
-              <span className="text-slate-400">{total}</span>
+              <span className="text-gray-700 font-medium">{state}</span>
+              <span className="text-gray-400">{total}</span>
             </div>
-            <div className="flex h-1.5 overflow-hidden rounded-full bg-slate-800">
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-gray-200">
               {insp > 0 && (
                 <div
-                  className="h-full bg-blue-500"
+                  className="h-full bg-indigo-500"
                   style={{ width: `${(insp / maxTotal) * 100}%` }}
                 />
               )}
@@ -515,9 +515,9 @@ function StateDistribution({
           </div>
         ))}
       </div>
-      <div className="mt-3 flex items-center gap-4 text-[10px] text-slate-500">
+      <div className="mt-3 flex items-center gap-4 text-[10px] text-gray-400">
         <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-blue-500" />
+          <span className="h-2 w-2 rounded-full bg-indigo-500" />
           Inspections
         </div>
         <div className="flex items-center gap-1.5">
@@ -543,7 +543,7 @@ function AuthoritySection({
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
     return (
-      <p className="text-sm text-slate-500 tracking-wide">
+      <p className="text-sm text-gray-400 tracking-wide">
         Authority data not available. Ensure FMCSA_WEBKEY is configured to
         retrieve operating authority details.
       </p>
@@ -554,9 +554,9 @@ function AuthoritySection({
     <div className="space-y-4">
       {authorityRecords.length > 0 && (
         <div className="max-h-[32rem] overflow-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="sticky top-0 bg-slate-900">
-              <tr className="border-b border-slate-700 text-slate-400">
+          <table className="w-full text-left text-xs text-gray-700">
+            <thead className="sticky top-0 bg-gray-50">
+              <tr className="border-b border-gray-200 text-gray-500">
                 <th className="px-3 py-2">Authority Type</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Granted Date</th>
@@ -567,7 +567,7 @@ function AuthoritySection({
               {authorityRecords.map((a, i) => (
                 <tr
                   key={i}
-                  className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                  className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
                 >
                   <td className="px-3 py-2">
                     {str(a.authorityType) || str(a.authTypDesc) || "\u2014"}
@@ -576,8 +576,8 @@ function AuthoritySection({
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : "bg-rose-500/20 text-rose-300"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                          : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                       }`}
                     >
                       {str(a.authStatusDesc) || str(a.authStatus) || "\u2014"}
@@ -602,13 +602,13 @@ function AuthoritySection({
 
       {oosRecords.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
             Out-of-Service Orders
           </h4>
           <div className="max-h-[32rem] overflow-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="sticky top-0 bg-slate-900">
-                <tr className="border-b border-slate-700 text-slate-400">
+            <table className="w-full text-left text-xs text-gray-700">
+              <thead className="sticky top-0 bg-gray-50">
+                <tr className="border-b border-gray-200 text-gray-500">
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Effective Date</th>
                   <th className="px-3 py-2">Reason</th>
@@ -618,7 +618,7 @@ function AuthoritySection({
                 {oosRecords.map((o, i) => (
                   <tr
                     key={i}
-                    className="border-b border-slate-800/50 transition hover:bg-slate-800/30 even:bg-slate-900/30"
+                    className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
                   >
                     <td className="px-3 py-2">
                       {str(o.oosType) || str(o.oosTypeDesc) || "\u2014"}
@@ -630,7 +630,7 @@ function AuthoritySection({
                           ).toLocaleDateString()
                         : "\u2014"}
                     </td>
-                    <td className="px-3 py-2 text-slate-400">
+                    <td className="px-3 py-2 text-gray-400">
                       {str(o.oosReason) || str(o.oosReasonDesc) || "\u2014"}
                     </td>
                   </tr>
