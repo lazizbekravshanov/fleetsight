@@ -78,4 +78,33 @@ export type CarrierDetail = {
   peerBenchmark: PeerBenchmark | null;
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection";
+
+export type AnomalyFlag = {
+  id: string;
+  severity: "critical" | "high" | "medium" | "low";
+  label: string;
+  detail: string;
+};
+
+export type DetectionData = {
+  anomalyFlags: AnomalyFlag[];
+  authorityMill: {
+    grantCount: number;
+    revokeCount: number;
+    avgDaysBetween: number;
+    isMillPattern: boolean;
+  };
+  brokerReincarnation: {
+    priorDot: number | null;
+    addressMatch: boolean;
+    phoneMatch: boolean;
+    officerMatch: boolean;
+    isReincarnation: boolean;
+  };
+  sharedInsurance: {
+    policyNumber: string;
+    insurerName: string;
+    matchingDots: number[];
+  }[];
+};

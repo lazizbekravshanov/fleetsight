@@ -10,7 +10,8 @@ import { InspectionsTab } from "./tabs/inspections-tab";
 import { CrashesTab } from "./tabs/crashes-tab";
 import { InsuranceTab } from "./tabs/insurance-tab";
 import { FleetTab } from "./tabs/fleet-tab";
-import type { CarrierDetail, Tab, FleetData } from "./types";
+import { DetectionTab } from "./tabs/detection-tab";
+import type { CarrierDetail, Tab, FleetData, DetectionData } from "./types";
 
 export function CarrierDetailView({
   detail,
@@ -44,6 +45,26 @@ export function CarrierDetailView({
       .finally(() => setFleetLoading(false));
   }, [activeTab, c.dot_number, fleetData, fleetLoading]);
 
+  // Lazy detection state
+  const [detectionData, setDetectionData] = useState<DetectionData | null>(null);
+  const [detectionLoading, setDetectionLoading] = useState(false);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== "detection" || detectionData || detectionLoading) return;
+
+    setDetectionLoading(true);
+    setDetectionError(null);
+    fetch(`/api/chameleon/carriers/${c.dot_number}/signals`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Detection returned ${res.status}`);
+        return res.json();
+      })
+      .then((data: DetectionData) => setDetectionData(data))
+      .catch(() => setDetectionError("Failed to load detection signals."))
+      .finally(() => setDetectionLoading(false));
+  }, [activeTab, c.dot_number, detectionData, detectionLoading]);
+
   // Compute OOS total for overview peer benchmark
   const oosTotal = detail.inspections.reduce(
     (s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0),
@@ -57,6 +78,7 @@ export function CarrierDetailView({
     { key: "crashes", label: "Crashes", count: detail.crashes.length, group: "ops" },
     { key: "insurance", label: "Insurance", group: "compliance" },
     { key: "fleet", label: "Fleet", group: "compliance" },
+    { key: "detection", label: "Detection", group: "compliance" },
   ];
 
   return (
@@ -169,6 +191,13 @@ export function CarrierDetailView({
               data={fleetData}
               loading={fleetLoading}
               error={fleetError}
+            />
+          )}
+          {activeTab === "detection" && (
+            <DetectionTab
+              data={detectionData}
+              loading={detectionLoading}
+              error={detectionError}
             />
           )}
         </motion.div>

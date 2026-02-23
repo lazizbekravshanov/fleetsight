@@ -38,16 +38,16 @@ export default async function DashboardPage() {
           <CarrierSnapshot usdotNumber={user.profile.usdotNumber} />
           <OpenClawConnectCard />
           <Link
-            href="/chameleon"
+            href="/"
             className="group rounded-xl border border-slate-800 bg-slate-900/70 p-5 transition hover:border-blue-500/40 hover:bg-slate-900"
           >
-            <h3 className="text-lg font-semibold text-white">Chameleon Detection</h3>
+            <h3 className="text-lg font-semibold text-white">Carrier Detection</h3>
             <p className="mt-2 text-sm text-slate-400">
               Detect reincarnated carriers using shared addresses, phones, officers,
               VINs, and prior-revocation links from FMCSA data.
             </p>
             <p className="mt-3 text-sm font-medium text-blue-400 transition group-hover:text-blue-300">
-              View dashboard &rarr;
+              Search carriers &rarr;
             </p>
           </Link>
         </div>
