@@ -3,11 +3,14 @@ const BASE_URL = "https://data.transportation.gov/resource";
 const CENSUS_RESOURCE = "az4n-8mr2";
 const INSPECTION_RESOURCE = "fx4q-ay7w";
 const CRASH_RESOURCE = "aayw-vxb3";
-const INSURANCE_RESOURCE = "qh9u-swkp";
-const VIOLATION_RESOURCE = "876r-jsdb";
-const AUTH_HIST_RESOURCE = "9mw4-x3tu";
-const COMPLAINT_RESOURCE = "r6z9-e9sk";
-const FLEET_UNIT_RESOURCE = "wt8s-2hbx";
+const INSURANCE_RESOURCE = "qh9u-swkp";   // dot_number is 8-char zero-padded
+const AUTH_HIST_RESOURCE = "9mw4-x3tu";    // dot_number is 8-char zero-padded
+const FLEET_UNIT_RESOURCE = "wt8s-2hbx";   // joined via inspection_id (no dot_number)
+
+/** Zero-pad DOT number to 8 characters for datasets that use that format */
+function padDot(dotNumber: number): string {
+  return String(dotNumber).padStart(8, "0");
+}
 
 export type SocrataCarrier = {
   dot_number: string;
@@ -181,52 +184,40 @@ export async function getCrashesByDot(
 
 export type SocrataInsurance = {
   dot_number: string;
-  ins_type?: string;
-  status?: string;
-  coverage_value?: string;
-  coverage_type?: string;
-  insurer_name?: string;
-  policy_effective_date?: string;
-  policy_cancellation_date?: string;
-  form_type?: string;
-};
-
-export type SocrataViolation = {
-  dot_number: string;
-  insp_date?: string;
-  basic_code_desc?: string;
-  group_desc?: string;
-  violation_code?: string;
-  violation_desc?: string;
-  oos_indicator?: string;
-  unit_type?: string;
-  severity_weight?: string;
+  docket_number?: string;
+  ins_form_code?: string;
+  mod_col_1?: string;         // type: "SURETY", "BIPD LIABILITY", etc.
+  name_company?: string;      // insurer name
+  policy_no?: string;
+  trans_date?: string;
+  underl_lim_amount?: string;
+  max_cov_amount?: string;
+  effective_date?: string;
 };
 
 export type SocrataAuthorityHistory = {
   dot_number: string;
-  auth_type_desc?: string;
-  auth_action_desc?: string;
-  action_date?: string;
   docket_number?: string;
-  auth_status?: string;
-};
-
-export type SocrataComplaint = {
-  dot_number: string;
-  complaint_date?: string;
-  complaint_category?: string;
-  status?: string;
-  complaint_text?: string;
+  sub_number?: string;
+  mod_col_1?: string;              // auth type: "MOTOR PROPERTY COMMON CARRIER" etc.
+  original_action_desc?: string;   // "GRANTED"
+  orig_served_date?: string;
+  disp_action_desc?: string;       // "REVOKED", "SUSPENDED" etc.
+  disp_decided_date?: string;
+  disp_served_date?: string;
 };
 
 export type SocrataFleetUnit = {
-  dot_number: string;
-  vin?: string;
-  unit_type?: string;
-  unit_make?: string;
-  unit_year?: string;
-  unit_type_desc?: string;
+  inspection_id: string;
+  insp_unit_id?: string;
+  insp_unit_type_id?: string;
+  insp_unit_number?: string;
+  insp_unit_make?: string;
+  insp_unit_company?: string;
+  insp_unit_license?: string;
+  insp_unit_license_state?: string;
+  insp_unit_vehicle_id_number?: string;  // VIN
+  insp_unit_decal?: string;
 };
 
 /* ── New Socrata Fetch Functions ──────────────────────────────── */
@@ -236,19 +227,7 @@ export async function getInsuranceByDot(
   limit = 50
 ): Promise<SocrataInsurance[]> {
   return socrataFetch<SocrataInsurance>(INSURANCE_RESOURCE, {
-    $where: `dot_number='${dotNumber}'`,
-    $order: "policy_effective_date DESC",
-    $limit: String(limit),
-  });
-}
-
-export async function getViolationsByDot(
-  dotNumber: number,
-  limit = 200
-): Promise<SocrataViolation[]> {
-  return socrataFetch<SocrataViolation>(VIOLATION_RESOURCE, {
-    $where: `dot_number='${dotNumber}'`,
-    $order: "insp_date DESC",
+    $where: `dot_number='${padDot(dotNumber)}'`,
     $limit: String(limit),
   });
 }
@@ -258,31 +237,34 @@ export async function getAuthorityHistoryByDot(
   limit = 50
 ): Promise<SocrataAuthorityHistory[]> {
   return socrataFetch<SocrataAuthorityHistory>(AUTH_HIST_RESOURCE, {
-    $where: `dot_number='${dotNumber}'`,
-    $order: "action_date DESC",
+    $where: `dot_number='${padDot(dotNumber)}'`,
     $limit: String(limit),
   });
 }
 
-export async function getComplaintsByDot(
-  dotNumber: number,
-  limit = 100
-): Promise<SocrataComplaint[]> {
-  return socrataFetch<SocrataComplaint>(COMPLAINT_RESOURCE, {
-    $where: `dot_number='${dotNumber}'`,
-    $order: "complaint_date DESC",
-    $limit: String(limit),
-  });
-}
-
-export async function getFleetUnitsByDot(
-  dotNumber: number,
+/**
+ * Get fleet units by inspection IDs (joined from inspections dataset).
+ * The fleet units dataset has no dot_number — we look up by inspection_id.
+ */
+export async function getFleetUnitsByInspectionIds(
+  inspectionIds: string[],
   limit = 200
 ): Promise<SocrataFleetUnit[]> {
-  return socrataFetch<SocrataFleetUnit>(FLEET_UNIT_RESOURCE, {
-    $where: `dot_number='${dotNumber}'`,
-    $limit: String(limit),
-  });
+  if (inspectionIds.length === 0) return [];
+
+  // Batch into groups of 20 inspection_ids to keep URL reasonable
+  const batchSize = 20;
+  const results: SocrataFleetUnit[] = [];
+  for (let i = 0; i < inspectionIds.length && results.length < limit; i += batchSize) {
+    const batch = inspectionIds.slice(i, i + batchSize);
+    const inClause = batch.map((id) => `'${id}'`).join(",");
+    const batchResults = await socrataFetch<SocrataFleetUnit>(FLEET_UNIT_RESOURCE, {
+      $where: `inspection_id in(${inClause})`,
+      $limit: String(limit - results.length),
+    });
+    results.push(...batchResults);
+  }
+  return results;
 }
 
 export async function getPeerBenchmark(

@@ -1,4 +1,4 @@
-import type { SocrataCarrier, SocrataInspection, SocrataCrash, SocrataInsurance, SocrataViolation, SocrataAuthorityHistory, SocrataComplaint } from "@/lib/socrata";
+import type { SocrataCarrier, SocrataInspection, SocrataCrash, SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
 
 export type SearchResult = {
   dotNumber: number;
@@ -30,18 +30,19 @@ export type PeerBenchmark = {
 };
 
 export type FleetData = {
-  units: SocrataFleetUnit[];
+  units: FleetUnit[];
   decodedVehicles: NhtsaDecodedVin[];
   recalls: NhtsaRecall[];
 };
 
-export type SocrataFleetUnit = {
-  dot_number: string;
-  vin?: string;
-  unit_type?: string;
-  unit_make?: string;
-  unit_year?: string;
-  unit_type_desc?: string;
+export type FleetUnit = {
+  inspection_id: string;
+  insp_unit_id?: string;
+  insp_unit_type_id?: string;
+  insp_unit_make?: string;
+  insp_unit_vehicle_id_number?: string;
+  insp_unit_license?: string;
+  insp_unit_license_state?: string;
 };
 
 export type NhtsaDecodedVin = {
@@ -73,9 +74,7 @@ export type CarrierDetail = {
   authority: unknown;
   oos: unknown;
   insurance: SocrataInsurance[];
-  violations: SocrataViolation[];
   authorityHistory: SocrataAuthorityHistory[];
-  complaints: SocrataComplaint[];
   peerBenchmark: PeerBenchmark | null;
 };
 

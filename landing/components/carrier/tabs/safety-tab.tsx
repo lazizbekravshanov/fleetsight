@@ -2,17 +2,15 @@
 
 import { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import type { SocrataInspection, SocrataViolation } from "@/lib/socrata";
+import type { SocrataInspection } from "@/lib/socrata";
 import { Stat, parseBasics } from "../shared";
 import type { BasicScore } from "../types";
 
 export function SafetyTab({
   basics,
-  violations,
   inspections,
 }: {
   basics: unknown;
-  violations: SocrataViolation[];
   inspections: SocrataInspection[];
 }) {
   const scores = parseBasics(basics);
@@ -22,8 +20,8 @@ export function SafetyTab({
       {/* BASIC Score Gauges */}
       <BasicGauges scores={scores} basicsAvailable={basics !== null} />
 
-      {/* Violation Breakdown */}
-      <ViolationBreakdown violations={violations} />
+      {/* Violation Breakdown (derived from inspections) */}
+      <ViolationBreakdown inspections={inspections} />
 
       {/* Violation Trend Chart */}
       {inspections.length > 0 && <ViolationTrendChart inspections={inspections} />}
@@ -122,34 +120,48 @@ function BasicGauges({
   );
 }
 
-/* ── Violation Breakdown ──────────────────────────────────────── */
+/* ── Violation Breakdown (derived from inspections) ───────────── */
 
-function ViolationBreakdown({ violations }: { violations: SocrataViolation[] }) {
-  if (violations.length === 0) {
+function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] }) {
+  if (inspections.length === 0) {
     return (
       <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-slate-400">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Violation Breakdown
         </h3>
-        <p className="text-sm text-slate-500 tracking-wide">No violation records found.</p>
+        <p className="text-sm text-slate-500 tracking-wide">No inspection records found.</p>
       </div>
     );
   }
 
-  // Group by basic_code_desc
-  const groups = new Map<string, { total: number; oos: number }>();
-  for (const v of violations) {
-    const cat = v.basic_code_desc || v.group_desc || "Other";
-    const existing = groups.get(cat) || { total: 0, oos: 0 };
-    existing.total += 1;
-    if (v.oos_indicator === "Y") existing.oos += 1;
-    groups.set(cat, existing);
+  // Derive violation breakdown from inspection category totals
+  const categories: { name: string; total: number; oos: number }[] = [];
+
+  const driverViols = inspections.reduce((s, i) => s + (parseInt(i.driver_viol_total ?? "0", 10) || 0), 0);
+  const driverOos = inspections.reduce((s, i) => s + (parseInt(i.driver_oos_total ?? "0", 10) || 0), 0);
+  const vehicleViols = inspections.reduce((s, i) => s + (parseInt(i.vehicle_viol_total ?? "0", 10) || 0), 0);
+  const vehicleOos = inspections.reduce((s, i) => s + (parseInt(i.vehicle_oos_total ?? "0", 10) || 0), 0);
+  const hazmatViols = inspections.reduce((s, i) => s + (parseInt(i.hazmat_viol_total ?? "0", 10) || 0), 0);
+  const hazmatOos = inspections.reduce((s, i) => s + (parseInt(i.hazmat_oos_total ?? "0", 10) || 0), 0);
+  const totalViols = inspections.reduce((s, i) => s + (parseInt(i.viol_total ?? "0", 10) || 0), 0);
+  const totalOos = inspections.reduce((s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0), 0);
+
+  if (driverViols > 0) categories.push({ name: "Driver", total: driverViols, oos: driverOos });
+  if (vehicleViols > 0) categories.push({ name: "Vehicle", total: vehicleViols, oos: vehicleOos });
+  if (hazmatViols > 0) categories.push({ name: "Hazmat", total: hazmatViols, oos: hazmatOos });
+
+  // Account for "other" violations not in driver/vehicle/hazmat
+  const categorizedViols = driverViols + vehicleViols + hazmatViols;
+  const otherViols = totalViols - categorizedViols;
+  if (otherViols > 0) {
+    const categorizedOos = driverOos + vehicleOos + hazmatOos;
+    categories.push({ name: "Other", total: otherViols, oos: Math.max(0, totalOos - categorizedOos) });
   }
 
-  const sorted = [...groups.entries()].sort((a, b) => b[1].total - a[1].total);
-  const maxCount = sorted[0]?.[1].total ?? 1;
-  const totalOos = violations.filter((v) => v.oos_indicator === "Y").length;
+  categories.sort((a, b) => b.total - a.total);
+  const maxCount = categories[0]?.total ?? 1;
+  const topCat = categories[0]?.name ?? "N/A";
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-panel">
@@ -158,37 +170,39 @@ function ViolationBreakdown({ violations }: { violations: SocrataViolation[] }) 
         Violation Breakdown
       </h3>
       <div className="mb-4 flex flex-wrap gap-4">
-        <Stat label="Total Violations" value={violations.length} />
+        <Stat label="Total Violations" value={totalViols} />
         <Stat label="OOS Violations" value={totalOos} warn={totalOos > 0} />
-        <Stat label="Top Category" value={sorted[0]?.[0] ?? "N/A"} />
+        <Stat label="Top Category" value={topCat} />
       </div>
-      <div className="space-y-3">
-        {sorted.slice(0, 8).map(([cat, { total, oos }]) => (
-          <div key={cat}>
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-slate-300 truncate max-w-[60%]">{cat}</span>
-              <div className="flex items-center gap-2 text-slate-400">
-                <span>{total} total</span>
-                {oos > 0 && <span className="text-rose-400">{oos} OOS</span>}
+      {categories.length > 0 && (
+        <div className="space-y-3">
+          {categories.map(({ name, total, oos }) => (
+            <div key={name}>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-slate-300">{name}</span>
+                <div className="flex items-center gap-2 text-slate-400">
+                  <span>{total} total</span>
+                  {oos > 0 && <span className="text-rose-400">{oos} OOS</span>}
+                </div>
               </div>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-              <div className="flex h-full">
-                <div
-                  className="h-full rounded-l-full bg-blue-500 transition-all"
-                  style={{ width: `${((total - oos) / maxCount) * 100}%` }}
-                />
-                {oos > 0 && (
+              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                <div className="flex h-full">
                   <div
-                    className="h-full bg-rose-500 transition-all last:rounded-r-full"
-                    style={{ width: `${(oos / maxCount) * 100}%` }}
+                    className="h-full rounded-l-full bg-blue-500 transition-all"
+                    style={{ width: `${((total - oos) / maxCount) * 100}%` }}
                   />
-                )}
+                  {oos > 0 && (
+                    <div
+                      className="h-full bg-rose-500 transition-all last:rounded-r-full"
+                      style={{ width: `${(oos / maxCount) * 100}%` }}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -252,23 +266,23 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
       .call(
         d3.axisLeft(yScale).tickSize(-innerW).tickFormat(() => "")
       )
-      .call((g) => g.select(".domain").remove())
-      .call((g) => g.selectAll(".tick line").attr("stroke", "#1e293b").attr("stroke-dasharray", "2,2"));
+      .call((sel) => sel.select(".domain").remove())
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#1e293b").attr("stroke-dasharray", "2,2"));
 
     // X axis
     g.append("g")
       .attr("transform", `translate(0,${innerH})`)
       .call(d3.axisBottom(xScale).ticks(6).tickFormat((d) => d3.timeFormat("%b '%y")(d as Date)))
-      .call((g) => g.select(".domain").attr("stroke", "#334155"))
-      .call((g) => g.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
-      .call((g) => g.selectAll(".tick line").attr("stroke", "#334155"));
+      .call((sel) => sel.select(".domain").attr("stroke", "#334155"))
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").attr("stroke", "#334155"));
 
     // Y axis
     g.append("g")
       .call(d3.axisLeft(yScale).ticks(5))
-      .call((g) => g.select(".domain").remove())
-      .call((g) => g.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
-      .call((g) => g.selectAll(".tick line").remove());
+      .call((sel) => sel.select(".domain").remove())
+      .call((sel) => sel.selectAll(".tick text").attr("fill", "#94a3b8").attr("font-size", "10px"))
+      .call((sel) => sel.selectAll(".tick line").remove());
 
     // Lines
     const violationLine = d3.line<typeof grouped[0]>()

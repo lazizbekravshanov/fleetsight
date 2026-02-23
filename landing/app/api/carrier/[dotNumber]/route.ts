@@ -6,9 +6,7 @@ import {
   getInspectionsByDot,
   getCrashesByDot,
   getInsuranceByDot,
-  getViolationsByDot,
   getAuthorityHistoryByDot,
-  getComplaintsByDot,
   getPeerBenchmark,
 } from "@/lib/socrata";
 import { getCarrierBasics, getCarrierAuthority, getCarrierOos } from "@/lib/fmcsa";
@@ -28,15 +26,13 @@ export async function GET(
 
   const dotNumber = parseInt(parsed.data.dotNumber, 10);
 
-  const [carrier, inspections, crashes, insurance, violations, authorityHistory, complaints] =
+  const [carrier, inspections, crashes, insurance, authorityHistory] =
     await Promise.all([
       getCarrierByDot(dotNumber),
       getInspectionsByDot(dotNumber),
       getCrashesByDot(dotNumber),
       getInsuranceByDot(dotNumber).catch(() => []),
-      getViolationsByDot(dotNumber).catch(() => []),
       getAuthorityHistoryByDot(dotNumber).catch(() => []),
-      getComplaintsByDot(dotNumber).catch(() => []),
     ]);
 
   if (!carrier) {
@@ -73,9 +69,7 @@ export async function GET(
     authority,
     oos,
     insurance,
-    violations,
     authorityHistory,
-    complaints,
     peerBenchmark,
   });
 }

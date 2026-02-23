@@ -148,7 +148,6 @@ export function CarrierDetailView({
           {activeTab === "safety" && (
             <SafetyTab
               basics={detail.basics}
-              violations={detail.violations}
               inspections={detail.inspections}
             />
           )}
@@ -162,7 +161,6 @@ export function CarrierDetailView({
             <InsuranceTab
               insurance={detail.insurance}
               authorityHistory={detail.authorityHistory}
-              complaints={detail.complaints}
               isHazmat={c.hm_ind === "Y"}
             />
           )}
