@@ -1,168 +1,67 @@
 # FleetSight
 
-FleetSight is an open-source carrier-affiliation detection MVP built as an OpenClaw skill.
+FMCSA carrier lookup and compliance intelligence platform. Search 4.4M registered carriers, view inspection history, crash records, BASIC safety scores, insurance filings, fleet details, and chameleon carrier detection — all from public datasets.
 
-Tagline: **Make trucking great through transparent, explainable network intelligence.**
+**Live:** [landing-delta-dun.vercel.app](https://landing-delta-dun.vercel.app)
 
-## What It Does
+![FleetSight — Carrier Lookup](docs/screenshot-home.png)
 
-FleetSight analyzes carrier records and detects likely affiliated or chameleon networks by finding overlaps across identifiers:
+![FleetSight — Search Results](docs/screenshot-search.png)
 
-- phone
-- email
-- email domain
-- address
-- IP
+## Features
 
-It outputs:
+- **Carrier Search** — Look up any FMCSA-registered carrier by USDOT number or company name
+- **7-Tab Detail View** — Overview, Safety, Inspections, Crashes, Insurance, Fleet, Detection
+- **BASIC Safety Scores** — Percentile bars with 75th-percentile intervention threshold markers
+- **Risk Summary Card** — Composite risk assessment from BASICs, OOS rates, crash severity, authority status
+- **Inspection & Crash Filtering** — Client-side filters by state, severity, level, violations, OOS
+- **Insurance & Authority History** — BIPD compliance checking, authority timeline with revocation tracking
+- **Fleet & Recalls** — NHTSA vehicle decoding, recall alerts, complaint alerts (crash/fire flagged)
+- **Chameleon Detection** — Shared address, phone, officer, VIN, and prior-revocation signal analysis
+- **Lazy-Loaded Tabs** — Lightweight initial payload, data fetched per-tab on demand
+- **CSV Export** — Download inspections, crashes, and insurance data
+- **Command Palette** — Cmd+K quick navigation
+- **Dashboard** — Carrier snapshot with BASIC mini-bars, OpenClaw token generation with copy-to-clipboard
 
-1. Ranked pairwise links with a score and explainable match reasons
-2. Affiliation clusters (connected components over thresholded links)
-3. Exportable reports (`JSON`, `CSV`, and a markdown summary)
+## Tech Stack
 
-## Why Open Source
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Auth:** NextAuth.js with credentials provider
+- **Database:** Prisma + PostgreSQL
+- **Animation:** Framer Motion
+- **APIs:** FMCSA QCMobile, Socrata Open Data, NHTSA Vehicle API
+- **Deployment:** Vercel
 
-This project is open source so carriers, brokers, compliance teams, and investigators can:
-
-- inspect exactly how scoring works
-- reproduce results locally
-- extend and audit detection logic
-- contribute improvements without vendor lock-in
-
-License: **MIT** (see `LICENSE`)
-
-## Project Structure
-
-```text
-.
-├── LICENSE
-├── README.md
-├── app/
-├── landing/
-└── fleetsight/
-    ├── Makefile
-    ├── README.md
-    ├── tests/
-    └── skills/fleetsight/
-        ├── fleetsight.py
-        ├── skill.json
-        └── skill.yaml
-```
-
-## Quick Start
-
-Requirements:
-
-- Python 3.11+ (3.9+ also works with current code)
-- OpenClaw (self-hosted)
-
-From repo root:
-
-```bash
-cd fleetsight
-make verify
-```
-
-This runs unit tests and a deterministic end-to-end verify flow.
-
-## Chat App (Signup + Chatbot + Upload)
-
-A ChatGPT-style web interface is available in `app/`.
-
-```bash
-cd app
-python3 -m pip install -r requirements.txt
-make run
-```
-
-Open:
-
-`http://127.0.0.1:8787`
-
-Detailed setup:
-
-- `app/README.md`
-
-## New Marketing Landing (Next.js)
-
-Redesigned product landing page built with App Router + Tailwind + Framer Motion.
+## Getting Started
 
 ```bash
 cd landing
 npm install
+cp .env.example .env.local  # add your API keys
+npx prisma generate
 npm run dev
 ```
 
-Open:
+## Project Structure
 
-`http://localhost:3000`
-
-## Replit Deployment
-
-This repo includes `.replit` and `replit.nix` for deploying the Python app and serving the built landing page.
-
-After importing to Replit:
-
-1. Click **Run** to preview.
-2. Click **Deploy** (Autoscale).
-3. Build command is already configured:
-   - `cd landing && npm ci && npm run build && cd ../app && python3 -m pip install -r requirements.txt`
-4. Start command is already configured:
-   - `cd app && FLEETSIGHT_APP_HOST=0.0.0.0 FLEETSIGHT_APP_PORT=$PORT python3 server.py`
-
-Routes:
-
-- Marketing landing page: `/`
-- App console: `/app`
-- Marketing landing page alias: `/landing`
-
-## Vercel Deployment (Recommended for Landing)
-
-Deploy the `landing/` app to Vercel from repo root:
-
-```bash
-npm i -g vercel
-vercel
-vercel --prod
+```
+landing/
+  app/
+    api/carrier/[dotNumber]/   # Carrier detail + lazy-load routes
+    api/chameleon/             # Detection signal API
+    api/fmcsa/                 # FMCSA proxy routes
+    dashboard/                 # Authenticated dashboard
+  components/
+    carrier/                   # Carrier detail tabs & shared utilities
+    dashboard/                 # Command palette
+  lib/
+    socrata.ts                 # Socrata Open Data client
+    nhtsa.ts                   # NHTSA complaints & recalls
+    fmcsa-codes.ts             # FMCSA code decoders
 ```
 
-This repo includes `vercel.json` configured to:
+## License
 
-- install from `landing/`
-- build with `next build`
-- deploy as a dynamic Next.js app (no static `landing/out` directory)
-
-Optional Vercel env for CTA links:
-
-- `NEXT_PUBLIC_APP_URL=https://<your-app-host>`
-
-Example app hosts:
-
-- Railway / Render / Fly / any HTTPS backend running `app/server.py`
-
-If your landing is on Vercel and backend is elsewhere, set backend CORS:
-
-- `FLEETSIGHT_CORS_ORIGINS=https://<your-vercel-domain>`
-
-## OpenClaw Usage
-
-After installing the skill in your OpenClaw skills directory:
-
-```bash
-/fleetsight sample-data
-/fleetsight analyze carriers.csv --top 50 --threshold 30
-/fleetsight explain
-```
-
-For full setup and integration steps, see:
-
-- `fleetsight/README.md`
-
-## Contributing
-
-Contributions are welcome.
-
-1. Fork the repo
-2. Create a feature branch
-3. Add tests for behavior changes
-4. Open a PR with a clear description
+Private.
