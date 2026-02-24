@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import type { SocrataInspection } from "@/lib/socrata";
 import { decodeInspectionLevel } from "@/lib/fmcsa-codes";
-import { Stat, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
 import type { CsvColumn } from "../shared";
 
 function inspDurationMinutes(start?: string, end?: string): number | null {
@@ -35,10 +36,29 @@ type InspRow = SocrataInspection & {
 export function InspectionsTab({
   inspections,
   carrierName,
+  loading,
+  error,
 }: {
   inspections: SocrataInspection[];
   carrierName?: string;
+  loading?: boolean;
+  error?: string | null;
 }) {
+  const [filterState, setFilterState] = useState("");
+  const [filterLevel, setFilterLevel] = useState("");
+  const [hasViolations, setHasViolations] = useState(false);
+  const [hasOos, setHasOos] = useState(false);
+
+  if (loading) {
+    return <SkeletonRows count={4} />;
+  }
+
+  if (error) {
+    return (
+      <p className="py-12 text-center text-sm text-rose-600">{error}</p>
+    );
+  }
+
   if (inspections.length === 0) {
     return (
       <p className="py-12 text-center text-base text-gray-400 tracking-wide">
@@ -47,7 +67,7 @@ export function InspectionsTab({
     );
   }
 
-  const rows: InspRow[] = inspections.map((insp) => ({
+  const allRows: InspRow[] = inspections.map((insp) => ({
     ...insp,
     _date: insp.insp_date ? new Date(insp.insp_date).getTime() : 0,
     _viols: parseInt(insp.viol_total ?? "0", 10) || 0,
@@ -57,10 +77,26 @@ export function InspectionsTab({
     _levelNum: parseInt(insp.insp_level_id ?? "0", 10) || 0,
   }));
 
+  // Unique filter options
+  const uniqueStates = [...new Set(allRows.map((r) => r.report_state).filter(Boolean))].sort() as string[];
+  const uniqueLevels = [...new Set(allRows.map((r) => r._level).filter(Boolean))].sort();
+
+  const isFiltered = filterState !== "" || filterLevel !== "" || hasViolations || hasOos;
+
+  // Apply filters
+  const rows = useMemo(() => {
+    let filtered = allRows;
+    if (filterState) filtered = filtered.filter((r) => r.report_state === filterState);
+    if (filterLevel) filtered = filtered.filter((r) => r._level === filterLevel);
+    if (hasViolations) filtered = filtered.filter((r) => r._viols > 0);
+    if (hasOos) filtered = filtered.filter((r) => r._oos > 0);
+    return filtered;
+  }, [allRows, filterState, filterLevel, hasViolations, hasOos]);
+
   const totalViols = rows.reduce((s, i) => s + i._viols, 0);
   const totalOos = rows.reduce((s, i) => s + i._oos, 0);
 
-  // Level distribution
+  // Level distribution (from filtered data)
   const levelCounts = new Map<string, number>();
   for (const r of rows) {
     const lbl = r._level;
@@ -85,18 +121,78 @@ export function InspectionsTab({
     { key: "location_desc", header: "Location" },
   ];
 
+  function clearFilters() {
+    setFilterState("");
+    setFilterLevel("");
+    setHasViolations(false);
+    setHasOos(false);
+  }
+
   return (
     <div>
+      {/* Filters */}
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <select
+          value={filterState}
+          onChange={(e) => setFilterState(e.target.value)}
+          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">All States</option>
+          {uniqueStates.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select
+          value={filterLevel}
+          onChange={(e) => setFilterLevel(e.target.value)}
+          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">All Levels</option>
+          {uniqueLevels.map((l) => (
+            <option key={l} value={l}>{l}</option>
+          ))}
+        </select>
+        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={hasViolations}
+            onChange={(e) => setHasViolations(e.target.checked)}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Has violations
+        </label>
+        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={hasOos}
+            onChange={(e) => setHasOos(e.target.checked)}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Has OOS
+        </label>
+        {isFiltered && (
+          <button
+            onClick={clearFilters}
+            className="ml-auto text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {/* Summary stats */}
       <div className="mb-4 flex flex-wrap items-start gap-4">
-        <Stat label="Total Inspections" value={inspections.length} />
+        <Stat
+          label="Total Inspections"
+          value={isFiltered ? `${rows.length} of ${inspections.length}` : inspections.length}
+        />
         <Stat label="Total Violations" value={totalViols} />
         <Stat label="Out of Service" value={totalOos} />
         <Stat
           label="OOS Rate"
           value={
-            inspections.length > 0
-              ? `${((totalOos / inspections.length) * 100).toFixed(1)}%`
+            rows.length > 0
+              ? `${((totalOos / rows.length) * 100).toFixed(1)}%`
               : "N/A"
           }
         />

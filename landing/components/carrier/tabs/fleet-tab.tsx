@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
 import type { CsvColumn } from "../shared";
-import type { FleetData, FleetUnit, NhtsaRecall, NhtsaDecodedVin } from "../types";
+import type { FleetData, FleetUnit, NhtsaRecall, NhtsaDecodedVin, NhtsaComplaint } from "../types";
 
 export function FleetTab({
   data,
@@ -32,7 +32,7 @@ export function FleetTab({
     );
   }
 
-  const { units, decodedVehicles, recalls } = data;
+  const { units, decodedVehicles, recalls, complaints } = data;
 
   if (units.length === 0 && decodedVehicles.length === 0) {
     return (
@@ -47,6 +47,7 @@ export function FleetTab({
       <FleetSummary decodedVehicles={decodedVehicles} units={units} />
       <FleetComposition decodedVehicles={decodedVehicles} />
       {recalls.length > 0 && <RecallAlerts recalls={recalls} />}
+      {complaints && complaints.length > 0 && <ComplaintAlerts complaints={complaints} />}
       <FleetDetailTable decodedVehicles={decodedVehicles} units={units} />
     </div>
   );
@@ -262,6 +263,121 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
                         <p className="text-gray-400 mt-0.5">
                           Remedy: {r.remedy}
                         </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Complaint Alerts ─────────────────────────────────────────── */
+
+function ComplaintAlerts({ complaints }: { complaints: NhtsaComplaint[] }) {
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // Group by make/model/year
+  const groups = new Map<string, NhtsaComplaint[]>();
+  for (const c of complaints) {
+    const key = `${c.make}|${c.model}|${c.modelYear}`;
+    const existing = groups.get(key) || [];
+    existing.push(c);
+    groups.set(key, existing);
+  }
+
+  const crashFireCount = complaints.filter((c) => c.crash || c.fire).length;
+
+  function toggleExpand(key: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
+        NHTSA Complaints
+        <span className="ml-auto rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-600/20">
+          {complaints.length} complaint{complaints.length !== 1 ? "s" : ""}
+        </span>
+        {crashFireCount > 0 && (
+          <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
+            {crashFireCount} crash/fire
+          </span>
+        )}
+      </h3>
+      <div className="space-y-2">
+        {[...groups.entries()].map(([key, groupComplaints]) => {
+          const [make, model, year] = key.split("|");
+          const isOpen = expanded.has(key);
+          const groupCrashFire = groupComplaints.filter((c) => c.crash || c.fire).length;
+          return (
+            <div key={key} className="rounded-lg border border-gray-100 bg-gray-50">
+              <button
+                onClick={() => toggleExpand(key)}
+                className="flex w-full items-center justify-between px-3 py-2 text-left text-xs"
+              >
+                <span className="text-gray-700 font-medium">
+                  {year} {make} {model}
+                </span>
+                <div className="flex items-center gap-2">
+                  {groupCrashFire > 0 && (
+                    <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] text-rose-700 ring-1 ring-rose-600/20">
+                      {groupCrashFire} crash/fire
+                    </span>
+                  )}
+                  <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 ring-1 ring-amber-600/20">
+                    {groupComplaints.length}
+                  </span>
+                  <span className="text-gray-400">{isOpen ? "\u25B2" : "\u25BC"}</span>
+                </div>
+              </button>
+              {isOpen && (
+                <div className="border-t border-gray-200 px-3 py-2 space-y-3">
+                  {groupComplaints.map((c, i) => (
+                    <div key={c.odiNumber || i} className="text-xs">
+                      <div className="flex items-center gap-2">
+                        <p className="text-gray-700 font-medium">
+                          ODI #{c.odiNumber}
+                        </p>
+                        {c.crash && (
+                          <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
+                            Crash
+                          </span>
+                        )}
+                        {c.fire && (
+                          <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
+                            Fire
+                          </span>
+                        )}
+                        {c.numberOfDeaths > 0 && (
+                          <span className="text-rose-600">{c.numberOfDeaths} death{c.numberOfDeaths !== 1 ? "s" : ""}</span>
+                        )}
+                        {c.numberOfInjuries > 0 && (
+                          <span className="text-amber-600">{c.numberOfInjuries} injur{c.numberOfInjuries !== 1 ? "ies" : "y"}</span>
+                        )}
+                      </div>
+                      {c.components && (
+                        <p className="text-gray-400 mt-0.5">
+                          Component: {c.components}
+                        </p>
+                      )}
+                      {c.dateOfIncident && (
+                        <p className="text-gray-400 mt-0.5">
+                          Incident: {c.dateOfIncident}
+                        </p>
+                      )}
+                      {c.summary && (
+                        <p className="text-gray-500 mt-0.5 line-clamp-3">{c.summary}</p>
                       )}
                     </div>
                   ))}

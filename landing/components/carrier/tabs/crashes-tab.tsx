@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import type { SocrataCrash } from "@/lib/socrata";
 import { decodeVehicleConfig, decodeCargoBodyType } from "@/lib/fmcsa-codes";
-import { Stat, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
 import type { CsvColumn } from "../shared";
 
 type CrashRow = SocrataCrash & {
@@ -13,7 +14,29 @@ type CrashRow = SocrataCrash & {
   _stateRec: string;
 };
 
-export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
+export function CrashesTab({
+  crashes,
+  loading,
+  error,
+}: {
+  crashes: SocrataCrash[];
+  loading?: boolean;
+  error?: string | null;
+}) {
+  const [filterState, setFilterState] = useState("");
+  const [filterSeverity, setFilterSeverity] = useState("");
+  const [fedRecordable, setFedRecordable] = useState(false);
+
+  if (loading) {
+    return <SkeletonRows count={4} />;
+  }
+
+  if (error) {
+    return (
+      <p className="py-12 text-center text-sm text-rose-600">{error}</p>
+    );
+  }
+
   if (crashes.length === 0) {
     return (
       <p className="py-12 text-center text-base text-gray-400 tracking-wide">
@@ -22,7 +45,7 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
     );
   }
 
-  const rows: CrashRow[] = crashes.map((cr) => ({
+  const allRows: CrashRow[] = crashes.map((cr) => ({
     ...cr,
     _date: cr.report_date ? new Date(cr.report_date).getTime() : 0,
     _fatalities: parseInt(cr.fatalities ?? "0", 10) || 0,
@@ -30,6 +53,19 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
     _towAway: parseInt(cr.tow_away ?? "0", 10) || 0,
     _stateRec: cr.state_recordable ?? "",
   }));
+
+  const uniqueStates = [...new Set(allRows.map((r) => r.report_state).filter(Boolean))].sort() as string[];
+  const isFiltered = filterState !== "" || filterSeverity !== "" || fedRecordable;
+
+  const rows = useMemo(() => {
+    let filtered = allRows;
+    if (filterState) filtered = filtered.filter((r) => r.report_state === filterState);
+    if (filterSeverity === "fatal") filtered = filtered.filter((r) => r._fatalities > 0);
+    else if (filterSeverity === "injury") filtered = filtered.filter((r) => r._injuries > 0);
+    else if (filterSeverity === "tow") filtered = filtered.filter((r) => r._towAway > 0);
+    if (fedRecordable) filtered = filtered.filter((r) => r.federal_recordable === "Y");
+    return filtered;
+  }, [allRows, filterState, filterSeverity, fedRecordable]);
 
   const totalFatalities = rows.reduce((s, c) => s + c._fatalities, 0);
   const totalInjuries = rows.reduce((s, c) => s + c._injuries, 0);
@@ -55,11 +91,61 @@ export function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
     { key: "state_recordable", header: "State Recordable" },
   ];
 
+  function clearFilters() {
+    setFilterState("");
+    setFilterSeverity("");
+    setFedRecordable(false);
+  }
+
   return (
     <div>
+      {/* Filters */}
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <select
+          value={filterState}
+          onChange={(e) => setFilterState(e.target.value)}
+          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">All States</option>
+          {uniqueStates.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <select
+          value={filterSeverity}
+          onChange={(e) => setFilterSeverity(e.target.value)}
+          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        >
+          <option value="">All Severities</option>
+          <option value="fatal">Fatal only</option>
+          <option value="injury">Injuries only</option>
+          <option value="tow">Tow-away only</option>
+        </select>
+        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fedRecordable}
+            onChange={(e) => setFedRecordable(e.target.checked)}
+            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Federal recordable
+        </label>
+        {isFiltered && (
+          <button
+            onClick={clearFilters}
+            className="ml-auto text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {/* Summary stats */}
       <div className="mb-4 flex flex-wrap items-start gap-4">
-        <Stat label="Total Crashes" value={crashes.length} />
+        <Stat
+          label="Total Crashes"
+          value={isFiltered ? `${rows.length} of ${crashes.length}` : crashes.length}
+        />
         <Stat label="Fatalities" value={totalFatalities} warn />
         <Stat
           label="Injuries"

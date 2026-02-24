@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
+import type { SocrataInspection, SocrataCrash, SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
 import { BADGE_COLORS } from "./shared";
 import { OverviewTab } from "./tabs/overview-tab";
 import { SafetyTab } from "./tabs/safety-tab";
@@ -12,6 +13,12 @@ import { InsuranceTab } from "./tabs/insurance-tab";
 import { FleetTab } from "./tabs/fleet-tab";
 import { DetectionTab } from "./tabs/detection-tab";
 import type { CarrierDetail, Tab, FleetData, DetectionData } from "./types";
+
+const SAFETY_RATING_COLORS: Record<string, string> = {
+  Satisfactory: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+  Conditional: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  Unsatisfactory: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20",
+};
 
 export function CarrierDetailView({
   detail,
@@ -24,11 +31,98 @@ export function CarrierDetailView({
 }) {
   const c = detail.carrier;
   const badge = entityTypeBadge(c.classdef);
+  const tablistRef = useRef<HTMLDivElement>(null);
+
+  // Lazy inspections state
+  const [inspections, setInspections] = useState<SocrataInspection[] | null>(null);
+  const [inspectionsLoading, setInspectionsLoading] = useState(false);
+  const [inspectionsError, setInspectionsError] = useState<string | null>(null);
+
+  // Lazy crashes state
+  const [crashes, setCrashes] = useState<SocrataCrash[] | null>(null);
+  const [crashesLoading, setCrashesLoading] = useState(false);
+  const [crashesError, setCrashesError] = useState<string | null>(null);
+
+  // Lazy insurance state
+  const [insurance, setInsurance] = useState<SocrataInsurance[] | null>(null);
+  const [authorityHistory, setAuthorityHistory] = useState<SocrataAuthorityHistory[] | null>(null);
+  const [insuranceLoading, setInsuranceLoading] = useState(false);
+  const [insuranceError, setInsuranceError] = useState<string | null>(null);
 
   // Lazy fleet state
   const [fleetData, setFleetData] = useState<FleetData | null>(null);
   const [fleetLoading, setFleetLoading] = useState(false);
   const [fleetError, setFleetError] = useState<string | null>(null);
+
+  // Lazy detection state
+  const [detectionData, setDetectionData] = useState<DetectionData | null>(null);
+  const [detectionLoading, setDetectionLoading] = useState(false);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
+
+  // Tabs that need inspections data: overview, safety, inspections
+  const needsInspections =
+    activeTab === "overview" || activeTab === "safety" || activeTab === "inspections";
+
+  useEffect(() => {
+    if (!needsInspections || inspections || inspectionsLoading) return;
+
+    setInspectionsLoading(true);
+    setInspectionsError(null);
+    fetch(`/api/carrier/${c.dot_number}/inspections`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Inspections returned ${res.status}`);
+        return res.json();
+      })
+      .then((data: { inspections: SocrataInspection[] }) =>
+        setInspections(data.inspections)
+      )
+      .catch(() => setInspectionsError("Failed to load inspections."))
+      .finally(() => setInspectionsLoading(false));
+  }, [needsInspections, c.dot_number, inspections, inspectionsLoading]);
+
+  // Tabs that need crashes data: overview, crashes
+  const needsCrashes = activeTab === "overview" || activeTab === "crashes";
+
+  useEffect(() => {
+    if (!needsCrashes || crashes || crashesLoading) return;
+
+    setCrashesLoading(true);
+    setCrashesError(null);
+    fetch(`/api/carrier/${c.dot_number}/crashes`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Crashes returned ${res.status}`);
+        return res.json();
+      })
+      .then((data: { crashes: SocrataCrash[] }) => setCrashes(data.crashes))
+      .catch(() => setCrashesError("Failed to load crashes."))
+      .finally(() => setCrashesLoading(false));
+  }, [needsCrashes, c.dot_number, crashes, crashesLoading]);
+
+  // Insurance + authority history
+  const needsInsurance = activeTab === "insurance" || activeTab === "overview";
+
+  useEffect(() => {
+    if (!needsInsurance || insurance || insuranceLoading) return;
+
+    setInsuranceLoading(true);
+    setInsuranceError(null);
+    fetch(`/api/carrier/${c.dot_number}/insurance`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Insurance returned ${res.status}`);
+        return res.json();
+      })
+      .then(
+        (data: {
+          insurance: SocrataInsurance[];
+          authorityHistory: SocrataAuthorityHistory[];
+        }) => {
+          setInsurance(data.insurance);
+          setAuthorityHistory(data.authorityHistory);
+        }
+      )
+      .catch(() => setInsuranceError("Failed to load insurance data."))
+      .finally(() => setInsuranceLoading(false));
+  }, [needsInsurance, c.dot_number, insurance, insuranceLoading]);
 
   useEffect(() => {
     if (activeTab !== "fleet" || fleetData || fleetLoading) return;
@@ -45,11 +139,6 @@ export function CarrierDetailView({
       .finally(() => setFleetLoading(false));
   }, [activeTab, c.dot_number, fleetData, fleetLoading]);
 
-  // Lazy detection state
-  const [detectionData, setDetectionData] = useState<DetectionData | null>(null);
-  const [detectionLoading, setDetectionLoading] = useState(false);
-  const [detectionError, setDetectionError] = useState<string | null>(null);
-
   useEffect(() => {
     if (activeTab !== "detection" || detectionData || detectionLoading) return;
 
@@ -65,15 +154,37 @@ export function CarrierDetailView({
       .finally(() => setDetectionLoading(false));
   }, [activeTab, c.dot_number, detectionData, detectionLoading]);
 
+  // Use counts from the main response, or fall back to loaded data length
+  const inspectionCount = inspections?.length ?? detail.inspectionCount ?? 0;
+  const crashCount = crashes?.length ?? detail.crashCount ?? 0;
+
   const tabs: { key: Tab; label: string; count?: number; group?: "ops" | "compliance" }[] = [
     { key: "overview", label: "Overview", group: "ops" },
     { key: "safety", label: "Safety", group: "ops" },
-    { key: "inspections", label: "Inspections", count: detail.inspections.length, group: "ops" },
-    { key: "crashes", label: "Crashes", count: detail.crashes.length, group: "ops" },
+    { key: "inspections", label: "Inspections", count: inspectionCount, group: "ops" },
+    { key: "crashes", label: "Crashes", count: crashCount, group: "ops" },
     { key: "insurance", label: "Insurance", group: "compliance" },
     { key: "fleet", label: "Fleet", group: "compliance" },
     { key: "detection", label: "Detection", group: "compliance" },
   ];
+
+  function handleTabKeyDown(e: React.KeyboardEvent) {
+    const currentIdx = tabs.findIndex((t) => t.key === activeTab);
+    let nextIdx = -1;
+    if (e.key === "ArrowRight") {
+      nextIdx = (currentIdx + 1) % tabs.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIdx = (currentIdx - 1 + tabs.length) % tabs.length;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    setActiveTab(tabs[nextIdx].key);
+    const btn = tablistRef.current?.querySelector<HTMLButtonElement>(
+      `#tab-${tabs[nextIdx].key}`
+    );
+    btn?.focus();
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -93,7 +204,7 @@ export function CarrierDetailView({
                 USDOT {c.dot_number}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
               >
@@ -108,20 +219,51 @@ export function CarrierDetailView({
               >
                 {decodeStatus(c.status_code)}
               </span>
+              {detail.safetyRating && (
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    SAFETY_RATING_COLORS[detail.safetyRating] ??
+                    "bg-gray-50 text-gray-700 ring-1 ring-gray-600/20"
+                  }`}
+                  title={
+                    detail.safetyRatingDate
+                      ? `Safety rating as of ${detail.safetyRatingDate}`
+                      : "FMCSA safety rating"
+                  }
+                >
+                  {detail.safetyRating}
+                </span>
+              )}
+              {detail.smartwayPartner && (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-600/20">
+                  SmartWay
+                </span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide border-b border-gray-200">
+      <div
+        ref={tablistRef}
+        role="tablist"
+        aria-label="Carrier detail sections"
+        onKeyDown={handleTabKeyDown}
+        className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide border-b border-gray-200"
+      >
         {tabs.map((t, i) => (
           <span key={t.key} className="flex items-center">
             {/* Separator between ops and compliance groups */}
             {i > 0 && tabs[i - 1].group !== t.group && (
-              <span className="mx-1 h-4 w-px bg-gray-300" />
+              <span className="mx-1 h-4 w-px bg-gray-300" aria-hidden="true" />
             )}
             <button
+              id={`tab-${t.key}`}
+              role="tab"
+              aria-selected={activeTab === t.key}
+              aria-controls={`panel-${t.key}`}
+              tabIndex={activeTab === t.key ? 0 : -1}
               onClick={() => setActiveTab(t.key)}
               className={`whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition ${
                 activeTab === t.key
@@ -144,6 +286,9 @@ export function CarrierDetailView({
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
+          id={`panel-${activeTab}`}
+          role="tabpanel"
+          aria-labelledby={`tab-${activeTab}`}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
@@ -156,33 +301,42 @@ export function CarrierDetailView({
               authority={detail.authority}
               oos={detail.oos}
               basics={detail.basics}
-              inspections={detail.inspections}
-              crashes={detail.crashes}
-              authorityHistory={detail.authorityHistory}
+              inspections={inspections ?? []}
+              crashes={crashes ?? []}
+              authorityHistory={authorityHistory ?? []}
               peerBenchmark={detail.peerBenchmark}
               onSwitchToSafety={() => setActiveTab("safety")}
+              onSwitchTab={(tab) => setActiveTab(tab as Tab)}
             />
           )}
           {activeTab === "safety" && (
             <SafetyTab
               basics={detail.basics}
-              inspections={detail.inspections}
+              inspections={inspections ?? []}
             />
           )}
           {activeTab === "inspections" && (
             <InspectionsTab
-              inspections={detail.inspections}
+              inspections={inspections ?? []}
               carrierName={c.legal_name}
+              loading={inspectionsLoading}
+              error={inspectionsError}
             />
           )}
           {activeTab === "crashes" && (
-            <CrashesTab crashes={detail.crashes} />
+            <CrashesTab
+              crashes={crashes ?? []}
+              loading={crashesLoading}
+              error={crashesError}
+            />
           )}
           {activeTab === "insurance" && (
             <InsuranceTab
-              insurance={detail.insurance}
-              authorityHistory={detail.authorityHistory}
+              insurance={insurance ?? []}
+              authorityHistory={authorityHistory ?? []}
               isHazmat={c.hm_ind === "Y"}
+              loading={insuranceLoading}
+              error={insuranceError}
             />
           )}
           {activeTab === "fleet" && (

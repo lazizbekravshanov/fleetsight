@@ -65,6 +65,61 @@ export async function decodeVinBatch(vins: string[]): Promise<NhtsaDecodedVin[]>
   return results;
 }
 
+export type NhtsaComplaint = {
+  odiNumber: string;
+  manufacturer: string;
+  crash: boolean;
+  fire: boolean;
+  numberOfInjuries: number;
+  numberOfDeaths: number;
+  dateComplaintFiled: string;
+  dateOfIncident: string;
+  summary: string;
+  components: string;
+  make: string;
+  model: string;
+  modelYear: string;
+};
+
+/**
+ * Get complaints by vehicle from NHTSA Complaints API. No auth required.
+ */
+export async function getComplaintsByVehicle(
+  make: string,
+  model: string,
+  year: string
+): Promise<NhtsaComplaint[]> {
+  if (!make || !model || !year) return [];
+
+  const url = `https://api.nhtsa.gov/complaints/complaintsByVehicle?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&modelYear=${encodeURIComponent(year)}`;
+
+  const res = await fetch(url, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  const results = data?.results ?? [];
+
+  return results.map((r: Record<string, unknown>) => ({
+    odiNumber: String(r.odiNumber ?? ""),
+    manufacturer: String(r.manufacturer ?? ""),
+    crash: r.crash === true || r.crash === "Y",
+    fire: r.fire === true || r.fire === "Y",
+    numberOfInjuries: Number(r.numberOfInjuries ?? 0),
+    numberOfDeaths: Number(r.numberOfDeaths ?? 0),
+    dateComplaintFiled: String(r.dateComplaintFiled ?? ""),
+    dateOfIncident: String(r.dateOfIncident ?? ""),
+    summary: String(r.summary ?? ""),
+    components: String(r.components ?? ""),
+    make,
+    model,
+    modelYear: year,
+  }));
+}
+
 /**
  * Get recalls by vehicle from NHTSA Recalls API. No auth required.
  */

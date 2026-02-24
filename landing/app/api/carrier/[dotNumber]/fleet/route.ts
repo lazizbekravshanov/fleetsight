@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
 import { getInspectionsByDot, getFleetUnitsByInspectionIds } from "@/lib/socrata";
-import { decodeVinBatch, getRecallsByVehicle } from "@/lib/nhtsa";
+import { decodeVinBatch, getRecallsByVehicle, getComplaintsByVehicle } from "@/lib/nhtsa";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -52,11 +52,17 @@ export async function GET(
     if (combos.length >= 20) break;
   }
 
-  // 6. Fetch recalls in parallel
-  const recallArrays = await Promise.all(
-    combos.map((c) => getRecallsByVehicle(c.make, c.model, c.year).catch(() => []))
-  );
+  // 6. Fetch recalls and complaints in parallel
+  const [recallArrays, complaintArrays] = await Promise.all([
+    Promise.all(
+      combos.map((c) => getRecallsByVehicle(c.make, c.model, c.year).catch(() => []))
+    ),
+    Promise.all(
+      combos.map((c) => getComplaintsByVehicle(c.make, c.model, c.year).catch(() => []))
+    ),
+  ]);
   const recalls = recallArrays.flat();
+  const complaints = complaintArrays.flat();
 
-  return Response.json({ units, decodedVehicles, recalls });
+  return Response.json({ units, decodedVehicles, recalls, complaints });
 }

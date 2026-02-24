@@ -9,12 +9,42 @@ type LoadState = {
   basics: unknown;
 };
 
+type BasicItem = {
+  basicsTypeDesc: string;
+  percentile: number;
+  exceedThreshold: string;
+};
+
+function parseBasicItems(basics: unknown): BasicItem[] {
+  const raw =
+    (basics as { content?: { basics?: unknown[] } } | null)?.content?.basics ||
+    (basics as { basics?: unknown[] } | null)?.basics ||
+    [];
+  if (!Array.isArray(raw)) return [];
+  return raw.map((b: unknown) => {
+    const item = b as Record<string, unknown>;
+    return {
+    basicsTypeDesc: String(
+      item.basicsTypeDesc || item.basics_type_desc || "Unknown"
+    ),
+    percentile: Number(item.percentile || 0),
+    exceedThreshold: String(item.exceedThreshold || item.exceed_threshold || "N"),
+  };
+  });
+}
+
+function barColor(pct: number): string {
+  if (pct >= 75) return "bg-rose-500";
+  if (pct >= 50) return "bg-amber-500";
+  return "bg-emerald-500";
+}
+
 export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
   const [state, setState] = useState<LoadState>({
     loading: true,
     error: null,
     profile: null,
-    basics: null
+    basics: null,
   });
 
   async function load() {
@@ -22,14 +52,16 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
     try {
       const [profileRes, basicsRes] = await Promise.all([
         fetch(`/api/fmcsa/carriers/${usdotNumber}`),
-        fetch(`/api/fmcsa/carriers/${usdotNumber}/basics`)
+        fetch(`/api/fmcsa/carriers/${usdotNumber}/basics`),
       ]);
 
       const profileBody = await profileRes.json().catch(() => ({}));
       const basicsBody = await basicsRes.json().catch(() => ({}));
 
       if (!profileRes.ok || !basicsRes.ok) {
-        throw new Error(profileBody.error || basicsBody.error || "FMCSA lookup failed");
+        throw new Error(
+          profileBody.error || basicsBody.error || "FMCSA lookup failed"
+        );
       }
 
       const carrier =
@@ -42,66 +74,148 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
         loading: false,
         error: null,
         profile: carrier,
-        basics: basicsBody.basics
+        basics: basicsBody.basics,
       });
     } catch (error) {
       setState({
         loading: false,
         error: error instanceof Error ? error.message : "Request failed",
         profile: null,
-        basics: null
+        basics: null,
       });
     }
   }
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usdotNumber]);
 
+  /* ── Skeleton ────────────────────────────────────── */
   if (state.loading) {
-    return <div className="rounded-xl border border-gray-200 bg-white p-4 text-gray-500">Loading carrier snapshot...</div>;
+    return (
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="space-y-3">
+          <div className="h-5 w-36 rounded shimmer" />
+          <div className="h-4 w-52 rounded shimmer" />
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="h-3 w-16 rounded shimmer" />
+                <div className="h-2 w-full rounded-full shimmer" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
+  /* ── Error ───────────────────────────────────────── */
   if (state.error) {
     return (
-      <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-600">
-        <p>{state.error}</p>
-        <button onClick={load} className="mt-3 rounded bg-rose-600 px-3 py-1.5 text-white">
+      <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 shadow-sm">
+        <p className="text-sm text-rose-600">{state.error}</p>
+        <button
+          onClick={load}
+          className="mt-3 rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-rose-700"
+        >
           Retry
         </button>
       </div>
     );
   }
 
-  const legalName = String(state.profile?.legalName || state.profile?.legal_name || "Unknown");
-  const dba = String(state.profile?.dbaName || state.profile?.dba_name || "N/A");
-  const operatingStatus = String(state.profile?.operatingStatus || state.profile?.status || "Unknown");
-  const basicsItems = (state.basics as { content?: { basics?: unknown[] }; basics?: unknown[] } | null)
-    ?.content?.basics ||
-    (state.basics as { basics?: unknown[] } | null)?.basics ||
-    [];
+  /* ── Data ─────────────────────────────────────────── */
+  const legalName = String(
+    state.profile?.legalName || state.profile?.legal_name || "Unknown"
+  );
+  const dbaRaw = state.profile?.dbaName || state.profile?.dba_name;
+  const dba = dbaRaw ? String(dbaRaw) : null;
+  const operatingStatus = String(
+    state.profile?.operatingStatus || state.profile?.status || "Unknown"
+  );
+  const isActive =
+    operatingStatus.toUpperCase().includes("ACTIVE") ||
+    operatingStatus.toUpperCase() === "A";
+
+  const basics = parseBasicItems(state.basics);
+  const alertCount = basics.filter((b) => b.percentile >= 75).length;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <h3 className="text-lg font-semibold text-gray-900">Carrier Snapshot</h3>
-      <dl className="mt-3 grid gap-2 text-sm text-gray-700">
-        <div>
-          <dt className="text-gray-500">Legal Name</dt>
-          <dd>{legalName}</dd>
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-400" />
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate text-lg font-semibold text-gray-900">
+              {legalName}
+            </h3>
+            {dba && (
+              <p className="truncate text-sm text-gray-500">
+                DBA {dba}
+              </p>
+            )}
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              isActive
+                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+            }`}
+          >
+            {isActive ? "Active" : operatingStatus}
+          </span>
         </div>
-        <div>
-          <dt className="text-gray-500">DBA</dt>
-          <dd>{dba}</dd>
-        </div>
-        <div>
-          <dt className="text-gray-500">Operating Status</dt>
-          <dd>{operatingStatus}</dd>
-        </div>
-        <div>
-          <dt className="text-gray-500">BASIC Summary</dt>
-          <dd>{Array.isArray(basicsItems) ? `${basicsItems.length} BASIC records` : "No BASIC data"}</dd>
-        </div>
-      </dl>
+
+        <p className="mt-1 text-xs text-gray-400">USDOT {usdotNumber}</p>
+
+        {/* BASIC Scores */}
+        {basics.length > 0 ? (
+          <div className="mt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                BASIC Scores
+              </p>
+              {alertCount > 0 && (
+                <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
+                  {alertCount} alert{alertCount > 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            <div className="space-y-2">
+              {basics.map((b) => (
+                <div key={b.basicsTypeDesc}>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">{b.basicsTypeDesc}</span>
+                    <span
+                      className={`font-medium ${
+                        b.percentile >= 75 ? "text-rose-600" : "text-gray-500"
+                      }`}
+                    >
+                      {b.percentile}%
+                    </span>
+                  </div>
+                  <div className="relative mt-0.5 h-1.5 overflow-visible rounded-full bg-gray-200">
+                    <div
+                      className={`h-full rounded-full transition-all ${barColor(b.percentile)}`}
+                      style={{
+                        width: `${Math.min(b.percentile, 100)}%`,
+                      }}
+                    />
+                    <div
+                      className="absolute top-0 h-full w-px border-l border-dashed border-gray-400"
+                      style={{ left: "75%" }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="mt-4 text-xs text-gray-400">No BASIC data available</p>
+        )}
+      </div>
     </div>
   );
 }

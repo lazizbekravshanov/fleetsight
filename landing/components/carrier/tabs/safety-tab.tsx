@@ -112,10 +112,16 @@ function BasicGauges({
                   </span>
                 </div>
               </div>
-              <div className="h-3 overflow-hidden rounded-full bg-gray-200">
+              <div className="relative h-3 overflow-visible rounded-full bg-gray-200">
                 <div
                   className={`h-full rounded-full ${color} transition-all`}
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
+                />
+                {/* Intervention threshold marker */}
+                <div
+                  className="absolute top-0 h-full w-px border-l border-dashed border-gray-500"
+                  style={{ left: "75%" }}
+                  title="Intervention threshold (75th percentile)"
                 />
               </div>
               {s.measureValue > 0 && (
@@ -126,6 +132,10 @@ function BasicGauges({
             </div>
           );
         })}
+      </div>
+      <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400">
+        <span className="inline-block w-3 border-t border-dashed border-gray-500" />
+        <span>FMCSA intervention threshold (75th percentile)</span>
       </div>
     </div>
   );

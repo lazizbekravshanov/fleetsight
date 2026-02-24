@@ -19,6 +19,7 @@ export function OverviewTab({
   authorityHistory,
   peerBenchmark,
   onSwitchToSafety,
+  onSwitchTab,
 }: {
   carrier: SocrataCarrier;
   authority: unknown;
@@ -29,6 +30,7 @@ export function OverviewTab({
   authorityHistory: SocrataAuthorityHistory[];
   peerBenchmark: PeerBenchmark | null;
   onSwitchToSafety: () => void;
+  onSwitchTab?: (tab: string) => void;
 }) {
   const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
     .filter(Boolean)
@@ -49,6 +51,17 @@ export function OverviewTab({
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
+      {/* Risk Summary Card */}
+      <RiskSummaryCard
+        basics={basics}
+        inspections={inspections}
+        crashes={crashes}
+        oos={oos}
+        authorityHistory={authorityHistory}
+        mcs150Date={c.mcs150_date}
+        onSwitchTab={onSwitchTab}
+      />
+
       {/* Company Info */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
@@ -194,6 +207,153 @@ export function OverviewTab({
           Authority &amp; Operating Status
         </h3>
         <AuthoritySection authority={authority} oos={oos} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Risk Summary Card ────────────────────────────────────────── */
+
+type RiskLevel = "critical" | "elevated" | "low";
+
+function RiskSummaryCard({
+  basics,
+  inspections,
+  crashes,
+  oos,
+  authorityHistory,
+  mcs150Date,
+  onSwitchTab,
+}: {
+  basics: unknown;
+  inspections: SocrataInspection[];
+  crashes: SocrataCrash[];
+  oos: unknown;
+  authorityHistory: SocrataAuthorityHistory[];
+  mcs150Date?: string;
+  onSwitchTab?: (tab: string) => void;
+}) {
+  const basicScores = parseBasics(basics);
+  const oosRecords = extractArray(oos, "oos");
+
+  // 1. BASIC Risk
+  const basicsAbove75 = basicScores.filter((s) => s.percentile > 75).length;
+
+  // 2. Inspection Risk — OOS rate
+  const totalInsp = inspections.length;
+  const oosCount = inspections.reduce(
+    (s, i) => s + (parseInt(i.oos_total ?? "0", 10) > 0 ? 1 : 0),
+    0
+  );
+  const oosRate = totalInsp > 0 ? (oosCount / totalInsp) * 100 : 0;
+
+  // 3. Crash Risk — severity score
+  const totalFatalities = crashes.reduce(
+    (s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0),
+    0
+  );
+  const totalInjuries = crashes.reduce(
+    (s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0),
+    0
+  );
+  const totalTow = crashes.reduce(
+    (s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0),
+    0
+  );
+  const severityScore = totalFatalities * 3 + totalInjuries * 2 + totalTow;
+
+  // 4. Authority Risk — active OOS orders, recent revocations
+  const activeOos = oosRecords.length > 0;
+  const revocations = authorityHistory.filter(
+    (h) => (h.disp_action_desc ?? "").toUpperCase().includes("REVOK")
+  );
+
+  // 5. Data Freshness
+  const mcs150 = computeMcs150Staleness(mcs150Date);
+
+  // Overall risk level
+  let riskLevel: RiskLevel = "low";
+  if (
+    totalFatalities > 0 ||
+    basicsAbove75 >= 2 ||
+    activeOos
+  ) {
+    riskLevel = "critical";
+  } else if (
+    basicsAbove75 >= 1 ||
+    oosRate > 10 ||
+    severityScore > 5
+  ) {
+    riskLevel = "elevated";
+  }
+
+  const riskConfig: Record<RiskLevel, { label: string; border: string; bg: string; text: string }> = {
+    critical: { label: "Critical Risk", border: "border-l-rose-500", bg: "bg-rose-50", text: "text-rose-700" },
+    elevated: { label: "Elevated Risk", border: "border-l-amber-500", bg: "bg-amber-50", text: "text-amber-700" },
+    low: { label: "Low Risk", border: "border-l-emerald-500", bg: "bg-emerald-50", text: "text-emerald-700" },
+  };
+
+  const cfg = riskConfig[riskLevel];
+
+  type Signal = { label: string; value: string; color: string; tab?: string };
+  const signals: Signal[] = [
+    {
+      label: "BASIC Alerts",
+      value: basicsAbove75 > 0 ? `${basicsAbove75} above 75%` : "None",
+      color: basicsAbove75 >= 2 ? "bg-rose-500" : basicsAbove75 === 1 ? "bg-amber-500" : "bg-emerald-500",
+      tab: "safety",
+    },
+    {
+      label: "OOS Rate",
+      value: totalInsp > 0 ? `${oosRate.toFixed(1)}%` : "N/A",
+      color: oosRate > 10 ? "bg-rose-500" : oosRate > 5.5 ? "bg-amber-500" : "bg-emerald-500",
+      tab: "inspections",
+    },
+    {
+      label: "Crash Severity",
+      value: String(severityScore),
+      color: totalFatalities > 0 ? "bg-rose-500" : severityScore > 5 ? "bg-amber-500" : "bg-emerald-500",
+      tab: "crashes",
+    },
+    {
+      label: "Authority",
+      value: activeOos ? "OOS Active" : revocations.length > 0 ? `${revocations.length} revocations` : "Clear",
+      color: activeOos ? "bg-rose-500" : revocations.length > 0 ? "bg-amber-500" : "bg-emerald-500",
+    },
+    ...(mcs150
+      ? [{
+          label: "MCS-150",
+          value: mcs150.label,
+          color: mcs150.label === "Overdue" ? "bg-rose-500" : mcs150.label === "Due for Update" ? "bg-amber-500" : "bg-emerald-500",
+        }]
+      : []),
+  ];
+
+  return (
+    <div className={`md:col-span-2 rounded-xl border border-gray-200 border-l-4 ${cfg.border} bg-white p-5 shadow-sm`}>
+      <div className="flex items-center gap-3 mb-4">
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
+          {cfg.label}
+        </span>
+        <span className="text-xs text-gray-400">Composite risk assessment</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+        {signals.map((sig) => (
+          <button
+            key={sig.label}
+            onClick={() => sig.tab && onSwitchTab?.(sig.tab)}
+            disabled={!sig.tab}
+            className={`flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-left text-xs transition ${
+              sig.tab ? "hover:bg-gray-100 cursor-pointer" : "cursor-default"
+            }`}
+          >
+            <span className={`h-2 w-2 shrink-0 rounded-full ${sig.color}`} />
+            <div>
+              <p className="text-gray-500">{sig.label}</p>
+              <p className="font-medium text-gray-900">{sig.value}</p>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );

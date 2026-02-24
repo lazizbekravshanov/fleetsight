@@ -1,13 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
 import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
 import { CarrierDetailView } from "./carrier-detail";
 import type { SearchResult, CarrierDetail, Tab } from "./types";
 
+function updateUrl(params: Record<string, string | null>) {
+  const url = new URL(window.location.href);
+  for (const [k, v] of Object.entries(params)) {
+    if (v) url.searchParams.set(k, v);
+    else url.searchParams.delete(k);
+  }
+  window.history.replaceState(null, "", url.toString());
+}
+
 export function CarrierLookup() {
+  const searchParams = useSearchParams();
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -18,9 +31,7 @@ export function CarrierLookup() {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const doSearch = useCallback(async (q: string) => {
     setSearching(true);
     setSearched(false);
     setSelectedDot(null);
@@ -28,7 +39,7 @@ export function CarrierLookup() {
     setDetailError(null);
     try {
       const res = await fetch(
-        `/api/carrier/search?q=${encodeURIComponent(query.trim())}`
+        `/api/carrier/search?q=${encodeURIComponent(q)}`
       );
       if (!res.ok) throw new Error(`Search returned ${res.status}`);
       const data = await res.json();
@@ -40,9 +51,9 @@ export function CarrierLookup() {
     } finally {
       setSearching(false);
     }
-  }
+  }, []);
 
-  async function handleSelect(dotNumber: number) {
+  const doSelect = useCallback(async (dotNumber: number) => {
     setSelectedDot(dotNumber);
     setDetailLoading(true);
     setDetailError(null);
@@ -57,6 +68,56 @@ export function CarrierLookup() {
     } finally {
       setDetailLoading(false);
     }
+  }, []);
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    const q = searchParams.get("q");
+    const dot = searchParams.get("dot");
+    if (q) {
+      setQuery(q);
+      doSearch(q).then(() => {
+        if (dot) doSelect(parseInt(dot, 10));
+      });
+    } else if (dot) {
+      doSelect(parseInt(dot, 10));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keyboard shortcut: / to focus search, Cmd+K / Ctrl+K
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+      if (
+        e.key === "/" &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    updateUrl({ q: query.trim(), dot: null });
+    await doSearch(query.trim());
+  }
+
+  async function handleSelect(dotNumber: number) {
+    updateUrl({ q: query.trim() || null, dot: String(dotNumber) });
+    await doSelect(dotNumber);
   }
 
   return (
@@ -84,6 +145,7 @@ export function CarrierLookup() {
 
         <form
           onSubmit={handleSearch}
+          role="search"
           className="mx-auto mt-6 flex max-w-2xl gap-2"
         >
           <div className="relative flex-1">
@@ -101,10 +163,12 @@ export function CarrierLookup() {
               />
             </svg>
             <input
+              ref={inputRef}
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="DOT number or company name..."
+              aria-label="Search carriers by name or DOT number"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
@@ -116,16 +180,47 @@ export function CarrierLookup() {
             {searching ? "Searching..." : "Search"}
           </button>
         </form>
+        <p className="mx-auto mt-1.5 max-w-2xl text-xs text-gray-400">
+          Press <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">/</kbd> to search
+        </p>
 
         {/* Results */}
         {searched && results.length === 0 && (
-          <motion.p
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-10 text-center text-base text-gray-500 tracking-wide"
+            className="mx-auto mt-10 max-w-md text-center"
           >
-            No carriers found. Try a different search term.
-          </motion.p>
+            <svg
+              className="mx-auto h-12 w-12 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.5 10.5L10.5 7.5m0 3l3-3"
+              />
+            </svg>
+            <h3 className="mt-3 text-base font-medium text-gray-900">
+              No carriers found
+            </h3>
+            <ul className="mt-2 space-y-1 text-sm text-gray-500">
+              <li>Try searching by DOT number</li>
+              <li>Check spelling of company name</li>
+              <li>
+                Use partial names (e.g., &quot;Swift&quot; instead of
+                &quot;Swift Transportation&quot;)
+              </li>
+            </ul>
+          </motion.div>
         )}
 
         {results.length > 0 && (

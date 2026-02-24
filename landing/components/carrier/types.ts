@@ -29,10 +29,27 @@ export type PeerBenchmark = {
   carrierCount: number;
 };
 
+export type NhtsaComplaint = {
+  odiNumber: string;
+  manufacturer: string;
+  crash: boolean;
+  fire: boolean;
+  numberOfInjuries: number;
+  numberOfDeaths: number;
+  dateComplaintFiled: string;
+  dateOfIncident: string;
+  summary: string;
+  components: string;
+  make: string;
+  model: string;
+  modelYear: string;
+};
+
 export type FleetData = {
   units: FleetUnit[];
   decodedVehicles: NhtsaDecodedVin[];
   recalls: NhtsaRecall[];
+  complaints: NhtsaComplaint[];
 };
 
 export type FleetUnit = {
@@ -68,14 +85,33 @@ export type NhtsaRecall = {
 
 export type CarrierDetail = {
   carrier: SocrataCarrier;
-  inspections: SocrataInspection[];
-  crashes: SocrataCrash[];
   basics: unknown;
   authority: unknown;
   oos: unknown;
+  peerBenchmark: PeerBenchmark | null;
+  safetyRating?: string | null;
+  safetyRatingDate?: string | null;
+  smartwayPartner?: boolean;
+  inspectionCount?: number;
+  crashCount?: number;
+  // Lazy-loaded fields (populated after tab activation)
+  inspections?: SocrataInspection[];
+  crashes?: SocrataCrash[];
+  insurance?: SocrataInsurance[];
+  authorityHistory?: SocrataAuthorityHistory[];
+};
+
+export type InspectionsData = {
+  inspections: SocrataInspection[];
+};
+
+export type CrashesData = {
+  crashes: SocrataCrash[];
+};
+
+export type InsuranceData = {
   insurance: SocrataInsurance[];
   authorityHistory: SocrataAuthorityHistory[];
-  peerBenchmark: PeerBenchmark | null;
 };
 
 export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection";

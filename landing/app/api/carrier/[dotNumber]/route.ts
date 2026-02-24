@@ -5,11 +5,10 @@ import {
   getCarrierByDot,
   getInspectionsByDot,
   getCrashesByDot,
-  getInsuranceByDot,
-  getAuthorityHistoryByDot,
   getPeerBenchmark,
 } from "@/lib/socrata";
-import { getCarrierBasics, getCarrierAuthority, getCarrierOos } from "@/lib/fmcsa";
+import { getCarrierBasics, getCarrierAuthority, getCarrierOos, getCarrierProfile, extractCarrierRecord } from "@/lib/fmcsa";
+import { isSmartWayPartner } from "@/lib/smartway";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -26,14 +25,12 @@ export async function GET(
 
   const dotNumber = parseInt(parsed.data.dotNumber, 10);
 
-  const [carrier, inspections, crashes, insurance, authorityHistory] =
-    await Promise.all([
-      getCarrierByDot(dotNumber),
-      getInspectionsByDot(dotNumber),
-      getCrashesByDot(dotNumber),
-      getInsuranceByDot(dotNumber).catch(() => []),
-      getAuthorityHistoryByDot(dotNumber).catch(() => []),
-    ]);
+  // Fetch carrier + lightweight counts for inspections/crashes (for tab badges)
+  const [carrier, inspections, crashes] = await Promise.all([
+    getCarrierByDot(dotNumber),
+    getInspectionsByDot(dotNumber).catch(() => []),
+    getCrashesByDot(dotNumber).catch(() => []),
+  ]);
 
   if (!carrier) {
     return jsonError("Carrier not found", 404);
@@ -43,15 +40,35 @@ export async function GET(
   let basics: unknown = null;
   let authority: unknown = null;
   let oos: unknown = null;
+  let profile: unknown = null;
   try {
-    [basics, authority, oos] = await Promise.all([
+    [basics, authority, oos, profile] = await Promise.all([
       getCarrierBasics(String(dotNumber)).catch(() => null),
       getCarrierAuthority(String(dotNumber)).catch(() => null),
       getCarrierOos(String(dotNumber)).catch(() => null),
+      getCarrierProfile(String(dotNumber)).catch(() => null),
     ]);
   } catch {
     // FMCSA_WEBKEY may not be configured — skip silently
   }
+
+  // Extract safety rating from profile
+  let safetyRating: string | null = null;
+  let safetyRatingDate: string | null = null;
+  const carrierRecord = extractCarrierRecord(profile);
+  if (carrierRecord) {
+    const rating = carrierRecord.safetyRating ?? carrierRecord.safety_rating;
+    if (rating && typeof rating === "string" && rating !== "None") {
+      safetyRating = rating;
+    }
+    const ratingDate = carrierRecord.safetyRatingDate ?? carrierRecord.safety_rating_date;
+    if (ratingDate && typeof ratingDate === "string") {
+      safetyRatingDate = ratingDate;
+    }
+  }
+
+  // SmartWay partner check
+  const smartwayPartner = isSmartWayPartner(carrier.legal_name);
 
   // Peer benchmark — depends on carrier's fleetsize, non-fatal
   let peerBenchmark = null;
@@ -63,13 +80,14 @@ export async function GET(
 
   return Response.json({
     carrier,
-    inspections,
-    crashes,
     basics,
     authority,
     oos,
-    insurance,
-    authorityHistory,
     peerBenchmark,
+    safetyRating,
+    safetyRatingDate,
+    smartwayPartner,
+    inspectionCount: inspections.length,
+    crashCount: crashes.length,
   });
 }

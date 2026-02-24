@@ -1,18 +1,31 @@
 "use client";
 
 import type { SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
-import { ExportButton, downloadCsv } from "../shared";
+import { ExportButton, SkeletonRows, downloadCsv } from "../shared";
 import type { CsvColumn } from "../shared";
 
 export function InsuranceTab({
   insurance,
   authorityHistory,
   isHazmat,
+  loading,
+  error,
 }: {
   insurance: SocrataInsurance[];
   authorityHistory: SocrataAuthorityHistory[];
   isHazmat: boolean;
+  loading?: boolean;
+  error?: string | null;
 }) {
+  if (loading) {
+    return <SkeletonRows count={3} />;
+  }
+
+  if (error) {
+    return (
+      <p className="py-12 text-center text-sm text-rose-600">{error}</p>
+    );
+  }
   const csvColumns: CsvColumn<Record<string, unknown>>[] = [
     { key: "mod_col_1", header: "Type" },
     { key: "name_company", header: "Company" },
