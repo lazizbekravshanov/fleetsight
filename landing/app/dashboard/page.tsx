@@ -6,6 +6,7 @@ import { OpenClawConnectCard } from "@/components/openclaw-connect-card";
 import { SignOutButton } from "@/components/signout-button";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { prisma } from "@/lib/prisma";
+import { getCreditBalance } from "@/lib/credits";
 
 export default async function DashboardPage() {
   const session = await getServerAuthSession();
@@ -21,6 +22,8 @@ export default async function DashboardPage() {
   if (!user?.profile) {
     redirect("/onboarding");
   }
+
+  const creditBalance = await getCreditBalance(session.user.id);
 
   const hour = new Date().getHours();
   const greeting =
@@ -44,6 +47,10 @@ export default async function DashboardPage() {
               <span>{user.email}</span>
               <span className="hidden sm:inline text-gray-300">|</span>
               <span>USDOT {user.profile.usdotNumber}</span>
+              <span className="hidden sm:inline text-gray-300">|</span>
+              <Link href="/credits" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
+                {creditBalance} AI credits
+              </Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -61,7 +68,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-5 grid gap-5 sm:grid-cols-3">
           <Link
             href="/"
             className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
@@ -118,6 +125,37 @@ export default async function DashboardPage() {
                 </h3>
                 <p className="text-xs text-gray-500">
                   Find reincarnated carriers
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/credits"
+            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-violet-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition group-hover:bg-violet-100">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="8" cy="8" r="6" />
+                  <path d="M8 5v6M5.5 8h5" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Buy Credits
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {creditBalance} credits remaining
                 </p>
               </div>
             </div>

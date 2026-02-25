@@ -1,6 +1,7 @@
 "use client";
 
 import { SkeletonRows } from "../shared";
+import { AiUpgradePrompt } from "@/components/credits/ai-upgrade-prompt";
 import type {
   BackgroundData,
   OfficerCrossRef,
@@ -698,7 +699,7 @@ export function BackgroundTab({
       <BackgroundSummaryBanner data={data} />
 
       {/* AI Risk Narrative */}
-      {data.riskNarrative && (
+      {data.riskNarrative ? (
         <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-violet-600/20">AI Analysis</span>
@@ -706,7 +707,9 @@ export function BackgroundTab({
           </div>
           <p className="text-sm leading-relaxed text-gray-700">{data.riskNarrative}</p>
         </div>
-      )}
+      ) : data.aiGated?.skipped ? (
+        <AiUpgradePrompt reason={data.aiGated.reason} />
+      ) : null}
 
       {/* Digital Footprint & Address Intel side by side on wide screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

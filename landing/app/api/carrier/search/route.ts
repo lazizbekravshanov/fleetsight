@@ -6,6 +6,7 @@ import type { SocrataCarrier } from "@/lib/socrata";
 import { parseNaturalQuery } from "@/lib/search-parser";
 import { translateSearchQuery } from "@/lib/ai/search-translator";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
+import { gateAiFeature } from "@/lib/ai/with-credits";
 
 const querySchema = z.object({
   q: z.string().min(1).max(200),
@@ -68,25 +69,39 @@ export async function GET(req: NextRequest) {
   const isNaturalLanguage = /\b(in|with|more than|less than|over|under|between|near|new|large|small|active|inactive|hazmat|broker|carrier|trucking|freight|who|where|find|show|list|get)\b/i.test(q);
 
   if (isNaturalLanguage) {
-    // 3. Try LLM-powered translation (Haiku, ~100ms, ~$0.001)
-    const aiResult = await translateSearchQuery(q);
-    if (aiResult) {
-      try {
-        const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
-          $where: aiResult.soqlWhere,
-          $limit: String(Math.min(aiResult.limit, limit)),
-          $order: "legal_name ASC",
-        });
+    // 3. Try LLM-powered translation (Haiku, ~100ms, ~$0.001) — requires credits
+    const gate = await gateAiFeature("ai_search", q);
+    if (gate.allowed) {
+      const aiResult = await translateSearchQuery(q);
+      if (aiResult) {
+        try {
+          const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+            $where: aiResult.soqlWhere,
+            $limit: String(Math.min(aiResult.limit, limit)),
+            $order: "legal_name ASC",
+          });
 
-        return Response.json({
-          results: results.map(mapCarrier),
-          total: results.length,
-          searchMode: "ai" as const,
-          searchDescription: aiResult.description,
-        });
-      } catch {
-        // AI-generated query failed — fall through to standard search
+          return Response.json({
+            results: results.map(mapCarrier),
+            total: results.length,
+            searchMode: "ai" as const,
+            searchDescription: aiResult.description,
+            creditsRemaining: gate.remaining,
+          });
+        } catch {
+          // AI-generated query failed — fall through to standard search
+        }
       }
+    } else {
+      // AI gated — fall through to standard search with reason
+      const results = await searchCarriers(q, limit);
+      return Response.json({
+        results: results.map(mapCarrier),
+        total: results.length,
+        searchMode: "standard" as const,
+        searchDescription: null,
+        aiSkipped: gate.reason,
+      });
     }
   }
 

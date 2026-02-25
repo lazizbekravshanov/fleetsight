@@ -270,6 +270,8 @@ export type BankruptcyCase = {
   url: string;
 };
 
+export type AiGated = { skipped: true; reason: "not_authenticated" | "no_credits" };
+
 export type BackgroundData = {
   officerCrossRefs: OfficerCrossRef[];
   mailingAddressMatches: { dotNumber: string; legalName: string; statusCode?: string }[];
@@ -284,6 +286,7 @@ export type BackgroundData = {
   epaEnforcements: EpaEnforcement[];
   bankruptcyCases: BankruptcyCase[];
   riskNarrative: string | null;
+  aiGated?: AiGated;
   errors: string[];
 };
 
@@ -317,4 +320,5 @@ export type DetectionData = {
   }[];
   addressMatches?: { dotNumber: string; legalName: string; statusCode?: string }[];
   aiExplanation?: string | null;
+  aiGated?: AiGated;
 };

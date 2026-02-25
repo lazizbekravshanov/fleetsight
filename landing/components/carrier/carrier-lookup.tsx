@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
 import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
 import { CarrierDetailView } from "./carrier-detail";
+import { CreditBadge } from "@/components/credits/credit-badge";
 import type { SearchResult, CarrierDetail, Tab } from "./types";
 
 const RISK_GRADE_COLORS: Record<string, string> = {
@@ -49,6 +50,7 @@ export function CarrierLookup() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [searchMode, setSearchMode] = useState<"standard" | "natural" | "ai">("standard");
   const [searchDescription, setSearchDescription] = useState<string | null>(null);
+  const [aiSkipped, setAiSkipped] = useState<"not_authenticated" | "no_credits" | null>(null);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
@@ -65,6 +67,7 @@ export function CarrierLookup() {
       setResults(data.results || []);
       setSearchMode(data.searchMode || "standard");
       setSearchDescription(data.searchDescription || null);
+      setAiSkipped(data.aiSkipped || null);
       setSearched(true);
     } catch {
       setResults([]);
@@ -151,10 +154,11 @@ export function CarrierLookup() {
     <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <p className="text-sm font-semibold tracking-wide text-indigo-600">
             FleetSight
           </p>
+          <CreditBadge />
         </div>
       </header>
 
@@ -242,6 +246,26 @@ export function CarrierLookup() {
               {searchMode === "ai" ? "AI Search" : "Smart Search"}
             </span>
             <span className="text-xs text-gray-500">{searchDescription}</span>
+          </div>
+        )}
+
+        {/* AI skipped banner */}
+        {searched && aiSkipped && (
+          <div className="mx-auto mt-3 max-w-2xl">
+            <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-xs text-violet-700">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 1l1.5 4.5H14l-3.5 2.5 1.3 4.5L8 10l-3.8 2.5 1.3-4.5L2 5.5h4.5z" />
+              </svg>
+              {aiSkipped === "not_authenticated" ? (
+                <span>
+                  <a href="/login" className="font-medium underline hover:text-violet-900">Sign in</a> for AI-powered search
+                </span>
+              ) : (
+                <span>
+                  <a href="/credits" className="font-medium underline hover:text-violet-900">Add credits</a> for AI-powered search
+                </span>
+              )}
+            </div>
           </div>
         )}
 

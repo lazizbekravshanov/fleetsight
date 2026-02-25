@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { enforceSameOrigin, getClientIp, jsonError } from "@/lib/http";
+import { grantCredits } from "@/lib/credits";
 
 const bodySchema = z.object({
   email: z.string().email().toLowerCase(),
@@ -54,6 +55,9 @@ export async function POST(req: NextRequest) {
     },
     select: { id: true, email: true }
   });
+
+  // Grant 10 free AI credits to new sign-ups
+  await grantCredits(user.id, 10, "signup_bonus");
 
   return Response.json({ ok: true, user }, { status: 201 });
 }
