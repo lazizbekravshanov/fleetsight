@@ -1,4 +1,4 @@
-import type { SosResult } from "@/components/carrier/types";
+import type { SosResult, OcOfficerCompany } from "@/components/carrier/types";
 
 const SUFFIXES = /\b(inc|incorporated|llc|l\.l\.c|corp|corporation|co|company|ltd|limited|lp|llp)\b\.?/gi;
 
@@ -81,5 +81,40 @@ export async function checkSecretaryOfState(
     return fallback;
   } catch {
     return fallback;
+  }
+}
+
+/** Search OpenCorporates for an officer name to find other corporate roles. */
+export async function searchOfficers(
+  name: string,
+  limit = 5
+): Promise<OcOfficerCompany> {
+  const result: OcOfficerCompany = { officerName: name, companies: [] };
+  const trimmed = name.trim();
+  if (!trimmed) return result;
+
+  try {
+    const url = `https://api.opencorporates.com/v0.4/officers/search?q=${encodeURIComponent(trimmed)}&per_page=${limit}`;
+    const res = await fetch(url, { next: { revalidate: 86400 } });
+    if (!res.ok) return result;
+
+    const data = await res.json();
+    const officers = data?.results?.officers;
+    if (!Array.isArray(officers)) return result;
+
+    for (const entry of officers) {
+      const o = entry.officer;
+      if (!o?.company) continue;
+      result.companies.push({
+        companyName: o.company.name ?? "Unknown",
+        companyNumber: o.company.company_number ?? "",
+        jurisdiction: o.company.jurisdiction_code ?? "",
+        status: o.company.current_status ?? "unknown",
+        opencorporatesUrl: o.company.opencorporates_url ?? "",
+      });
+    }
+    return result;
+  } catch {
+    return result;
   }
 }

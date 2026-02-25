@@ -12,7 +12,8 @@ import { CrashesTab } from "./tabs/crashes-tab";
 import { InsuranceTab } from "./tabs/insurance-tab";
 import { FleetTab } from "./tabs/fleet-tab";
 import { DetectionTab } from "./tabs/detection-tab";
-import type { CarrierDetail, Tab, FleetData, DetectionData } from "./types";
+import { BackgroundTab } from "./tabs/background-tab";
+import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
   Satisfactory: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -61,6 +62,11 @@ export function CarrierDetailView({
   const [detectionData, setDetectionData] = useState<DetectionData | null>(null);
   const [detectionLoading, setDetectionLoading] = useState(false);
   const [detectionError, setDetectionError] = useState<string | null>(null);
+
+  // Lazy background state
+  const [backgroundData, setBackgroundData] = useState<BackgroundData | null>(null);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
+  const [backgroundError, setBackgroundError] = useState<string | null>(null);
 
   // Tabs that need inspections data: overview, safety, inspections
   const needsInspections =
@@ -157,6 +163,21 @@ export function CarrierDetailView({
       .finally(() => setDetectionLoading(false));
   }, [activeTab, c.dot_number, detectionData, detectionLoading]);
 
+  useEffect(() => {
+    if (activeTab !== "background" || backgroundData || backgroundLoading) return;
+
+    setBackgroundLoading(true);
+    setBackgroundError(null);
+    fetch(`/api/carrier/${c.dot_number}/background`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Background returned ${res.status}`);
+        return res.json();
+      })
+      .then((data: BackgroundData) => setBackgroundData(data))
+      .catch(() => setBackgroundError("Failed to load background checks."))
+      .finally(() => setBackgroundLoading(false));
+  }, [activeTab, c.dot_number, backgroundData, backgroundLoading]);
+
   // Use counts from the main response, or fall back to loaded data length
   const inspectionCount = inspections?.length ?? detail.inspectionCount ?? 0;
   const crashCount = crashes?.length ?? detail.crashCount ?? 0;
@@ -169,6 +190,7 @@ export function CarrierDetailView({
     { key: "insurance", label: "Insurance", group: "compliance" },
     { key: "fleet", label: "Fleet", group: "compliance" },
     { key: "detection", label: "Detection", group: "compliance" },
+    { key: "background", label: "Background", group: "compliance" },
   ];
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
@@ -362,6 +384,13 @@ export function CarrierDetailView({
               data={detectionData}
               loading={detectionLoading}
               error={detectionError}
+            />
+          )}
+          {activeTab === "background" && (
+            <BackgroundTab
+              data={backgroundData}
+              loading={backgroundLoading}
+              error={backgroundError}
             />
           )}
         </motion.div>

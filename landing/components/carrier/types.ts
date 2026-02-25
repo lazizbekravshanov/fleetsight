@@ -151,7 +151,69 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background";
+
+/* ── Background Check Types ─────────────────────────────────── */
+
+export type OfficerCrossRef = {
+  officerName: string;
+  carriers: { dotNumber: string; legalName: string; statusCode?: string }[];
+};
+
+export type OfacMatch = {
+  queriedName: string;
+  matchedName: string;
+  score: number;
+  sdnType: string;
+  programs: string[];
+};
+
+export type SamExclusion = {
+  name: string;
+  classification: string;
+  exclusionType: string;
+  agency: string;
+  activeDateRange: string;
+};
+
+export type EdgarFiling = {
+  companyName: string;
+  formType: string;
+  dateFiled: string;
+  description: string;
+  url: string;
+};
+
+export type CourtCase = {
+  caseName: string;
+  court: string;
+  docketNumber: string;
+  dateFiled: string;
+  status: string;
+  url: string;
+};
+
+export type OcOfficerCompany = {
+  officerName: string;
+  companies: {
+    companyName: string;
+    companyNumber: string;
+    jurisdiction: string;
+    status: string;
+    opencorporatesUrl: string;
+  }[];
+};
+
+export type BackgroundData = {
+  officerCrossRefs: OfficerCrossRef[];
+  mailingAddressMatches: { dotNumber: string; legalName: string; statusCode?: string }[];
+  ofacMatches: OfacMatch[];
+  samExclusions: SamExclusion[];
+  edgarFilings: EdgarFiling[];
+  courtCases: CourtCase[];
+  corporateAffiliations: OcOfficerCompany[];
+  errors: string[];
+};
 
 export type AnomalyFlag = {
   id: string;

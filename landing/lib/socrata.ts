@@ -314,6 +314,36 @@ export async function getInsuranceByPolicy(
   });
 }
 
+export async function searchCarriersByOfficer(
+  name: string,
+  limit = 20
+): Promise<SocrataCarrier[]> {
+  const normalized = name.trim().replace(/'/g, "''").toUpperCase();
+  if (!normalized) return [];
+  return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `upper(company_officer_1)='${normalized}' OR upper(company_officer_2)='${normalized}'`,
+    $limit: String(limit),
+    $order: "add_date DESC",
+  });
+}
+
+export async function searchCarriersByMailingAddress(
+  street: string,
+  city: string,
+  state: string,
+  limit = 10
+): Promise<SocrataCarrier[]> {
+  const normStreet = street.trim().replace(/'/g, "''").toUpperCase();
+  const normCity = city.trim().replace(/'/g, "''").toUpperCase();
+  const normState = state.trim().toUpperCase();
+  if (!normStreet || !normCity || !normState) return [];
+  return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `upper(carrier_mailing_street)='${normStreet}' AND upper(carrier_mailing_city)='${normCity}' AND upper(carrier_mailing_state)='${normState}'`,
+    $limit: String(limit),
+    $order: "add_date DESC",
+  });
+}
+
 export async function searchCarriersByAddress(
   street: string,
   city: string,
