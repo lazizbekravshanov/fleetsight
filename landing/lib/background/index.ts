@@ -192,6 +192,7 @@ export async function runBackgroundChecks(
     oshaViolations,
     epaEnforcements,
     bankruptcyCases,
+    riskNarrative: null,
     errors,
   };
 }

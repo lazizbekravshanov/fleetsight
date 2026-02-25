@@ -283,6 +283,7 @@ export type BackgroundData = {
   oshaViolations: OshaViolation[];
   epaEnforcements: EpaEnforcement[];
   bankruptcyCases: BankruptcyCase[];
+  riskNarrative: string | null;
   errors: string[];
 };
 
@@ -315,4 +316,5 @@ export type DetectionData = {
     matchingCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
   }[];
   addressMatches?: { dotNumber: string; legalName: string; statusCode?: string }[];
+  aiExplanation?: string | null;
 };

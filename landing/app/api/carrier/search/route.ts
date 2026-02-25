@@ -4,6 +4,7 @@ import { jsonError } from "@/lib/http";
 import { searchCarriers, socrataFetch, CENSUS_RESOURCE } from "@/lib/socrata";
 import type { SocrataCarrier } from "@/lib/socrata";
 import { parseNaturalQuery } from "@/lib/search-parser";
+import { translateSearchQuery } from "@/lib/ai/search-translator";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
 
 const querySchema = z.object({
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
 
   const { q, limit } = parsed.data;
 
-  // Try natural language parsing first
+  // 1. Try regex-based natural language parsing first (fast, free)
   const natural = parseNaturalQuery(q);
   if (natural) {
     const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
@@ -63,7 +64,33 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Standard search
+  // 2. Check if it looks like a natural language query (not just a name/number)
+  const isNaturalLanguage = /\b(in|with|more than|less than|over|under|between|near|new|large|small|active|inactive|hazmat|broker|carrier|trucking|freight|who|where|find|show|list|get)\b/i.test(q);
+
+  if (isNaturalLanguage) {
+    // 3. Try LLM-powered translation (Haiku, ~100ms, ~$0.001)
+    const aiResult = await translateSearchQuery(q);
+    if (aiResult) {
+      try {
+        const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+          $where: aiResult.soqlWhere,
+          $limit: String(Math.min(aiResult.limit, limit)),
+          $order: "legal_name ASC",
+        });
+
+        return Response.json({
+          results: results.map(mapCarrier),
+          total: results.length,
+          searchMode: "ai" as const,
+          searchDescription: aiResult.description,
+        });
+      } catch {
+        // AI-generated query failed — fall through to standard search
+      }
+    }
+  }
+
+  // 4. Standard search (DOT number, MC number, or name substring)
   const results = await searchCarriers(q, limit);
 
   return Response.json({

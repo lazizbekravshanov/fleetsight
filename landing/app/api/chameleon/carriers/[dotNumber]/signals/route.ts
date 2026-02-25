@@ -10,6 +10,7 @@ import {
 } from "@/lib/socrata";
 import type { InsuranceCrossMatch } from "@/lib/detection-signals";
 import { computeAllSignals } from "@/lib/detection-signals";
+import { explainAnomalies } from "@/lib/ai/anomaly-explainer";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -159,7 +160,7 @@ export async function GET(
     });
   }
 
-  return Response.json({
+  const responseData = {
     anomalyFlags,
     authorityMill: {
       grantCount: authorityMill.grantCount,
@@ -176,5 +177,13 @@ export async function GET(
     },
     sharedInsurance,
     addressMatches,
-  });
+  };
+
+  // Generate AI explanation (non-blocking)
+  const aiExplanation = await explainAnomalies(
+    carrier.legal_name,
+    responseData
+  ).catch(() => null);
+
+  return Response.json({ ...responseData, aiExplanation });
 }

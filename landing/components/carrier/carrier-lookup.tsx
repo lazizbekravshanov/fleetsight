@@ -18,8 +18,11 @@ const RISK_GRADE_COLORS: Record<string, string> = {
 
 const EXAMPLE_QUERIES = [
   "50+ trucks in Texas",
-  "brokers in California",
   "hazmat carriers in Ohio",
+  "new carriers with over 100 trucks",
+  "freight brokers in Florida",
+  "large carriers in New York",
+  "sole proprietorship trucking in Georgia",
 ];
 
 function updateUrl(params: Record<string, string | null>) {
@@ -44,7 +47,7 @@ export function CarrierLookup() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [searchMode, setSearchMode] = useState<"standard" | "natural">("standard");
+  const [searchMode, setSearchMode] = useState<"standard" | "natural" | "ai">("standard");
   const [searchDescription, setSearchDescription] = useState<string | null>(null);
 
   const doSearch = useCallback(async (q: string) => {
@@ -191,8 +194,8 @@ export function CarrierLookup() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="DOT number, MC number, or company name..."
-              aria-label="Search carriers by name, DOT number, or MC number"
+              placeholder="DOT, MC, company name, or try &quot;large carriers in Texas&quot;..."
+              aria-label="Search carriers by name, DOT number, MC number, or natural language"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
@@ -229,10 +232,14 @@ export function CarrierLookup() {
         )}
 
         {/* Search mode indicator + description */}
-        {searched && searchMode === "natural" && searchDescription && (
+        {searched && (searchMode === "natural" || searchMode === "ai") && searchDescription && (
           <div className="mx-auto mt-4 max-w-2xl flex items-center gap-2">
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-indigo-600/20">
-              AI Search
+            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ring-1 ${
+              searchMode === "ai"
+                ? "bg-violet-50 text-violet-700 ring-violet-600/20"
+                : "bg-indigo-50 text-indigo-700 ring-indigo-600/20"
+            }`}>
+              {searchMode === "ai" ? "AI Search" : "Smart Search"}
             </span>
             <span className="text-xs text-gray-500">{searchDescription}</span>
           </div>
