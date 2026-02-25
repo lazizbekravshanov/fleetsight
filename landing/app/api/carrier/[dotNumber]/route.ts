@@ -6,9 +6,12 @@ import {
   getInspectionsByDot,
   getCrashesByDot,
   getPeerBenchmark,
+  searchCarriersByAddress,
 } from "@/lib/socrata";
 import { getCarrierBasics, getCarrierAuthority, getCarrierOos, getCarrierProfile, extractCarrierRecord } from "@/lib/fmcsa";
 import { isSmartWayPartner } from "@/lib/smartway";
+import { checkVoipIndicators } from "@/lib/voip-check";
+import { checkSecretaryOfState } from "@/lib/opencorporates";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -70,13 +73,31 @@ export async function GET(
   // SmartWay partner check
   const smartwayPartner = isSmartWayPartner(carrier.legal_name);
 
-  // Peer benchmark — depends on carrier's fleetsize, non-fatal
-  let peerBenchmark = null;
-  try {
-    peerBenchmark = await getPeerBenchmark(carrier.fleetsize);
-  } catch {
-    // Non-fatal
-  }
+  // Parallel: peer benchmark, VoIP check, SoS check, affiliated carriers
+  const [peerBenchmark, voip, sosResult, addressMatches] = await Promise.all([
+    getPeerBenchmark(carrier.fleetsize).catch(() => null),
+    Promise.resolve(checkVoipIndicators(carrier.phone)),
+    checkSecretaryOfState(carrier.legal_name, carrier.phy_state).catch(() => ({
+      found: false,
+      matchQuality: "none" as const,
+      registrationStatus: null,
+      registeredName: null,
+      jurisdiction: null,
+      opencorporatesUrl: null,
+    })),
+    carrier.phy_street && carrier.phy_city && carrier.phy_state
+      ? searchCarriersByAddress(carrier.phy_street, carrier.phy_city, carrier.phy_state).catch(() => [])
+      : Promise.resolve([]),
+  ]);
+
+  // Filter affiliated carriers (exclude self)
+  const affiliatedCarriers = addressMatches
+    .filter((m) => m.dot_number !== String(dotNumber))
+    .map((m) => ({
+      dotNumber: m.dot_number,
+      legalName: m.legal_name,
+      statusCode: m.status_code,
+    }));
 
   return Response.json({
     carrier,
@@ -89,5 +110,8 @@ export async function GET(
     smartwayPartner,
     inspectionCount: inspections.length,
     crashCount: crashes.length,
+    voip,
+    sosResult,
+    affiliatedCarriers: affiliatedCarriers.length > 0 ? affiliatedCarriers : undefined,
   });
 }

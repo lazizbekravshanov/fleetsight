@@ -8,6 +8,20 @@ import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
 import { CarrierDetailView } from "./carrier-detail";
 import type { SearchResult, CarrierDetail, Tab } from "./types";
 
+const RISK_GRADE_COLORS: Record<string, string> = {
+  A: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+  B: "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/20",
+  C: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  D: "bg-orange-50 text-orange-700 ring-1 ring-orange-600/20",
+  F: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20",
+};
+
+const EXAMPLE_QUERIES = [
+  "50+ trucks in Texas",
+  "brokers in California",
+  "hazmat carriers in Ohio",
+];
+
 function updateUrl(params: Record<string, string | null>) {
   const url = new URL(window.location.href);
   for (const [k, v] of Object.entries(params)) {
@@ -30,6 +44,8 @@ export function CarrierLookup() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [searchMode, setSearchMode] = useState<"standard" | "natural">("standard");
+  const [searchDescription, setSearchDescription] = useState<string | null>(null);
 
   const doSearch = useCallback(async (q: string) => {
     setSearching(true);
@@ -44,6 +60,8 @@ export function CarrierLookup() {
       if (!res.ok) throw new Error(`Search returned ${res.status}`);
       const data = await res.json();
       setResults(data.results || []);
+      setSearchMode(data.searchMode || "standard");
+      setSearchDescription(data.searchDescription || null);
       setSearched(true);
     } catch {
       setResults([]);
@@ -120,6 +138,12 @@ export function CarrierLookup() {
     await doSelect(dotNumber);
   }
 
+  function handleExampleClick(example: string) {
+    setQuery(example);
+    updateUrl({ q: example, dot: null });
+    doSearch(example);
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Header */}
@@ -139,7 +163,7 @@ export function CarrierLookup() {
           </h1>
           <p className="mt-2 text-sm text-gray-500">
             Search 4.4M FMCSA-registered carriers, brokers &amp; freight
-            forwarders by name or DOT number
+            forwarders by name, DOT number, or MC number
           </p>
         </div>
 
@@ -167,8 +191,8 @@ export function CarrierLookup() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="DOT number or company name..."
-              aria-label="Search carriers by name or DOT number"
+              placeholder="DOT number, MC number, or company name..."
+              aria-label="Search carriers by name, DOT number, or MC number"
               className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
@@ -180,9 +204,39 @@ export function CarrierLookup() {
             {searching ? "Searching..." : "Search"}
           </button>
         </form>
-        <p className="mx-auto mt-1.5 max-w-2xl text-xs text-gray-400">
-          Press <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">/</kbd> to search
-        </p>
+        <div className="mx-auto mt-1.5 max-w-2xl flex items-center justify-between">
+          <p className="text-xs text-gray-400">
+            Press <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">/</kbd> to search
+          </p>
+        </div>
+
+        {/* Example query chips */}
+        {!searched && !selectedDot && (
+          <div className="mx-auto mt-3 max-w-2xl">
+            <p className="mb-1.5 text-xs text-gray-400">Try a smart search:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {EXAMPLE_QUERIES.map((eq) => (
+                <button
+                  key={eq}
+                  onClick={() => handleExampleClick(eq)}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                >
+                  {eq}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Search mode indicator + description */}
+        {searched && searchMode === "natural" && searchDescription && (
+          <div className="mx-auto mt-4 max-w-2xl flex items-center gap-2">
+            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-indigo-600/20">
+              AI Search
+            </span>
+            <span className="text-xs text-gray-500">{searchDescription}</span>
+          </div>
+        )}
 
         {/* Results */}
         {searched && results.length === 0 && (
@@ -267,6 +321,9 @@ export function CarrierLookup() {
                         </p>
                         <p className="text-xs text-gray-500">
                           DOT {r.dotNumber}
+                          {r.mcNumber && (
+                            <span className="ml-2">{r.mcNumber}</span>
+                          )}
                           {r.phyState && (
                             <span className="ml-2">{r.phyState}</span>
                           )}
@@ -279,6 +336,14 @@ export function CarrierLookup() {
                         </p>
                       </div>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
+                        {r.riskIndicator && (
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${RISK_GRADE_COLORS[r.riskIndicator.grade] ?? ""}`}
+                            title={`Risk score: ${r.riskIndicator.score}/100`}
+                          >
+                            {r.riskIndicator.grade}
+                          </span>
+                        )}
                         {r.classdef && (
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[badge.color]}`}

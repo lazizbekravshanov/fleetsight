@@ -33,6 +33,9 @@ export function CarrierDetailView({
   const badge = entityTypeBadge(c.classdef);
   const tablistRef = useRef<HTMLDivElement>(null);
 
+  // Authority age computation
+  const authorityAge = computeAuthorityAge(c.add_date);
+
   // Lazy inspections state
   const [inspections, setInspections] = useState<SocrataInspection[] | null>(null);
   const [inspectionsLoading, setInspectionsLoading] = useState(false);
@@ -239,6 +242,11 @@ export function CarrierDetailView({
                   SmartWay
                 </span>
               )}
+              {authorityAge.badge && (
+                <span className={`rounded-full px-3 py-1 text-xs font-medium ${authorityAge.badge.className}`}>
+                  {authorityAge.badge.label}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -307,6 +315,9 @@ export function CarrierDetailView({
               peerBenchmark={detail.peerBenchmark}
               onSwitchToSafety={() => setActiveTab("safety")}
               onSwitchTab={(tab) => setActiveTab(tab as Tab)}
+              voip={detail.voip}
+              sosResult={detail.sosResult}
+              affiliatedCarriers={detail.affiliatedCarriers}
             />
           )}
           {activeTab === "safety" && (
@@ -357,4 +368,40 @@ export function CarrierDetailView({
       </AnimatePresence>
     </div>
   );
+}
+
+/* ── Authority Age Helper ─────────────────────────────────────── */
+
+function computeAuthorityAge(addDate?: string): {
+  days: number | null;
+  formatted: string | null;
+  badge: { label: string; className: string } | null;
+} {
+  if (!addDate) return { days: null, formatted: null, badge: null };
+  const date = new Date(addDate);
+  if (isNaN(date.getTime())) return { days: null, formatted: null, badge: null };
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (days < 90) {
+    return {
+      days,
+      formatted: `${days} days`,
+      badge: { label: "New Authority", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20" },
+    };
+  }
+  if (days < 180) {
+    return {
+      days,
+      formatted: `${Math.floor(days / 30)} months`,
+      badge: { label: "Recent Authority", className: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20" },
+    };
+  }
+
+  const years = Math.floor(days / 365);
+  const months = Math.floor((days % 365) / 30);
+  const formatted = years > 0
+    ? `${years}y ${months}m`
+    : `${months} months`;
+
+  return { days, formatted, badge: null };
 }

@@ -1,6 +1,6 @@
 const BASE_URL = "https://data.transportation.gov/resource";
 
-const CENSUS_RESOURCE = "az4n-8mr2";
+export const CENSUS_RESOURCE = "az4n-8mr2";
 const INSPECTION_RESOURCE = "fx4q-ay7w";
 const CRASH_RESOURCE = "aayw-vxb3";
 const INSURANCE_RESOURCE = "qh9u-swkp";   // dot_number is 8-char zero-padded
@@ -107,7 +107,7 @@ export type SocrataCrash = {
   truck_bus_ind?: string;
 };
 
-async function socrataFetch<T>(
+export async function socrataFetch<T>(
   resourceId: string,
   params: Record<string, string>
 ): Promise<T[]> {
@@ -137,9 +137,17 @@ export async function searchCarriers(
   const trimmed = query.trim();
   const isNumeric = /^\d+$/.test(trimmed);
 
-  const where = isNumeric
-    ? `dot_number='${trimmed}'`
-    : `upper(legal_name) like upper('%${trimmed.replace(/'/g, "''")}%') OR upper(dba_name) like upper('%${trimmed.replace(/'/g, "''")}%')`;
+  // MC/docket number pattern: MC-123456, MC 123456, MC123456
+  const mcMatch = trimmed.match(/^MC[-\s]?(\d{3,8})$/i);
+
+  let where: string;
+  if (mcMatch) {
+    where = `docket1='${mcMatch[1]}'`;
+  } else if (isNumeric) {
+    where = `dot_number='${trimmed}'`;
+  } else {
+    where = `upper(legal_name) like upper('%${trimmed.replace(/'/g, "''")}%') OR upper(dba_name) like upper('%${trimmed.replace(/'/g, "''")}%')`;
+  }
 
   return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
     $where: where,

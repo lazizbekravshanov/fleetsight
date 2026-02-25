@@ -9,6 +9,40 @@ export type SearchResult = {
   powerUnits: number | null;
   classdef: string | null;
   businessOrgDesc: string | null;
+  addDate?: string | null;
+  mcNumber?: string | null;
+  riskIndicator?: { grade: "A" | "B" | "C" | "D" | "F"; score: number };
+};
+
+export type RiskFactor = {
+  category: string;
+  label: string;
+  value: number;
+  weight: number;
+  weightedScore: number;
+  severity: "critical" | "elevated" | "low";
+  detail: string;
+};
+
+export type RiskScore = {
+  score: number;
+  grade: "A" | "B" | "C" | "D" | "F";
+  factors: RiskFactor[];
+};
+
+export type VoipResult = {
+  isLikelyVoip: boolean;
+  reason: string | null;
+  provider: string | null;
+};
+
+export type SosResult = {
+  found: boolean;
+  matchQuality: "exact" | "partial" | "none";
+  registrationStatus: string | null;
+  registeredName: string | null;
+  jurisdiction: string | null;
+  opencorporatesUrl: string | null;
 };
 
 export type BasicScore = {
@@ -94,6 +128,9 @@ export type CarrierDetail = {
   smartwayPartner?: boolean;
   inspectionCount?: number;
   crashCount?: number;
+  voip?: VoipResult;
+  sosResult?: SosResult;
+  affiliatedCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
   // Lazy-loaded fields (populated after tab activation)
   inspections?: SocrataInspection[];
   crashes?: SocrataCrash[];

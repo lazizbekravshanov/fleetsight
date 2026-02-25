@@ -6,8 +6,9 @@ import {
   decodeCarship,
   decodeClassdef,
 } from "@/lib/fmcsa-codes";
-import { Row, Stat, extractArray, str, parseBasics } from "../shared";
-import type { BasicScore, PeerBenchmark } from "../types";
+import { Row, extractArray, str, parseBasics } from "../shared";
+import type { BasicScore, PeerBenchmark, VoipResult, SosResult, RiskScore } from "../types";
+import { computeRiskScore } from "@/lib/risk-score";
 
 export function OverviewTab({
   carrier: c,
@@ -20,6 +21,9 @@ export function OverviewTab({
   peerBenchmark,
   onSwitchToSafety,
   onSwitchTab,
+  voip,
+  sosResult,
+  affiliatedCarriers,
 }: {
   carrier: SocrataCarrier;
   authority: unknown;
@@ -31,6 +35,9 @@ export function OverviewTab({
   peerBenchmark: PeerBenchmark | null;
   onSwitchToSafety: () => void;
   onSwitchTab?: (tab: string) => void;
+  voip?: VoipResult;
+  sosResult?: SosResult;
+  affiliatedCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
 }) {
   const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
     .filter(Boolean)
@@ -46,8 +53,11 @@ export function OverviewTab({
   const classifications = decodeClassdef(c.classdef);
   const basicScores = parseBasics(basics);
 
-  // MCS-150 staleness
-  const mcs150Staleness = computeMcs150Staleness(c.mcs150_date);
+  // Contact recency
+  const contactRecency = computeContactRecency(c.mcs150_date, c.add_date);
+
+  // Authority age
+  const authorityAge = computeAuthorityAge(c.add_date);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -58,7 +68,9 @@ export function OverviewTab({
         crashes={crashes}
         oos={oos}
         authorityHistory={authorityHistory}
-        mcs150Date={c.mcs150_date}
+        carrier={c}
+        voip={voip}
+        sosResult={sosResult}
         onSwitchTab={onSwitchTab}
       />
 
@@ -75,7 +87,22 @@ export function OverviewTab({
           {mailingAddress && mailingAddress !== address && (
             <Row label="Mailing Address" value={mailingAddress} />
           )}
-          {c.phone && <Row label="Phone" value={c.phone} />}
+          {c.phone && (
+            <div className="flex justify-between gap-4">
+              <dt className="shrink-0 text-gray-500">Phone</dt>
+              <dd className="flex items-center gap-2 text-right text-gray-900">
+                {c.phone}
+                {voip?.isLikelyVoip && (
+                  <span
+                    className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-600/20"
+                    title={voip.reason ?? "Likely VoIP number"}
+                  >
+                    VoIP
+                  </span>
+                )}
+              </dd>
+            </div>
+          )}
           {c.cell_phone && <Row label="Cell Phone" value={c.cell_phone} />}
           {c.fax && <Row label="Fax" value={c.fax} />}
           {c.email_address && <Row label="Email" value={c.email_address} />}
@@ -92,22 +119,37 @@ export function OverviewTab({
             <Row label="D&B Number" value={c.dun_bradstreet_no} />
           )}
           {c.add_date && (
-            <Row
-              label="Operating Since"
-              value={new Date(c.add_date).toLocaleDateString()}
-            />
+            <div className="flex justify-between gap-4">
+              <dt className="shrink-0 text-gray-500">Operating Since</dt>
+              <dd className="flex items-center gap-2 text-right text-gray-900">
+                {new Date(c.add_date).toLocaleDateString()}
+                {authorityAge.badge && (
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${authorityAge.badge.className}`}>
+                    {authorityAge.badge.label}
+                  </span>
+                )}
+                {authorityAge.formatted && !authorityAge.badge && (
+                  <span className="text-xs text-gray-400">({authorityAge.formatted})</span>
+                )}
+              </dd>
+            </div>
           )}
           {c.mcs150_date && (
             <div className="flex justify-between gap-4">
-              <dt className="shrink-0 text-gray-500">MCS-150 Date</dt>
+              <dt className="shrink-0 text-gray-500">Contact Last Verified</dt>
               <dd className="flex items-center gap-2 text-right text-gray-900">
                 {new Date(c.mcs150_date).toLocaleDateString()}
-                {mcs150Staleness && (
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${mcs150Staleness.className}`}>
-                    {mcs150Staleness.label}
+                {contactRecency.staleness && (
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${contactRecency.staleness.className}`}>
+                    {contactRecency.staleness.label}
                   </span>
                 )}
               </dd>
+            </div>
+          )}
+          {contactRecency.isSuspicious && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-600">
+              {contactRecency.suspicionReason}
             </div>
           )}
           {c.mcs150_mileage && (
@@ -173,6 +215,11 @@ export function OverviewTab({
         </dl>
       </div>
 
+      {/* Secretary of State / Business Registration */}
+      {sosResult && (
+        <SosCard sosResult={sosResult} />
+      )}
+
       {/* BASIC Scores Summary */}
       {basicScores.length > 0 && (
         <BasicScoresSummary scores={basicScores} onViewAll={onSwitchToSafety} />
@@ -208,11 +255,72 @@ export function OverviewTab({
         </h3>
         <AuthoritySection authority={authority} oos={oos} />
       </div>
+
+      {/* Related Carriers */}
+      {affiliatedCarriers && affiliatedCarriers.length > 0 && (
+        <RelatedCarriersCard carriers={affiliatedCarriers} onSwitchTab={onSwitchTab} />
+      )}
     </div>
   );
 }
 
-/* ── Risk Summary Card ────────────────────────────────────────── */
+/* ── Risk Summary Card with Circular Score Badge ─────────────── */
+
+const GRADE_COLORS: Record<string, { stroke: string; text: string; bg: string }> = {
+  A: { stroke: "stroke-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50" },
+  B: { stroke: "stroke-emerald-400", text: "text-emerald-600", bg: "bg-emerald-50" },
+  C: { stroke: "stroke-amber-500", text: "text-amber-700", bg: "bg-amber-50" },
+  D: { stroke: "stroke-orange-500", text: "text-orange-700", bg: "bg-orange-50" },
+  F: { stroke: "stroke-rose-500", text: "text-rose-700", bg: "bg-rose-50" },
+};
+
+function CircularScoreBadge({ score, grade }: { score: number; grade: string }) {
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 100) * circumference;
+  const colors = GRADE_COLORS[grade] ?? GRADE_COLORS.C;
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <svg width="88" height="88" viewBox="0 0 88 88" className="shrink-0">
+        <circle
+          cx="44" cy="44" r={radius}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="6"
+        />
+        <circle
+          cx="44" cy="44" r={radius}
+          fill="none"
+          className={colors.stroke}
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          transform="rotate(-90 44 44)"
+        />
+        <text
+          x="44" y="38"
+          textAnchor="middle"
+          className={`text-2xl font-bold ${colors.text}`}
+          fill="currentColor"
+          dominantBaseline="middle"
+        >
+          {grade}
+        </text>
+        <text
+          x="44" y="56"
+          textAnchor="middle"
+          className="text-[10px] text-gray-400"
+          fill="currentColor"
+          dominantBaseline="middle"
+        >
+          {score}/100
+        </text>
+      </svg>
+    </div>
+  );
+}
 
 type RiskLevel = "critical" | "elevated" | "low";
 
@@ -222,7 +330,9 @@ function RiskSummaryCard({
   crashes,
   oos,
   authorityHistory,
-  mcs150Date,
+  carrier,
+  voip,
+  sosResult,
   onSwitchTab,
 }: {
   basics: unknown;
@@ -230,11 +340,30 @@ function RiskSummaryCard({
   crashes: SocrataCrash[];
   oos: unknown;
   authorityHistory: SocrataAuthorityHistory[];
-  mcs150Date?: string;
+  carrier: SocrataCarrier;
+  voip?: VoipResult;
+  sosResult?: SosResult;
   onSwitchTab?: (tab: string) => void;
 }) {
   const basicScores = parseBasics(basics);
   const oosRecords = extractArray(oos, "oos");
+
+  // Compute full risk score
+  const riskResult: RiskScore = computeRiskScore({
+    basicScores,
+    inspections,
+    crashes,
+    oosRecords,
+    authorityHistory,
+    mcs150Date: carrier.mcs150_date,
+    addDate: carrier.add_date,
+    insurance: [], // insurance loaded lazily, not available on overview initial load
+    powerUnits: carrier.power_units ? parseInt(carrier.power_units, 10) : undefined,
+    totalDrivers: carrier.total_drivers ? parseInt(carrier.total_drivers, 10) : undefined,
+    isHazmat: carrier.hm_ind === "Y",
+    isVoip: voip?.isLikelyVoip,
+    sosMatchQuality: sosResult?.matchQuality,
+  });
 
   // 1. BASIC Risk
   const basicsAbove75 = basicScores.filter((s) => s.percentile > 75).length;
@@ -252,38 +381,25 @@ function RiskSummaryCard({
     (s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0),
     0
   );
-  const totalInjuries = crashes.reduce(
-    (s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0),
-    0
-  );
-  const totalTow = crashes.reduce(
-    (s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0),
-    0
-  );
-  const severityScore = totalFatalities * 3 + totalInjuries * 2 + totalTow;
+  const severityScore =
+    totalFatalities * 3 +
+    crashes.reduce((s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0), 0) * 2 +
+    crashes.reduce((s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0), 0);
 
-  // 4. Authority Risk — active OOS orders, recent revocations
+  // 4. Authority Risk
   const activeOos = oosRecords.length > 0;
   const revocations = authorityHistory.filter(
     (h) => (h.disp_action_desc ?? "").toUpperCase().includes("REVOK")
   );
 
   // 5. Data Freshness
-  const mcs150 = computeMcs150Staleness(mcs150Date);
+  const mcs150 = computeMcs150Staleness(carrier.mcs150_date);
 
   // Overall risk level
   let riskLevel: RiskLevel = "low";
-  if (
-    totalFatalities > 0 ||
-    basicsAbove75 >= 2 ||
-    activeOos
-  ) {
+  if (totalFatalities > 0 || basicsAbove75 >= 2 || activeOos) {
     riskLevel = "critical";
-  } else if (
-    basicsAbove75 >= 1 ||
-    oosRate > 10 ||
-    severityScore > 5
-  ) {
+  } else if (basicsAbove75 >= 1 || oosRate > 10 || severityScore > 5) {
     riskLevel = "elevated";
   }
 
@@ -331,11 +447,30 @@ function RiskSummaryCard({
 
   return (
     <div className={`md:col-span-2 rounded-xl border border-gray-200 border-l-4 ${cfg.border} bg-white p-5 shadow-sm`}>
-      <div className="flex items-center gap-3 mb-4">
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
-          {cfg.label}
-        </span>
-        <span className="text-xs text-gray-400">Composite risk assessment</span>
+      <div className="flex items-start gap-4 mb-4">
+        <CircularScoreBadge score={riskResult.score} grade={riskResult.grade} />
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
+              {cfg.label}
+            </span>
+            <span className="text-xs text-gray-400">Composite risk score: {riskResult.score}/100</span>
+          </div>
+          {/* Top risk factors */}
+          <div className="space-y-1">
+            {riskResult.factors
+              .filter((f) => f.value > 0)
+              .slice(0, 3)
+              .map((f) => (
+                <div key={f.category} className="flex items-center gap-2 text-xs">
+                  <span className={`h-1.5 w-1.5 rounded-full ${
+                    f.severity === "critical" ? "bg-rose-500" : f.severity === "elevated" ? "bg-amber-500" : "bg-emerald-500"
+                  }`} />
+                  <span className="text-gray-600">{f.detail}</span>
+                </div>
+              ))}
+          </div>
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {signals.map((sig) => (
@@ -374,6 +509,176 @@ function computeMcs150Staleness(mcs150Date?: string) {
     return { label: "Due for Update", className: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20" };
   }
   return { label: "Current", className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" };
+}
+
+/* ── Contact Recency ──────────────────────────────────────────── */
+
+function computeContactRecency(mcs150Date?: string, addDate?: string) {
+  const staleness = computeMcs150Staleness(mcs150Date);
+
+  let isSuspicious = false;
+  let suspicionReason: string | null = null;
+
+  if (mcs150Date && addDate) {
+    const mcsDate = new Date(mcs150Date);
+    const authDate = new Date(addDate);
+    if (!isNaN(mcsDate.getTime()) && !isNaN(authDate.getTime())) {
+      const mcsMonths = (Date.now() - mcsDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+      const authDays = (Date.now() - authDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (mcsMonths > 24 && authDays < 180) {
+        isSuspicious = true;
+        suspicionReason = "New authority with overdue MCS-150 — contact info may be unverified";
+      }
+    }
+  }
+
+  return { lastVerified: mcs150Date, staleness, isSuspicious, suspicionReason };
+}
+
+/* ── Authority Age ────────────────────────────────────────────── */
+
+function computeAuthorityAge(addDate?: string) {
+  if (!addDate) return { days: null, formatted: null, badge: null };
+  const date = new Date(addDate);
+  if (isNaN(date.getTime())) return { days: null, formatted: null, badge: null };
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (days < 90) {
+    return {
+      days,
+      formatted: `${days} days`,
+      badge: { label: "New Authority", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20" },
+    };
+  }
+  if (days < 180) {
+    return {
+      days,
+      formatted: `${Math.floor(days / 30)} months`,
+      badge: { label: "Recent Authority", className: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20" },
+    };
+  }
+
+  const years = Math.floor(days / 365);
+  const months = Math.floor((days % 365) / 30);
+  return {
+    days,
+    formatted: years > 0 ? `${years}y ${months}m` : `${months} months`,
+    badge: null,
+  };
+}
+
+/* ── Secretary of State Card ──────────────────────────────────── */
+
+function SosCard({ sosResult }: { sosResult: SosResult }) {
+  const matchColors = {
+    exact: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
+    partial: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+    none: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20",
+  };
+
+  const matchLabels = {
+    exact: "Exact Match",
+    partial: "Partial Match",
+    none: "No Match Found",
+  };
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-violet-400" />
+        Business Registration
+      </h3>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between gap-4">
+          <span className="shrink-0 text-gray-500">Match Status</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${matchColors[sosResult.matchQuality]}`}>
+            {matchLabels[sosResult.matchQuality]}
+          </span>
+        </div>
+        {sosResult.registeredName && (
+          <Row label="Registered Name" value={sosResult.registeredName} />
+        )}
+        {sosResult.registrationStatus && (
+          <Row label="Registration Status" value={sosResult.registrationStatus} />
+        )}
+        {sosResult.jurisdiction && (
+          <Row label="Jurisdiction" value={sosResult.jurisdiction.toUpperCase()} />
+        )}
+        {sosResult.opencorporatesUrl && (
+          <div className="pt-1">
+            <a
+              href={sosResult.opencorporatesUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+            >
+              View on OpenCorporates &rarr;
+            </a>
+          </div>
+        )}
+        {sosResult.matchQuality === "none" && (
+          <p className="text-xs text-gray-400">
+            No matching business registration found in state records.
+            This may indicate an unregistered entity.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Related Carriers Card ────────────────────────────────────── */
+
+function RelatedCarriersCard({
+  carriers,
+  onSwitchTab,
+}: {
+  carriers: { dotNumber: string; legalName: string; statusCode?: string }[];
+  onSwitchTab?: (tab: string) => void;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400" />
+        Related Carriers
+        <span className="ml-auto text-[10px] font-normal normal-case text-gray-400">
+          {carriers.length} carrier{carriers.length !== 1 ? "s" : ""} at same address
+        </span>
+      </h3>
+      <div className="space-y-1">
+        {carriers.slice(0, 10).map((c) => (
+          <div
+            key={c.dotNumber}
+            className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs"
+          >
+            <div>
+              <span className="font-medium text-gray-900">{c.legalName}</span>
+              <span className="ml-2 text-gray-400">DOT {c.dotNumber}</span>
+            </div>
+            {c.statusCode && (
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  c.statusCode === "A"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                }`}
+              >
+                {c.statusCode === "A" ? "Active" : "Inactive"}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      {onSwitchTab && (
+        <button
+          onClick={() => onSwitchTab("detection")}
+          className="mt-3 text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+        >
+          View detection analysis &rarr;
+        </button>
+      )}
+    </div>
+  );
 }
 
 /* ── BASIC Scores Summary Card ────────────────────────────────── */
@@ -449,7 +754,6 @@ function PeerBenchmarkCard({
   const carrierPU = parseInt(carrier.power_units ?? "0", 10);
   const carrierDrivers = parseInt(carrier.total_drivers ?? "0", 10);
 
-  // Only show Power Units and Drivers — OOS Rate removed (census dataset has no OOS data)
   const metrics = [
     {
       label: "Power Units",
