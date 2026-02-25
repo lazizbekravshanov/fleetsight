@@ -4,11 +4,20 @@ import { searchOfficers } from "@/lib/opencorporates";
 import { screenOfac } from "./ofac";
 import { searchSamExclusions } from "./sam";
 import { searchEdgar } from "./edgar";
-import { searchCourtListener } from "./courtlistener";
+import { searchCourtListener, searchBankruptcy } from "./courtlistener";
+import { buildDigitalFootprint } from "./digital-footprint";
+import { searchOshaViolations } from "./osha";
+import { searchEpaEnforcement } from "./epa";
+import { analyzeAddress } from "./address-intel";
 import type {
   BackgroundData,
   OfficerCrossRef,
   OcOfficerCompany,
+  DigitalFootprint,
+  AddressIntelligence,
+  OshaViolation,
+  EpaEnforcement,
+  BankruptcyCase,
 } from "@/components/carrier/types";
 
 /**
@@ -37,8 +46,23 @@ export async function runBackgroundChecks(
   const { companyName, officers, allNames } = extractNames(carrier);
   const errors: string[] = [];
   const dotNumber = carrier.dot_number;
+  const state = carrier.phy_state?.trim();
 
-  // Fan out all checks in parallel
+  // Synchronous checks (no API calls)
+  let digitalFootprint: DigitalFootprint | null = null;
+  let addressIntelligence: AddressIntelligence | null = null;
+  try {
+    digitalFootprint = buildDigitalFootprint(carrier);
+  } catch {
+    errors.push("Digital footprint analysis failed");
+  }
+  try {
+    addressIntelligence = analyzeAddress(carrier);
+  } catch {
+    errors.push("Address intelligence failed");
+  }
+
+  // Fan out all async checks in parallel
   const [
     officerCrossRefResults,
     mailingAddressResult,
@@ -46,6 +70,9 @@ export async function runBackgroundChecks(
     samResult,
     edgarResult,
     courtResult,
+    bankruptcyResult,
+    oshaResult,
+    epaResult,
     ...ocResults
   ] = await Promise.allSettled([
     // 1. Officer cross-references (one query per officer)
@@ -69,9 +96,9 @@ export async function runBackgroundChecks(
     (async () => {
       const street = carrier.carrier_mailing_street?.trim();
       const city = carrier.carrier_mailing_city?.trim();
-      const state = carrier.carrier_mailing_state?.trim();
-      if (!street || !city || !state) return [];
-      const carriers = await searchCarriersByMailingAddress(street, city, state, 20);
+      const mailState = carrier.carrier_mailing_state?.trim();
+      if (!street || !city || !mailState) return [];
+      const carriers = await searchCarriersByMailingAddress(street, city, mailState, 20);
       return carriers
         .filter((c) => c.dot_number !== dotNumber)
         .map((c) => ({
@@ -90,10 +117,19 @@ export async function runBackgroundChecks(
     // 5. SEC EDGAR
     searchEdgar(companyName, officers),
 
-    // 6. CourtListener
+    // 6. CourtListener (federal litigation)
     searchCourtListener(allNames),
 
-    // 7+. OpenCorporates officer search (one per officer)
+    // 7. Bankruptcy search
+    searchBankruptcy(allNames),
+
+    // 8. OSHA violations
+    searchOshaViolations(companyName, state),
+
+    // 9. EPA enforcement
+    searchEpaEnforcement(companyName, state),
+
+    // 10+. OpenCorporates officer search (one per officer)
     ...officers.map((name) => searchOfficers(name, 5)),
   ]);
 
@@ -124,6 +160,15 @@ export async function runBackgroundChecks(
   const courtCases = courtResult.status === "fulfilled" ? courtResult.value : [];
   if (courtResult.status === "rejected") errors.push("Court records search failed");
 
+  const bankruptcyCases: BankruptcyCase[] = bankruptcyResult.status === "fulfilled" ? bankruptcyResult.value : [];
+  if (bankruptcyResult.status === "rejected") errors.push("Bankruptcy search failed");
+
+  const oshaViolations: OshaViolation[] = oshaResult.status === "fulfilled" ? oshaResult.value : [];
+  if (oshaResult.status === "rejected") errors.push("OSHA violation search failed");
+
+  const epaEnforcements: EpaEnforcement[] = epaResult.status === "fulfilled" ? epaResult.value : [];
+  if (epaResult.status === "rejected") errors.push("EPA enforcement search failed");
+
   const corporateAffiliations: OcOfficerCompany[] = [];
   for (const r of ocResults) {
     if (r.status === "fulfilled") {
@@ -142,6 +187,11 @@ export async function runBackgroundChecks(
     edgarFilings,
     courtCases,
     corporateAffiliations,
+    digitalFootprint,
+    addressIntelligence,
+    oshaViolations,
+    epaEnforcements,
+    bankruptcyCases,
     errors,
   };
 }

@@ -204,6 +204,72 @@ export type OcOfficerCompany = {
   }[];
 };
 
+export type SearchLink = {
+  label: string;
+  url: string;
+  category: "social" | "business" | "registry" | "search";
+};
+
+export type DigitalFootprint = {
+  websiteDomain: string | null;
+  websiteUrl: string | null;
+  emailDomain: string | null;
+  dnbNumber: string | null;
+  dnbUrl: string | null;
+  bbbSearchUrl: string | null;
+  companySearchLinks: SearchLink[];
+  officerSearchLinks: {
+    officerName: string;
+    links: SearchLink[];
+  }[];
+  sosDeepLink: string | null;
+  uccSearchUrl: string | null;
+};
+
+export type AddressIntelligence = {
+  isPoBox: boolean;
+  isLikelyVirtualOffice: boolean;
+  virtualOfficeProvider: string | null;
+  isLikelyResidential: boolean;
+  googleMapsUrl: string;
+  streetViewUrl: string;
+  flags: string[];
+};
+
+export type OshaViolation = {
+  activityNumber: string;
+  inspectionDate: string;
+  establishment: string;
+  city: string;
+  state: string;
+  violationType: string;
+  penalty: number;
+  description: string;
+  status: string;
+};
+
+export type EpaEnforcement = {
+  facilityName: string;
+  registryId: string;
+  city: string;
+  state: string;
+  programAreas: string[];
+  violationStatus: string;
+  lastInspectionDate: string;
+  penalties: number;
+  url: string;
+};
+
+export type BankruptcyCase = {
+  caseName: string;
+  court: string;
+  chapter: string;
+  docketNumber: string;
+  dateFiled: string;
+  status: string;
+  url: string;
+};
+
 export type BackgroundData = {
   officerCrossRefs: OfficerCrossRef[];
   mailingAddressMatches: { dotNumber: string; legalName: string; statusCode?: string }[];
@@ -212,6 +278,11 @@ export type BackgroundData = {
   edgarFilings: EdgarFiling[];
   courtCases: CourtCase[];
   corporateAffiliations: OcOfficerCompany[];
+  digitalFootprint: DigitalFootprint | null;
+  addressIntelligence: AddressIntelligence | null;
+  oshaViolations: OshaViolation[];
+  epaEnforcements: EpaEnforcement[];
+  bankruptcyCases: BankruptcyCase[];
   errors: string[];
 };
 
