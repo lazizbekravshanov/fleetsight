@@ -117,6 +117,12 @@ export type NhtsaRecall = {
   modelYear: string;
 };
 
+export type FmcsaStatus = {
+  usdotStatus: string | null;
+  operatingAuthorityStatus: string | null;
+  hasActiveOos: boolean;
+};
+
 export type CarrierDetail = {
   carrier: SocrataCarrier;
   basics: unknown;
@@ -126,6 +132,7 @@ export type CarrierDetail = {
   safetyRating?: string | null;
   safetyRatingDate?: string | null;
   smartwayPartner?: boolean;
+  fmcsaStatus?: FmcsaStatus | null;
   inspectionCount?: number;
   crashCount?: number;
   voip?: VoipResult;

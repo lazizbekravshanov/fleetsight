@@ -7,7 +7,7 @@ import {
   decodeClassdef,
 } from "@/lib/fmcsa-codes";
 import { Row, extractArray, str, parseBasics } from "../shared";
-import type { BasicScore, PeerBenchmark, VoipResult, SosResult, RiskScore } from "../types";
+import type { BasicScore, PeerBenchmark, VoipResult, SosResult, RiskScore, FmcsaStatus } from "../types";
 import { computeRiskScore } from "@/lib/risk-score";
 
 export function OverviewTab({
@@ -24,6 +24,7 @@ export function OverviewTab({
   voip,
   sosResult,
   affiliatedCarriers,
+  fmcsaStatus,
 }: {
   carrier: SocrataCarrier;
   authority: unknown;
@@ -38,6 +39,7 @@ export function OverviewTab({
   voip?: VoipResult;
   sosResult?: SosResult;
   affiliatedCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
+  fmcsaStatus?: FmcsaStatus | null;
 }) {
   const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
     .filter(Boolean)
@@ -180,7 +182,47 @@ export function OverviewTab({
           )}
         </div>
         <dl className="space-y-2 text-sm">
-          <Row label="Status" value={decodeStatus(c.status_code)} />
+          {fmcsaStatus?.usdotStatus ? (
+            <div className="flex justify-between gap-4">
+              <dt className="shrink-0 text-gray-500">USDOT Status</dt>
+              <dd className="flex items-center gap-2 text-right">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    fmcsaStatus.usdotStatus.toUpperCase() === "ACTIVE"
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                      : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                  }`}
+                >
+                  {fmcsaStatus.usdotStatus}
+                </span>
+                <span className="text-[10px] text-gray-400">FMCSA</span>
+              </dd>
+            </div>
+          ) : (
+            <Row label="USDOT Status" value={decodeStatus(c.status_code)} />
+          )}
+          {fmcsaStatus?.operatingAuthorityStatus && (
+            <div className="flex justify-between gap-4">
+              <dt className="shrink-0 text-gray-500">Operating Authority</dt>
+              <dd className="flex items-center gap-2 text-right">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    fmcsaStatus.operatingAuthorityStatus === "ACTIVE"
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                      : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                  }`}
+                >
+                  {fmcsaStatus.operatingAuthorityStatus}
+                </span>
+                <span className="text-[10px] text-gray-400">FMCSA</span>
+              </dd>
+            </div>
+          )}
+          {fmcsaStatus?.hasActiveOos && (
+            <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+              Active Out-of-Service Order
+            </div>
+          )}
           <Row
             label="Operation Type"
             value={decodeOperation(c.carrier_operation)}

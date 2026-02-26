@@ -55,9 +55,10 @@ export async function GET(
     // FMCSA_WEBKEY may not be configured — skip silently
   }
 
-  // Extract safety rating from profile
+  // Extract live FMCSA status from profile
   let safetyRating: string | null = null;
   let safetyRatingDate: string | null = null;
+  let usdotStatus: string | null = null;
   const carrierRecord = extractCarrierRecord(profile);
   if (carrierRecord) {
     const rating = carrierRecord.safetyRating ?? carrierRecord.safety_rating;
@@ -68,7 +69,50 @@ export async function GET(
     if (ratingDate && typeof ratingDate === "string") {
       safetyRatingDate = ratingDate;
     }
+    // Live USDOT entity status from FMCSA (e.g., "ACTIVE", "NOT AUTHORIZED", "OUT-OF-SERVICE")
+    const liveStatus = carrierRecord.operatingStatus ?? carrierRecord.statusCode ?? carrierRecord.status;
+    if (liveStatus && typeof liveStatus === "string") {
+      usdotStatus = liveStatus;
+    }
   }
+
+  // Extract operating authority summary from FMCSA authority data
+  let operatingAuthorityStatus: string | null = null;
+  if (authority && typeof authority === "object") {
+    const authObj = authority as Record<string, unknown>;
+    const content = authObj.content as Record<string, unknown> | undefined;
+    const authRecords = content?.authority ?? authObj.authority;
+    if (Array.isArray(authRecords) && authRecords.length > 0) {
+      const activeCount = authRecords.filter(
+        (a: Record<string, unknown>) =>
+          String(a.authStatusDesc ?? a.authStatus ?? "").toUpperCase() === "ACTIVE"
+      ).length;
+      const total = authRecords.length;
+      if (activeCount === 0) {
+        operatingAuthorityStatus = "NONE ACTIVE";
+      } else if (activeCount === total) {
+        operatingAuthorityStatus = "ACTIVE";
+      } else {
+        operatingAuthorityStatus = `${activeCount}/${total} ACTIVE`;
+      }
+    }
+  }
+
+  // Extract OOS summary
+  let hasActiveOos = false;
+  if (oos && typeof oos === "object") {
+    const oosObj = oos as Record<string, unknown>;
+    const content = oosObj.content as Record<string, unknown> | undefined;
+    const oosRecords = content?.oos ?? oosObj.oos;
+    if (Array.isArray(oosRecords) && oosRecords.length > 0) {
+      hasActiveOos = true;
+    }
+  }
+
+  // Build consolidated FMCSA status object
+  const fmcsaStatus = (usdotStatus || operatingAuthorityStatus || hasActiveOos)
+    ? { usdotStatus, operatingAuthorityStatus, hasActiveOos }
+    : null;
 
   // SmartWay partner check
   const smartwayPartner = isSmartWayPartner(carrier.legal_name);
@@ -108,6 +152,7 @@ export async function GET(
     safetyRating,
     safetyRatingDate,
     smartwayPartner,
+    fmcsaStatus,
     inspectionCount: inspections.length,
     crashCount: crashes.length,
     voip,

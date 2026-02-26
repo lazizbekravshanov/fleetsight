@@ -13,7 +13,7 @@ import { InsuranceTab } from "./tabs/insurance-tab";
 import { FleetTab } from "./tabs/fleet-tab";
 import { DetectionTab } from "./tabs/detection-tab";
 import { BackgroundTab } from "./tabs/background-tab";
-import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData } from "./types";
+import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
   Satisfactory: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -235,15 +235,27 @@ export function CarrierDetailView({
               >
                 {badge.label}
               </span>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  c.status_code === "A"
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                }`}
-              >
-                {decodeStatus(c.status_code)}
-              </span>
+              <UsdotStatusBadge
+                socrataStatus={c.status_code}
+                fmcsaStatus={detail.fmcsaStatus}
+              />
+              {detail.fmcsaStatus?.operatingAuthorityStatus && (
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    detail.fmcsaStatus.operatingAuthorityStatus === "ACTIVE"
+                      ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                      : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                  }`}
+                  title="Operating authority status from FMCSA"
+                >
+                  Auth: {detail.fmcsaStatus.operatingAuthorityStatus}
+                </span>
+              )}
+              {detail.fmcsaStatus?.hasActiveOos && (
+                <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800 ring-1 ring-rose-600/30">
+                  OUT OF SERVICE
+                </span>
+              )}
               {detail.safetyRating && (
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -340,6 +352,7 @@ export function CarrierDetailView({
               voip={detail.voip}
               sosResult={detail.sosResult}
               affiliatedCarriers={detail.affiliatedCarriers}
+              fmcsaStatus={detail.fmcsaStatus}
             />
           )}
           {activeTab === "safety" && (
@@ -433,4 +446,46 @@ function computeAuthorityAge(addDate?: string): {
     : `${months} months`;
 
   return { days, formatted, badge: null };
+}
+
+/* ── USDOT Status Badge ─────────────────────────────────────── */
+
+function isActiveStatus(status: string): boolean {
+  const upper = status.toUpperCase().trim();
+  return upper === "ACTIVE" || upper === "A";
+}
+
+function UsdotStatusBadge({
+  socrataStatus,
+  fmcsaStatus,
+}: {
+  socrataStatus?: string;
+  fmcsaStatus?: FmcsaStatus | null;
+}) {
+  // Prefer FMCSA live status when available
+  const liveStatus = fmcsaStatus?.usdotStatus;
+  const displayStatus = liveStatus || (socrataStatus ? decodeStatus(socrataStatus) : "Unknown");
+  const isActive = liveStatus
+    ? isActiveStatus(liveStatus)
+    : socrataStatus === "A";
+
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-medium ${
+        isActive
+          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+          : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+      }`}
+      title={
+        liveStatus
+          ? `FMCSA USDOT status (live)${socrataStatus && !isActiveStatus(decodeStatus(socrataStatus)) !== !isActive ? ` — Census snapshot: ${decodeStatus(socrataStatus)}` : ""}`
+          : "USDOT status from Census snapshot"
+      }
+    >
+      {displayStatus}
+      {liveStatus && (
+        <span className="ml-1 text-[8px] opacity-60">FMCSA</span>
+      )}
+    </span>
+  );
 }
