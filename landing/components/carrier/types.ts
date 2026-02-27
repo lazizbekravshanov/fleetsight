@@ -121,6 +121,8 @@ export type FmcsaStatus = {
   usdotStatus: string | null;
   operatingAuthorityStatus: string | null;
   hasActiveOos: boolean;
+  oosDate?: string | null;
+  oosReason?: string | null;
 };
 
 export type CarrierDetail = {

@@ -56,9 +56,11 @@ export async function GET(
   }
 
   // Extract live FMCSA status from profile
+  // FMCSA API shape: { content: { carrier: { allowedToOperate, statusCode, oosDate, ... } } }
   let safetyRating: string | null = null;
   let safetyRatingDate: string | null = null;
-  let usdotStatus: string | null = null;
+  let allowedToOperate: string | null = null;
+  let oosDate: string | null = null;
   const carrierRecord = extractCarrierRecord(profile);
   if (carrierRecord) {
     const rating = carrierRecord.safetyRating ?? carrierRecord.safety_rating;
@@ -69,49 +71,73 @@ export async function GET(
     if (ratingDate && typeof ratingDate === "string") {
       safetyRatingDate = ratingDate;
     }
-    // Live USDOT entity status from FMCSA (e.g., "ACTIVE", "NOT AUTHORIZED", "OUT-OF-SERVICE")
-    const liveStatus = carrierRecord.operatingStatus ?? carrierRecord.statusCode ?? carrierRecord.status;
-    if (liveStatus && typeof liveStatus === "string") {
-      usdotStatus = liveStatus;
+    // allowedToOperate is "Y" or "N" — the definitive operating status from FMCSA
+    if (typeof carrierRecord.allowedToOperate === "string") {
+      allowedToOperate = carrierRecord.allowedToOperate;
+    }
+    // oosDate on the profile indicates an active out-of-service order
+    if (typeof carrierRecord.oosDate === "string" && carrierRecord.oosDate) {
+      oosDate = carrierRecord.oosDate;
     }
   }
 
+  // Derive USDOT status from allowedToOperate flag
+  let usdotStatus: string | null = null;
+  if (allowedToOperate === "Y") {
+    usdotStatus = "AUTHORIZED";
+  } else if (allowedToOperate === "N") {
+    usdotStatus = oosDate ? "OUT-OF-SERVICE" : "NOT AUTHORIZED";
+  }
+
   // Extract operating authority summary from FMCSA authority data
+  // FMCSA shape: { content: [ { carrierAuthority: { commonAuthorityStatus, contractAuthorityStatus, brokerAuthorityStatus, ... } } ] }
   let operatingAuthorityStatus: string | null = null;
   if (authority && typeof authority === "object") {
     const authObj = authority as Record<string, unknown>;
-    const content = authObj.content as Record<string, unknown> | undefined;
-    const authRecords = content?.authority ?? authObj.authority;
-    if (Array.isArray(authRecords) && authRecords.length > 0) {
-      const activeCount = authRecords.filter(
-        (a: Record<string, unknown>) =>
-          String(a.authStatusDesc ?? a.authStatus ?? "").toUpperCase() === "ACTIVE"
-      ).length;
-      const total = authRecords.length;
-      if (activeCount === 0) {
-        operatingAuthorityStatus = "NONE ACTIVE";
-      } else if (activeCount === total) {
+    const content = authObj.content;
+    if (Array.isArray(content) && content.length > 0) {
+      // Each entry has a carrierAuthority object
+      const statuses: string[] = [];
+      for (const entry of content) {
+        const ca = (entry as Record<string, unknown>).carrierAuthority as Record<string, unknown> | undefined;
+        if (!ca) continue;
+        // Check all authority type statuses: A = Active, N = None/Inactive
+        if (ca.commonAuthorityStatus === "A") statuses.push("Common");
+        if (ca.contractAuthorityStatus === "A") statuses.push("Contract");
+        if (ca.brokerAuthorityStatus === "A") statuses.push("Broker");
+      }
+      if (statuses.length > 0) {
         operatingAuthorityStatus = "ACTIVE";
       } else {
-        operatingAuthorityStatus = `${activeCount}/${total} ACTIVE`;
+        operatingAuthorityStatus = "NONE ACTIVE";
       }
     }
   }
 
-  // Extract OOS summary
+  // Extract OOS orders from the OOS endpoint
+  // FMCSA shape: { content: [ { oos: { oosDate, oosReason, oosReasonDescription } } ] }
   let hasActiveOos = false;
+  let oosReason: string | null = null;
   if (oos && typeof oos === "object") {
     const oosObj = oos as Record<string, unknown>;
-    const content = oosObj.content as Record<string, unknown> | undefined;
-    const oosRecords = content?.oos ?? oosObj.oos;
-    if (Array.isArray(oosRecords) && oosRecords.length > 0) {
+    const content = oosObj.content;
+    if (Array.isArray(content) && content.length > 0) {
       hasActiveOos = true;
+      const firstOos = (content[0] as Record<string, unknown>).oos as Record<string, unknown> | undefined;
+      if (firstOos?.oosReasonDescription && typeof firstOos.oosReasonDescription === "string") {
+        oosReason = firstOos.oosReasonDescription;
+      }
     }
+  }
+
+  // Also check profile-level oosDate as backup (some carriers have oosDate on profile but empty /oos endpoint)
+  if (!hasActiveOos && oosDate) {
+    hasActiveOos = true;
   }
 
   // Build consolidated FMCSA status object
   const fmcsaStatus = (usdotStatus || operatingAuthorityStatus || hasActiveOos)
-    ? { usdotStatus, operatingAuthorityStatus, hasActiveOos }
+    ? { usdotStatus, operatingAuthorityStatus, hasActiveOos, oosDate, oosReason }
     : null;
 
   // SmartWay partner check

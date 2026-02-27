@@ -450,11 +450,6 @@ function computeAuthorityAge(addDate?: string): {
 
 /* ── USDOT Status Badge ─────────────────────────────────────── */
 
-function isActiveStatus(status: string): boolean {
-  const upper = status.toUpperCase().trim();
-  return upper === "ACTIVE" || upper === "A";
-}
-
 function UsdotStatusBadge({
   socrataStatus,
   fmcsaStatus,
@@ -462,30 +457,40 @@ function UsdotStatusBadge({
   socrataStatus?: string;
   fmcsaStatus?: FmcsaStatus | null;
 }) {
-  // Prefer FMCSA live status when available
   const liveStatus = fmcsaStatus?.usdotStatus;
-  const displayStatus = liveStatus || (socrataStatus ? decodeStatus(socrataStatus) : "Unknown");
-  const isActive = liveStatus
-    ? isActiveStatus(liveStatus)
-    : socrataStatus === "A";
+  const isAuthorized = liveStatus === "AUTHORIZED";
+  const isOos = liveStatus === "OUT-OF-SERVICE";
+  const isNotAuth = liveStatus === "NOT AUTHORIZED";
 
+  // When FMCSA data is available, use it as source of truth
+  if (liveStatus) {
+    return (
+      <span
+        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+          isAuthorized
+            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+            : isOos
+              ? "bg-rose-100 text-rose-800 ring-1 ring-rose-600/30"
+              : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+        }`}
+        title={`FMCSA live status${fmcsaStatus?.oosDate ? ` — OOS since ${fmcsaStatus.oosDate}` : ""}`}
+      >
+        {isOos ? "OUT OF SERVICE" : isNotAuth ? "NOT AUTHORIZED" : "AUTHORIZED"}
+      </span>
+    );
+  }
+
+  // Fallback to Socrata Census status
   return (
     <span
       className={`rounded-full px-3 py-1 text-xs font-medium ${
-        isActive
+        socrataStatus === "A"
           ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
           : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
       }`}
-      title={
-        liveStatus
-          ? `FMCSA USDOT status (live)${socrataStatus && !isActiveStatus(decodeStatus(socrataStatus)) !== !isActive ? ` — Census snapshot: ${decodeStatus(socrataStatus)}` : ""}`
-          : "USDOT status from Census snapshot"
-      }
+      title="Status from Census snapshot — may be outdated"
     >
-      {displayStatus}
-      {liveStatus && (
-        <span className="ml-1 text-[8px] opacity-60">FMCSA</span>
-      )}
+      {decodeStatus(socrataStatus)}
     </span>
   );
 }

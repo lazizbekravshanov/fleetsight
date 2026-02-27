@@ -1037,6 +1037,35 @@ function StateDistribution({
 
 /* ── Authority Section ────────────────────────────────────────── */
 
+/**
+ * Extract authority/OOS records from FMCSA response.
+ * FMCSA shape: { content: [ { carrierAuthority: {...} } ] } for authority
+ * FMCSA shape: { content: [ { oos: {...} } ] } for OOS
+ * Falls back to the old extractArray for backward compatibility.
+ */
+function extractNestedRecords(payload: unknown, innerKey: string): Record<string, unknown>[] {
+  if (!payload || typeof payload !== "object") return [];
+  const obj = payload as Record<string, unknown>;
+  const content = obj.content;
+
+  // New FMCSA shape: content is an array of wrapper objects
+  if (Array.isArray(content)) {
+    const records: Record<string, unknown>[] = [];
+    for (const entry of content) {
+      if (entry && typeof entry === "object") {
+        const inner = (entry as Record<string, unknown>)[innerKey];
+        if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+          records.push(inner as Record<string, unknown>);
+        }
+      }
+    }
+    if (records.length > 0) return records;
+  }
+
+  // Fallback: old extractArray behavior
+  return extractArray(payload, innerKey);
+}
+
 function AuthoritySection({
   authority,
   oos,
@@ -1044,8 +1073,17 @@ function AuthoritySection({
   authority: unknown;
   oos: unknown;
 }) {
-  const authorityRecords = extractArray(authority, "authority");
-  const oosRecords = extractArray(oos, "oos");
+  // Try both nesting patterns for authority
+  let authorityRecords = extractNestedRecords(authority, "carrierAuthority");
+  if (authorityRecords.length === 0) {
+    authorityRecords = extractArray(authority, "authority");
+  }
+
+  // Try both nesting patterns for OOS
+  let oosRecords = extractNestedRecords(oos, "oos");
+  if (oosRecords.length === 0) {
+    oosRecords = extractArray(oos, "oos");
+  }
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
     return (
@@ -1056,48 +1094,90 @@ function AuthoritySection({
     );
   }
 
+  // Derive readable authority type rows from carrierAuthority shape
+  type AuthRow = { type: string; status: string; docket: string };
+  const authRows: AuthRow[] = [];
+
+  for (const a of authorityRecords) {
+    // New FMCSA carrierAuthority shape
+    if (a.commonAuthorityStatus || a.contractAuthorityStatus || a.brokerAuthorityStatus) {
+      const prefix = str(a.prefix) ?? "";
+      const docketNum = str(a.docketNumber) ?? str(a.docketNbr) ?? "";
+      const docket = prefix && docketNum ? `${prefix}-${docketNum}` : "";
+
+      if (str(a.authorizedForProperty) === "Y") {
+        authRows.push({
+          type: "Common (Property)",
+          status: str(a.commonAuthorityStatus) === "A" ? "ACTIVE" : "INACTIVE",
+          docket,
+        });
+      }
+      if (str(a.contractAuthorityStatus) === "A" || str(a.authorizedForHouseholdGoods) === "Y") {
+        authRows.push({
+          type: "Contract",
+          status: str(a.contractAuthorityStatus) === "A" ? "ACTIVE" : "INACTIVE",
+          docket,
+        });
+      }
+      if (str(a.brokerAuthorityStatus) === "A" || str(a.authorizedForBroker) === "Y") {
+        authRows.push({
+          type: "Broker",
+          status: str(a.brokerAuthorityStatus) === "A" ? "ACTIVE" : "INACTIVE",
+          docket,
+        });
+      }
+      // If nothing specific matched, show the raw common status
+      if (authRows.length === 0) {
+        authRows.push({
+          type: str(a.authorityType) || "Operating Authority",
+          status: str(a.commonAuthorityStatus) === "A" ? "ACTIVE" : "INACTIVE",
+          docket,
+        });
+      }
+    } else {
+      // Old/fallback shape
+      authRows.push({
+        type: str(a.authorityType) || str(a.authTypDesc) || "Unknown",
+        status: str(a.authStatusDesc) || str(a.authStatus) || "Unknown",
+        docket: str(a.docketNbr) || str(a.docketPrefix)
+          ? `${str(a.docketPrefix) ?? ""}${str(a.docketNbr) ?? ""}`
+          : "",
+      });
+    }
+  }
+
   return (
     <div className="space-y-4">
-      {authorityRecords.length > 0 && (
+      {authRows.length > 0 && (
         <div className="max-h-[32rem] overflow-auto">
           <table className="w-full text-left text-xs text-gray-700">
             <thead className="sticky top-0 bg-gray-50">
               <tr className="border-b border-gray-200 text-gray-500">
                 <th className="px-3 py-2">Authority Type</th>
                 <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Granted Date</th>
                 <th className="hidden px-3 py-2 sm:table-cell">Docket</th>
               </tr>
             </thead>
             <tbody>
-              {authorityRecords.map((a, i) => (
+              {authRows.map((a, i) => (
                 <tr
                   key={i}
                   className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
                 >
-                  <td className="px-3 py-2">
-                    {str(a.authorityType) || str(a.authTypDesc) || "\u2014"}
-                  </td>
+                  <td className="px-3 py-2">{a.type}</td>
                   <td className="px-3 py-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
+                        a.status.toUpperCase() === "ACTIVE"
                           ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
                           : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                       }`}
                     >
-                      {str(a.authStatusDesc) || str(a.authStatus) || "\u2014"}
+                      {a.status}
                     </span>
                   </td>
-                  <td className="px-3 py-2">
-                    {str(a.authGrantDate)
-                      ? new Date(str(a.authGrantDate)!).toLocaleDateString()
-                      : "\u2014"}
-                  </td>
                   <td className="hidden px-3 py-2 sm:table-cell">
-                    {str(a.docketNbr) || str(a.docketPrefix)
-                      ? `${str(a.docketPrefix) ?? ""}${str(a.docketNbr) ?? ""}`
-                      : "\u2014"}
+                    {a.docket || "\u2014"}
                   </td>
                 </tr>
               ))}
@@ -1108,14 +1188,13 @@ function AuthoritySection({
 
       {oosRecords.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-rose-600">
             Out-of-Service Orders
           </h4>
           <div className="max-h-[32rem] overflow-auto">
             <table className="w-full text-left text-xs text-gray-700">
-              <thead className="sticky top-0 bg-gray-50">
-                <tr className="border-b border-gray-200 text-gray-500">
-                  <th className="px-3 py-2">Type</th>
+              <thead className="sticky top-0 bg-rose-50">
+                <tr className="border-b border-rose-200 text-rose-600">
                   <th className="px-3 py-2">Effective Date</th>
                   <th className="px-3 py-2">Reason</th>
                 </tr>
@@ -1124,20 +1203,17 @@ function AuthoritySection({
                 {oosRecords.map((o, i) => (
                   <tr
                     key={i}
-                    className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                    className="border-b border-rose-100 bg-rose-50/50"
                   >
-                    <td className="px-3 py-2">
-                      {str(o.oosType) || str(o.oosTypeDesc) || "\u2014"}
-                    </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 font-medium">
                       {str(o.oosDate) || str(o.effectiveDate)
                         ? new Date(
                             (str(o.oosDate) || str(o.effectiveDate))!
                           ).toLocaleDateString()
                         : "\u2014"}
                     </td>
-                    <td className="px-3 py-2 text-gray-400">
-                      {str(o.oosReason) || str(o.oosReasonDesc) || "\u2014"}
+                    <td className="px-3 py-2">
+                      {str(o.oosReasonDescription) || str(o.oosReason) || str(o.oosReasonDesc) || "\u2014"}
                     </td>
                   </tr>
                 ))}
