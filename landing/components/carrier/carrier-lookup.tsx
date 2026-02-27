@@ -372,14 +372,6 @@ export function CarrierLookup() {
                         </p>
                       </div>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
-                        {r.riskIndicator && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${RISK_GRADE_COLORS[r.riskIndicator.grade] ?? ""}`}
-                            title={`Risk score: ${r.riskIndicator.score}/100`}
-                          >
-                            {r.riskIndicator.grade}
-                          </span>
-                        )}
                         {r.classdef && (
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
