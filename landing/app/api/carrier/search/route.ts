@@ -7,11 +7,14 @@ import { parseNaturalQuery } from "@/lib/search-parser";
 import { translateSearchQuery } from "@/lib/ai/search-translator";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
 import { gateAiFeature } from "@/lib/ai/with-credits";
+import { getCarrierProfile, extractCarrierRecord } from "@/lib/fmcsa";
 
 const querySchema = z.object({
   q: z.string().min(1).max(200),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
+
+type MappedCarrier = ReturnType<typeof mapCarrier>;
 
 function mapCarrier(r: SocrataCarrier) {
   const riskIndicator = computeQuickRiskIndicator({
@@ -39,6 +42,32 @@ function mapCarrier(r: SocrataCarrier) {
   };
 }
 
+/** Enrich search results with live FMCSA status (allowedToOperate). */
+async function enrichWithLiveStatus(carriers: MappedCarrier[]): Promise<MappedCarrier[]> {
+  if (!process.env.FMCSA_WEBKEY || carriers.length === 0) return carriers;
+
+  const profiles = await Promise.all(
+    carriers.map((c) =>
+      getCarrierProfile(String(c.dotNumber)).catch(() => null)
+    )
+  );
+
+  return carriers.map((c, i) => {
+    const record = extractCarrierRecord(profiles[i]);
+    if (!record) return c;
+
+    const allowed = record.allowedToOperate;
+    if (typeof allowed !== "string") return c;
+
+    if (allowed === "N") {
+      const hasOosDate = typeof record.oosDate === "string" && record.oosDate;
+      return { ...c, statusCode: hasOosDate ? "OOS" : "I" };
+    }
+    // allowed === "Y" — keep Socrata status (should be "A")
+    return c;
+  });
+}
+
 export async function GET(req: NextRequest) {
   const params = Object.fromEntries(req.nextUrl.searchParams);
   const parsed = querySchema.safeParse(params);
@@ -57,8 +86,9 @@ export async function GET(req: NextRequest) {
       $order: "legal_name ASC",
     });
 
+    const enriched = await enrichWithLiveStatus(results.map(mapCarrier));
     return Response.json({
-      results: results.map(mapCarrier),
+      results: enriched,
       total: results.length,
       searchMode: "natural" as const,
       searchDescription: natural.description,
@@ -81,8 +111,9 @@ export async function GET(req: NextRequest) {
             $order: "legal_name ASC",
           });
 
+          const enriched = await enrichWithLiveStatus(results.map(mapCarrier));
           return Response.json({
-            results: results.map(mapCarrier),
+            results: enriched,
             total: results.length,
             searchMode: "ai" as const,
             searchDescription: aiResult.description,
@@ -95,8 +126,9 @@ export async function GET(req: NextRequest) {
     } else {
       // AI gated — fall through to standard search with reason
       const results = await searchCarriers(q, limit);
+      const enriched = await enrichWithLiveStatus(results.map(mapCarrier));
       return Response.json({
-        results: results.map(mapCarrier),
+        results: enriched,
         total: results.length,
         searchMode: "standard" as const,
         searchDescription: null,
@@ -107,9 +139,10 @@ export async function GET(req: NextRequest) {
 
   // 4. Standard search (DOT number, MC number, or name substring)
   const results = await searchCarriers(q, limit);
+  const enriched = await enrichWithLiveStatus(results.map(mapCarrier));
 
   return Response.json({
-    results: results.map(mapCarrier),
+    results: enriched,
     total: results.length,
     searchMode: "standard" as const,
     searchDescription: null,

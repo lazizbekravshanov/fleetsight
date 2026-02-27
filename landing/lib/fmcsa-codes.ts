@@ -58,6 +58,7 @@ export const INSPECTION_LEVEL_CODES: Record<string, string> = {
 export const STATUS_CODES: Record<string, string> = {
   A: "Active",
   I: "Inactive",
+  OOS: "Out of Service",
   "NOT AUTH": "Not Authorized",
 };
 
