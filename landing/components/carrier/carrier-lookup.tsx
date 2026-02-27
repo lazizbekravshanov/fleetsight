@@ -342,8 +342,13 @@ export function CarrierLookup() {
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-gray-900">
-                          {r.legalName}
+                        <p className="flex items-center gap-1.5 truncate text-sm font-medium text-gray-900">
+                          {r.statusCode && r.statusCode !== "A" && (
+                            <svg className="h-4 w-4 shrink-0 text-rose-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                          <span className="truncate">{r.legalName}</span>
                           {r.dbaName && (
                             <span className="ml-2 text-gray-400">
                               DBA {r.dbaName}
