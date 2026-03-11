@@ -19,7 +19,6 @@ import type {
   OshaViolation,
   EpaEnforcement,
   BankruptcyCase,
-  SearchLink,
 } from "@/components/carrier/types";
 
 /**
@@ -213,46 +212,6 @@ export async function runBackgroundChecks(
       c.caseName.toLowerCase().includes(nameLower)
     );
 
-    // Government & public record search links for this officer
-    const encName = encodeURIComponent(name);
-    const searchLinks: SearchLink[] = [
-      {
-        label: "LinkedIn",
-        url: `https://www.linkedin.com/search/results/people/?keywords=${encName}`,
-        category: "social",
-      },
-      {
-        label: "Google",
-        url: `https://www.google.com/search?q="${encName}"+trucking+carrier`,
-        category: "search",
-      },
-      {
-        label: "OpenCorporates",
-        url: `https://opencorporates.com/officers?q=${encName}&jurisdiction_code=us`,
-        category: "registry",
-      },
-      {
-        label: "CourtListener",
-        url: `https://www.courtlistener.com/?q="${encName}"&type=r`,
-        category: "search",
-      },
-      {
-        label: "SAM.gov",
-        url: `https://sam.gov/search/?keywords=${encName}&index=ei`,
-        category: "registry",
-      },
-      {
-        label: "OFAC Search",
-        url: `https://sanctionssearch.ofac.treas.gov/`,
-        category: "registry",
-      },
-      {
-        label: "DOL Enforcement",
-        url: `https://enforcedata.dol.gov/views/data_catalogs.php`,
-        category: "registry",
-      },
-    ];
-
     return {
       name,
       carrierRefs,
@@ -261,7 +220,6 @@ export async function runBackgroundChecks(
       samExclusions: samForOfficer,
       courtCases: courtsForOfficer,
       bankruptcyCases: bankruptciesForOfficer,
-      searchLinks,
     };
   });
 

@@ -784,20 +784,38 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
             </p>
             <div className="space-y-1.5">
               {profile.carrierRefs.map((c) => (
-                <div key={c.dotNumber} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div key={c.dotNumber} className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-gray-900 truncate">{c.legalName}</p>
                     <p className="text-[11px] text-gray-400 tabular-nums">USDOT {c.dotNumber}</p>
                   </div>
-                  {c.statusCode && (
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      c.statusCode === "A"
-                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                        : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                    }`}>
-                      {c.statusCode === "A" ? "Active" : "Inactive"}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {c.statusCode && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        c.statusCode === "A"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                          : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                      }`}>
+                        {c.statusCode === "A" ? "Active" : "Inactive"}
+                      </span>
+                    )}
+                    <a
+                      href={`https://safer.fmcsa.dot.gov/query.asp?searchtype=ANY&query_type=queryCarrierSnapshot&query_param=USDOT&query_string=${c.dotNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100 transition-colors"
+                    >
+                      SAFER
+                    </a>
+                    <a
+                      href={`https://li-public.fmcsa.dot.gov/LIVIEW/pkg_carrquery.prc_carrlist?pv_usdot=${c.dotNumber}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 ring-1 ring-blue-200 hover:bg-blue-100 transition-colors"
+                    >
+                      L&amp;I
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -862,17 +880,6 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
           </div>
         )}
 
-        {/* Search links */}
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-            Public Record Searches
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {profile.searchLinks.map((link) => (
-              <LinkPill key={link.label} link={link} />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

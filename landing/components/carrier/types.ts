@@ -232,8 +232,6 @@ export type OfficerProfile = {
   courtCases: CourtCase[];
   /** Bankruptcy filings mentioning this officer */
   bankruptcyCases: BankruptcyCase[];
-  /** Government & public record search links */
-  searchLinks: SearchLink[];
 };
 
 export type SearchLink = {
