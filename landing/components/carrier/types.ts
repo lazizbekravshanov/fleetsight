@@ -202,15 +202,38 @@ export type CourtCase = {
   url: string;
 };
 
+export type OcOfficerRole = {
+  companyName: string;
+  companyNumber: string;
+  jurisdiction: string;
+  status: string;
+  position: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  opencorporatesUrl: string;
+};
+
 export type OcOfficerCompany = {
   officerName: string;
-  companies: {
-    companyName: string;
-    companyNumber: string;
-    jurisdiction: string;
-    status: string;
-    opencorporatesUrl: string;
-  }[];
+  companies: OcOfficerRole[];
+};
+
+export type OfficerProfile = {
+  name: string;
+  /** Other FMCSA-registered carriers listing this officer */
+  carrierRefs: { dotNumber: string; legalName: string; statusCode?: string }[];
+  /** Corporate roles at other companies (OpenCorporates) */
+  corporateRoles: OcOfficerRole[];
+  /** OFAC SDN matches attributed to this officer */
+  ofacMatches: OfacMatch[];
+  /** SAM.gov exclusions attributed to this officer */
+  samExclusions: SamExclusion[];
+  /** Federal court cases mentioning this officer */
+  courtCases: CourtCase[];
+  /** Bankruptcy filings mentioning this officer */
+  bankruptcyCases: BankruptcyCase[];
+  /** Government & public record search links */
+  searchLinks: SearchLink[];
 };
 
 export type SearchLink = {
@@ -282,6 +305,7 @@ export type BankruptcyCase = {
 export type AiGated = { skipped: true; reason: "not_authenticated" | "no_credits" };
 
 export type BackgroundData = {
+  officerProfiles: OfficerProfile[];
   officerCrossRefs: OfficerCrossRef[];
   mailingAddressMatches: { dotNumber: string; legalName: string; statusCode?: string }[];
   ofacMatches: OfacMatch[];

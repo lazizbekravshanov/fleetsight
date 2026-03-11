@@ -4,6 +4,8 @@ import { SkeletonRows } from "../shared";
 import { AiUpgradePrompt } from "@/components/credits/ai-upgrade-prompt";
 import type {
   BackgroundData,
+  OfficerProfile,
+  OcOfficerRole,
   OfficerCrossRef,
   OfacMatch,
   SamExclusion,
@@ -106,9 +108,12 @@ function LinkPill({ link }: { link: SearchLink }) {
 /* ── Summary Banner ───────────────────────────────────────────────────── */
 
 function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
-  const totalOfficerRefs = data.officerCrossRefs.reduce((s, o) => s + o.carriers.length, 0);
+  const profiles = data.officerProfiles ?? [];
+  const totalCarrierRefs = profiles.reduce((s, p) => s + p.carrierRefs.length, 0);
+  const totalCorpRoles = profiles.reduce((s, p) => s + p.corporateRoles.length, 0);
   const categories = [
-    { label: "Officer Cross-Refs", count: totalOfficerRefs, color: "text-indigo-600" },
+    { label: "Carrier Cross-Refs", count: totalCarrierRefs, color: "text-indigo-600" },
+    { label: "Corp. Roles", count: totalCorpRoles, color: "text-teal-600" },
     { label: "OFAC Matches", count: data.ofacMatches.length, color: "text-rose-600" },
     { label: "SAM Exclusions", count: data.samExclusions.length, color: "text-orange-600" },
     { label: "SEC Filings", count: data.edgarFilings.length, color: "text-blue-600" },
@@ -116,7 +121,6 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
     { label: "Bankruptcy", count: data.bankruptcyCases.length, color: "text-rose-600" },
     { label: "OSHA", count: data.oshaViolations.length, color: "text-yellow-600" },
     { label: "EPA", count: data.epaEnforcements.length, color: "text-green-600" },
-    { label: "Corp. Affiliations", count: data.corporateAffiliations.reduce((s, o) => s + o.companies.length, 0), color: "text-teal-600" },
     { label: "Address Matches", count: data.mailingAddressMatches.length, color: "text-amber-600" },
   ];
   const totalFindings = categories.reduce((s, c) => s + c.count, 0);
@@ -641,6 +645,262 @@ function MailingAddressMatchesCard({ matches }: { matches: { dotNumber: string; 
   );
 }
 
+/* ── Officer Profiles Card ────────────────────────────────────────────── */
+
+function OfficerRoleRow({ role }: { role: OcOfficerRole }) {
+  const dateRange =
+    role.startDate || role.endDate
+      ? `${role.startDate ?? "?"} – ${role.endDate ?? "present"}`
+      : null;
+
+  return (
+    <a
+      href={role.opencorporatesUrl || undefined}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 hover:bg-teal-50 hover:border-teal-200 transition-colors"
+    >
+      <div className="min-w-0">
+        <p className="text-xs font-medium text-gray-900 truncate">{role.companyName}</p>
+        <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+          <span>{role.jurisdiction.toUpperCase()}</span>
+          {role.companyNumber && <><span>·</span><span>#{role.companyNumber}</span></>}
+          {dateRange && <><span>·</span><span>{dateRange}</span></>}
+        </div>
+      </div>
+      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        {role.position && (
+          <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 ring-1 ring-teal-200 capitalize">
+            {role.position}
+          </span>
+        )}
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+          role.status.toLowerCase().includes("active")
+            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+            : "bg-gray-100 text-gray-500 ring-1 ring-gray-300"
+        }`}>
+          {role.status}
+        </span>
+      </div>
+    </a>
+  );
+}
+
+function OfficerCard({ profile }: { profile: OfficerProfile }) {
+  const hasOfac = profile.ofacMatches.length > 0;
+  const hasSam = profile.samExclusions.length > 0;
+  const hasCritical = hasOfac || hasSam;
+  const totalFindings =
+    profile.carrierRefs.length +
+    profile.corporateRoles.length +
+    profile.ofacMatches.length +
+    profile.samExclusions.length +
+    profile.courtCases.length +
+    profile.bankruptcyCases.length;
+
+  return (
+    <div className={`rounded-2xl border shadow-sm p-5 ${hasCritical ? "border-rose-200 bg-rose-50/30" : "border-gray-200 bg-white"}`}>
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+              <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">{profile.name}</p>
+            {totalFindings > 0 && (
+              <p className="text-[11px] text-gray-400">{totalFindings} finding{totalFindings !== 1 ? "s" : ""}</p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {hasOfac ? (
+            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-rose-300">
+              OFAC Hit
+            </span>
+          ) : (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
+              OFAC Clear
+            </span>
+          )}
+          {hasSam ? (
+            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-semibold text-orange-700 ring-1 ring-orange-300">
+              SAM Excluded
+            </span>
+          ) : (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200">
+              SAM Clear
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {/* OFAC matches */}
+        {profile.ofacMatches.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-rose-600 mb-1.5">
+              OFAC SDN Matches
+            </p>
+            <div className="space-y-1.5">
+              {profile.ofacMatches.map((m, i) => (
+                <div key={i} className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2">
+                  <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-rose-500" />
+                  <span className="text-xs font-medium text-gray-900">{m.matchedName}</span>
+                  <span className="ml-auto rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700">
+                    {Math.round(m.score * 100)}% match
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SAM exclusions */}
+        {profile.samExclusions.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-orange-600 mb-1.5">
+              Federal Exclusions (SAM.gov)
+            </p>
+            <div className="space-y-1.5">
+              {profile.samExclusions.map((e, i) => (
+                <div key={i} className="rounded-lg border border-orange-200 bg-orange-50 px-3.5 py-2">
+                  <p className="text-xs font-medium text-gray-900">{e.name}</p>
+                  <p className="mt-0.5 text-[11px] text-gray-500">{e.classification} · {e.agency}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Other carrier registrations */}
+        {profile.carrierRefs.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 mb-1.5">
+              Other Carrier Registrations ({profile.carrierRefs.length})
+            </p>
+            <div className="space-y-1.5">
+              {profile.carrierRefs.map((c) => (
+                <div key={c.dotNumber} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-900 truncate">{c.legalName}</p>
+                    <p className="text-[11px] text-gray-400 tabular-nums">USDOT {c.dotNumber}</p>
+                  </div>
+                  {c.statusCode && (
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                      c.statusCode === "A"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                        : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                    }`}>
+                      {c.statusCode === "A" ? "Active" : "Inactive"}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Corporate roles */}
+        {profile.corporateRoles.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-teal-600 mb-1.5">
+              Corporate Roles ({profile.corporateRoles.length})
+            </p>
+            <div className="space-y-1.5">
+              {profile.corporateRoles.map((role, i) => (
+                <OfficerRoleRow key={i} role={role} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Court cases */}
+        {profile.courtCases.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-purple-600 mb-1.5">
+              Federal Court Records ({profile.courtCases.length})
+            </p>
+            <div className="space-y-1.5">
+              {profile.courtCases.map((c, i) => (
+                <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer"
+                  className="block rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                  <p className="text-xs font-medium text-gray-900 truncate">{c.caseName}</p>
+                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+                    <span>{c.court}</span>
+                    {c.dateFiled && <><span>·</span><span>{c.dateFiled}</span></>}
+                    {c.status && c.status !== "unknown" && <><span>·</span><span>{c.status}</span></>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Bankruptcy */}
+        {profile.bankruptcyCases.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-rose-600 mb-1.5">
+              Bankruptcy Filings ({profile.bankruptcyCases.length})
+            </p>
+            <div className="space-y-1.5">
+              {profile.bankruptcyCases.map((c, i) => (
+                <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer"
+                  className="block rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 hover:bg-rose-100 transition-colors">
+                  <p className="text-xs font-medium text-gray-900 truncate">{c.caseName}</p>
+                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+                    <span>{c.court}</span>
+                    {c.chapter !== "unknown" && <><span>·</span><span className="font-semibold text-rose-600">{c.chapter}</span></>}
+                    {c.dateFiled && <><span>·</span><span>{c.dateFiled}</span></>}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Search links */}
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+            Public Record Searches
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {profile.searchLinks.map((link) => (
+              <LinkPill key={link.label} link={link} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OfficerProfilesCard({ profiles }: { profiles: OfficerProfile[] }) {
+  if (profiles.length === 0) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+      <SectionHeader
+        icon={<UsersIcon />}
+        title="Officer Profiles"
+        count={profiles.length}
+        color="text-indigo-500"
+      />
+      <p className="mb-4 -mt-1 text-xs text-gray-400">
+        Public government records for each registered officer — FMCSA carrier history, corporate roles, sanctions screening, and court records.
+      </p>
+      <div className="space-y-4">
+        {profiles.map((profile) => (
+          <OfficerCard key={profile.name} profile={profile} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    Main Export
    ══════════════════════════════════════════════════════════════════════ */
@@ -666,14 +926,26 @@ export function BackgroundTab({
     return <p className="py-12 text-center text-base text-gray-400 tracking-wide">Background checks will load when this tab is selected.</p>;
   }
 
+  const officerProfiles = data.officerProfiles ?? [];
+  const totalOfficerFindings = officerProfiles.reduce(
+    (s, p) =>
+      s +
+      p.carrierRefs.length +
+      p.corporateRoles.length +
+      p.ofacMatches.length +
+      p.samExclusions.length +
+      p.courtCases.length +
+      p.bankruptcyCases.length,
+    0
+  );
+
   const isEmpty =
-    data.officerCrossRefs.every((r) => r.carriers.length === 0) &&
+    totalOfficerFindings === 0 &&
     data.mailingAddressMatches.length === 0 &&
     data.ofacMatches.length === 0 &&
     data.samExclusions.length === 0 &&
     data.edgarFilings.length === 0 &&
     data.courtCases.length === 0 &&
-    data.corporateAffiliations.length === 0 &&
     data.oshaViolations.length === 0 &&
     data.epaEnforcements.length === 0 &&
     data.bankruptcyCases.length === 0 &&
@@ -717,8 +989,10 @@ export function BackgroundTab({
         {data.addressIntelligence && <AddressIntelligenceCard intel={data.addressIntelligence} />}
       </div>
 
-      {/* Critical: Sanctions & Exclusions */}
-      <OfficerNetworkCard crossRefs={data.officerCrossRefs} />
+      {/* Officers — consolidated profiles */}
+      <OfficerProfilesCard profiles={data.officerProfiles ?? []} />
+
+      {/* Sanctions & Exclusions (company-level) */}
       <SanctionsScreeningCard matches={data.ofacMatches} />
       <FederalExclusionsCard exclusions={data.samExclusions} />
       <BankruptcyCard cases={data.bankruptcyCases} />
@@ -732,7 +1006,6 @@ export function BackgroundTab({
       {/* Legal & Business */}
       <SecFilingsCard filings={data.edgarFilings} />
       <CourtRecordsCard cases={data.courtCases} />
-      <CorporateAffiliationsCard affiliations={data.corporateAffiliations} />
       <MailingAddressMatchesCard matches={data.mailingAddressMatches} />
     </div>
   );

@@ -110,6 +110,9 @@ export async function searchOfficers(
         companyNumber: o.company.company_number ?? "",
         jurisdiction: o.company.jurisdiction_code ?? "",
         status: o.company.current_status ?? "unknown",
+        position: (o.position as string | undefined) ?? null,
+        startDate: (o.start_date as string | undefined) ?? null,
+        endDate: (o.end_date as string | undefined) ?? null,
         opencorporatesUrl: o.company.opencorporates_url ?? "",
       });
     }

@@ -12,12 +12,14 @@ import { analyzeAddress } from "./address-intel";
 import type {
   BackgroundData,
   OfficerCrossRef,
+  OfficerProfile,
   OcOfficerCompany,
   DigitalFootprint,
   AddressIntelligence,
   OshaViolation,
   EpaEnforcement,
   BankruptcyCase,
+  SearchLink,
 } from "@/components/carrier/types";
 
 /**
@@ -179,7 +181,92 @@ export async function runBackgroundChecks(
     }
   }
 
+  // Build consolidated per-officer profiles
+  const officerProfiles: OfficerProfile[] = officers.map((name, i) => {
+    // Carrier cross-refs for this officer
+    const crossRef = officerCrossRefs.find((r) => r.officerName === name);
+    const carrierRefs = crossRef?.carriers ?? [];
+
+    // Corporate roles (OpenCorporates, with position/dates)
+    const ocEntry = ocResults[i];
+    const corporateRoles =
+      ocEntry?.status === "fulfilled"
+        ? (ocEntry.value as OcOfficerCompany).companies
+        : [];
+
+    // OFAC matches attributed to this officer by queriedName
+    const ofacForOfficer = ofacMatches.filter((m) => m.queriedName === name);
+
+    // SAM exclusions where officer name appears
+    const nameLower = name.toLowerCase();
+    const samForOfficer = samExclusions.filter((e) =>
+      e.name.toLowerCase().includes(nameLower)
+    );
+
+    // Federal court cases mentioning this officer's name in the case title
+    const courtsForOfficer = courtCases.filter((c) =>
+      c.caseName.toLowerCase().includes(nameLower)
+    );
+
+    // Bankruptcy cases mentioning this officer
+    const bankruptciesForOfficer = bankruptcyCases.filter((c) =>
+      c.caseName.toLowerCase().includes(nameLower)
+    );
+
+    // Government & public record search links for this officer
+    const encName = encodeURIComponent(name);
+    const searchLinks: SearchLink[] = [
+      {
+        label: "LinkedIn",
+        url: `https://www.linkedin.com/search/results/people/?keywords=${encName}`,
+        category: "social",
+      },
+      {
+        label: "Google",
+        url: `https://www.google.com/search?q="${encName}"+trucking+carrier`,
+        category: "search",
+      },
+      {
+        label: "OpenCorporates",
+        url: `https://opencorporates.com/officers?q=${encName}&jurisdiction_code=us`,
+        category: "registry",
+      },
+      {
+        label: "CourtListener",
+        url: `https://www.courtlistener.com/?q="${encName}"&type=r`,
+        category: "search",
+      },
+      {
+        label: "SAM.gov",
+        url: `https://sam.gov/search/?keywords=${encName}&index=ei`,
+        category: "registry",
+      },
+      {
+        label: "OFAC Search",
+        url: `https://sanctionssearch.ofac.treas.gov/`,
+        category: "registry",
+      },
+      {
+        label: "DOL Enforcement",
+        url: `https://enforcedata.dol.gov/views/data_catalogs.php`,
+        category: "registry",
+      },
+    ];
+
+    return {
+      name,
+      carrierRefs,
+      corporateRoles,
+      ofacMatches: ofacForOfficer,
+      samExclusions: samForOfficer,
+      courtCases: courtsForOfficer,
+      bankruptcyCases: bankruptciesForOfficer,
+      searchLinks,
+    };
+  });
+
   return {
+    officerProfiles,
     officerCrossRefs,
     mailingAddressMatches,
     ofacMatches,
