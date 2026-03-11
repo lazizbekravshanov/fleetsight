@@ -1,1 +1,6 @@
 .vercel
+node_modules/
+screenshot.mjs
+screenshot-detail.mjs
+screenshot.png
+screenshot-detail.png
