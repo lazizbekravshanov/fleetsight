@@ -5,8 +5,6 @@ import { Resend } from "resend";
 
 export const maxDuration = 60;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 /** POST /api/cron/watchlist-check — called by Vercel Cron daily */
 export async function GET(req: NextRequest) {
   // Verify this is a Vercel Cron call or internal call
@@ -90,8 +88,10 @@ export async function GET(req: NextRequest) {
 
   // Send email digests
   const fromEmail = process.env.RESEND_FROM_EMAIL ?? "alerts@fleetsight.io";
+  const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
   for (const [, { email, carriers }] of changes) {
+    if (!resend) continue;
     try {
       await resend.emails.send({
         from: fromEmail,
