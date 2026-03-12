@@ -138,13 +138,16 @@ export async function searchCarriers(
   const isNumeric = /^\d+$/.test(trimmed);
 
   // MC/docket number pattern: MC-123456, MC 123456, MC123456
-  const mcMatch = trimmed.match(/^MC[-\s]?(\d{3,8})$/i);
+  const mcMatch = trimmed.match(/^MC[-\s]?(\d{1,8})$/i);
 
   let where: string;
   if (mcMatch) {
-    where = `docket1='${mcMatch[1]}'`;
+    // Explicit MC prefix — search docket number only, with or without leading zeros
+    const mcNum = mcMatch[1];
+    where = `docket1='${mcNum}' OR docket1='${mcNum.padStart(6, "0")}'`;
   } else if (isNumeric) {
-    where = `dot_number='${trimmed}'`;
+    // Ambiguous number — could be USDOT or MC#, search both
+    where = `dot_number='${trimmed}' OR docket1='${trimmed}' OR docket1='${trimmed.padStart(6, "0")}'`;
   } else {
     where = `upper(legal_name) like upper('%${trimmed.replace(/'/g, "''")}%') OR upper(dba_name) like upper('%${trimmed.replace(/'/g, "''")}%')`;
   }
