@@ -13,6 +13,7 @@ import { InsuranceTab } from "./tabs/insurance-tab";
 import { FleetTab } from "./tabs/fleet-tab";
 import { DetectionTab } from "./tabs/detection-tab";
 import { BackgroundTab } from "./tabs/background-tab";
+import { NotesTab } from "./tabs/notes-tab";
 import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
@@ -238,6 +239,7 @@ export function CarrierDetailView({
     { key: "fleet", label: "Fleet", group: "compliance" },
     { key: "detection", label: "Detection", group: "compliance" },
     { key: "background", label: "Background", group: "compliance" },
+    { key: "notes", label: "Notes", group: "compliance" },
   ];
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
@@ -277,6 +279,17 @@ export function CarrierDetailView({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {/* PDF Export */}
+              <button
+                onClick={() => window.print()}
+                title="Export as PDF"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-colors print:hidden"
+              >
+                <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 13h8M8 2v8M5 7l3 3 3-3" /><rect x="2" y="11" width="12" height="4" rx="1" />
+                </svg>
+                Export PDF
+              </button>
               {/* Watch button — only shown once auth check resolves */}
               {watched !== null && (
                 <button
@@ -477,6 +490,9 @@ export function CarrierDetailView({
               loading={backgroundLoading}
               error={backgroundError}
             />
+          )}
+          {activeTab === "notes" && (
+            <NotesTab dotNumber={c.dot_number} />
           )}
         </motion.div>
       </AnimatePresence>

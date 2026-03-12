@@ -1,5 +1,11 @@
 {
   "framework": "nextjs",
   "installCommand": "npm ci",
-  "buildCommand": "npx prisma generate && npm run build"
+  "buildCommand": "npx prisma generate && npm run build",
+  "crons": [
+    {
+      "path": "/api/cron/watchlist-check",
+      "schedule": "0 8 * * *"
+    }
+  ]
 }

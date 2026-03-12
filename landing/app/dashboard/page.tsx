@@ -88,7 +88,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-3">
             <Link
               href="/"
               className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
@@ -103,6 +103,24 @@ export default async function DashboardPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">Carrier Lookup</h3>
                   <p className="text-xs text-gray-500">Search by USDOT or name</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href="/bulk"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-emerald-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="12" height="12" rx="2" />
+                    <path d="M5 8h6M5 5h6M5 11h4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Bulk Screening</h3>
+                  <p className="text-xs text-gray-500">Screen up to 50 carriers</p>
                 </div>
               </div>
             </Link>

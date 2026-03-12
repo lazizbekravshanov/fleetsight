@@ -22,8 +22,21 @@ model User {
   creditPurchases     CreditPurchase[]
   watchedCarriers     WatchedCarrier[]
   searchHistory       SearchHistory[]
+  carrierNotes        CarrierNote[]
 
   @@index([createdAt])
+}
+
+model CarrierNote {
+  id        String   @id @default(cuid())
+  userId    String
+  dotNumber String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dotNumber])
 }
 
 model WatchedCarrier {

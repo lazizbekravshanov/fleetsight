@@ -160,7 +160,7 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background" | "notes";
 
 /* ── Background Check Types ─────────────────────────────────── */
 
