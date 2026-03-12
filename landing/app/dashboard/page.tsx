@@ -5,6 +5,8 @@ import { CarrierSnapshot } from "@/components/carrier-snapshot";
 import { OpenClawConnectCard } from "@/components/openclaw-connect-card";
 import { SignOutButton } from "@/components/signout-button";
 import { CommandPalette } from "@/components/dashboard/command-palette";
+import { WatchlistSection } from "@/components/dashboard/watchlist-section";
+import { RecentSearchesSection } from "@/components/dashboard/recent-searches-section";
 import { prisma } from "@/lib/prisma";
 import { getCreditBalance } from "@/lib/credits";
 
@@ -23,7 +25,18 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  const creditBalance = await getCreditBalance(session.user.id);
+  const [creditBalance, watchedCarriers, searchHistory] = await Promise.all([
+    getCreditBalance(session.user.id),
+    prisma.watchedCarrier.findMany({
+      where: { userId: session.user.id },
+      orderBy: { addedAt: "desc" },
+    }),
+    prisma.searchHistory.findMany({
+      where: { userId: session.user.id },
+      orderBy: { searchedAt: "desc" },
+      take: 15,
+    }),
+  ]);
 
   const hour = new Date().getHours();
   const greeting =
@@ -61,105 +74,57 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        {/* Main Grid */}
-        <div className="grid gap-5 md:grid-cols-2">
-          <CarrierSnapshot usdotNumber={user.profile.usdotNumber} />
-          <OpenClawConnectCard />
-        </div>
+        <div className="space-y-6">
+          {/* Watchlist */}
+          <WatchlistSection initial={watchedCarriers} />
 
-        {/* Quick Actions */}
-        <div className="mt-5 grid gap-5 sm:grid-cols-3">
-          <Link
-            href="/"
-            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="7" cy="7" r="5" />
-                  <path d="M14 14l-3.5-3.5" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Carrier Lookup
-                </h3>
-                <p className="text-xs text-gray-500">
-                  Search by USDOT or name
-                </p>
-              </div>
-            </div>
-          </Link>
+          {/* Recent Lookups */}
+          <RecentSearchesSection history={searchHistory} />
 
-          <Link
-            href="/"
-            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition group-hover:bg-amber-100">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M8 1l1.8 5.5H15l-4.2 3 1.6 5.5L8 12l-4.4 3 1.6-5.5-4.2-3h5.2z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Chameleon Detection
-                </h3>
-                <p className="text-xs text-gray-500">
-                  Find reincarnated carriers
-                </p>
-              </div>
-            </div>
-          </Link>
+          {/* Carrier Snapshot + API Access */}
+          <div className="grid gap-5 md:grid-cols-2">
+            <CarrierSnapshot usdotNumber={user.profile.usdotNumber} />
+            <OpenClawConnectCard />
+          </div>
 
-          <Link
-            href="/credits"
-            className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-violet-200"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition group-hover:bg-violet-100">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="8" cy="8" r="6" />
-                  <path d="M8 5v6M5.5 8h5" />
-                </svg>
+          {/* Quick Actions */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Link
+              href="/"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="7" cy="7" r="5" />
+                    <path d="M14 14l-3.5-3.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Carrier Lookup</h3>
+                  <p className="text-xs text-gray-500">Search by USDOT or name</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Buy Credits
-                </h3>
-                <p className="text-xs text-gray-500">
-                  {creditBalance} credits remaining
-                </p>
+            </Link>
+
+            <Link
+              href="/credits"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-violet-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition group-hover:bg-violet-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="8" cy="8" r="6" />
+                    <path d="M8 5v6M5.5 8h5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Buy AI Credits</h3>
+                  <p className="text-xs text-gray-500">{creditBalance} credits remaining</p>
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         </div>
       </div>
     </main>

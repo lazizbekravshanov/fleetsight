@@ -37,6 +37,53 @@ export function CarrierDetailView({
   // Authority age computation
   const authorityAge = computeAuthorityAge(c.add_date);
 
+  // Record this lookup in search history (fire-and-forget)
+  useEffect(() => {
+    fetch("/api/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dotNumber: c.dot_number, legalName: c.legal_name }),
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.dot_number]);
+
+  // Watchlist state
+  const [watched, setWatched] = useState<boolean | null>(null);
+  const [watchLoading, setWatchLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/watchlist?dot=${c.dot_number}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setWatched(data?.watched ?? false))
+      .catch(() => setWatched(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.dot_number]);
+
+  function toggleWatch() {
+    if (watched === null || watchLoading) return;
+    setWatchLoading(true);
+    if (watched) {
+      fetch(`/api/watchlist/${c.dot_number}`, { method: "DELETE" })
+        .then((r) => { if (r.ok || r.status === 204) setWatched(false); })
+        .catch(() => {})
+        .finally(() => setWatchLoading(false));
+    } else {
+      fetch("/api/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dotNumber: c.dot_number,
+          legalName: c.legal_name,
+          usdotStatus: detail.fmcsaStatus?.usdotStatus ?? null,
+          authStatus: detail.fmcsaStatus?.operatingAuthorityStatus ?? null,
+        }),
+      })
+        .then((r) => { if (r.ok || r.status === 201) setWatched(true); })
+        .catch(() => {})
+        .finally(() => setWatchLoading(false));
+    }
+  }
+
   // Lazy inspections state
   const [inspections, setInspections] = useState<SocrataInspection[] | null>(null);
   const [inspectionsLoading, setInspectionsLoading] = useState(false);
@@ -230,6 +277,31 @@ export function CarrierDetailView({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+              {/* Watch button — only shown once auth check resolves */}
+              {watched !== null && (
+                <button
+                  onClick={toggleWatch}
+                  disabled={watchLoading}
+                  title={watched ? "Remove from watchlist" : "Add to watchlist"}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 transition-colors ${
+                    watched
+                      ? "bg-indigo-50 text-indigo-700 ring-indigo-300 hover:bg-indigo-100"
+                      : "bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700"
+                  } disabled:opacity-50`}
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill={watched ? "currentColor" : "none"}
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                  >
+                    <path d="M6 1L7.5 4.5H11L8 6.5L9.5 10L6 8L2.5 10L4 6.5L1 4.5H4.5L6 1Z" />
+                  </svg>
+                  {watched ? "Watching" : "Watch"}
+                </button>
+              )}
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
               >

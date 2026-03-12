@@ -20,8 +20,37 @@ model User {
   creditTransactions  CreditTransaction[]
   stripeCustomer      StripeCustomer?
   creditPurchases     CreditPurchase[]
+  watchedCarriers     WatchedCarrier[]
+  searchHistory       SearchHistory[]
 
   @@index([createdAt])
+}
+
+model WatchedCarrier {
+  id              String    @id @default(cuid())
+  userId          String
+  dotNumber       String
+  legalName       String
+  lastUsdotStatus String?
+  lastAuthStatus  String?
+  lastCheckedAt   DateTime?
+  statusChanged   Boolean   @default(false)
+  addedAt         DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dotNumber])
+  @@index([userId])
+}
+
+model SearchHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  dotNumber  String
+  legalName  String
+  searchedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, searchedAt])
 }
 
 model CreditBalance {
