@@ -280,16 +280,18 @@ export function CarrierDetailView({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {/* PDF Export */}
-              <button
-                onClick={() => window.print()}
-                title="Export as PDF"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-colors print:hidden"
+              <a
+                href={`/carrier/${c.dot_number}/report`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open print-ready vetting report"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-colors"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 13h8M8 2v8M5 7l3 3 3-3" /><rect x="2" y="11" width="12" height="4" rx="1" />
                 </svg>
                 Export PDF
-              </button>
+              </a>
               {/* Watch button — only shown once auth check resolves */}
               {watched !== null && (
                 <button
