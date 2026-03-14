@@ -1,3 +1,5 @@
+import { cacheGet, cacheSet } from "@/lib/cache";
+
 const BASE_URL = "https://data.transportation.gov/resource";
 
 export const CENSUS_RESOURCE = "az4n-8mr2";
@@ -162,33 +164,51 @@ export async function searchCarriers(
 export async function getCarrierByDot(
   dotNumber: number
 ): Promise<SocrataCarrier | null> {
+  const cacheKey = `socrata:carrier:${dotNumber}`;
+  const cached = await cacheGet<SocrataCarrier | null>(cacheKey);
+  if (cached !== null) return cached;
+
   const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
     $where: `dot_number='${dotNumber}'`,
     $limit: "1",
   });
-  return results[0] ?? null;
+  const carrier = results[0] ?? null;
+  if (carrier) await cacheSet(cacheKey, carrier, 3600); // 1 hour
+  return carrier;
 }
 
 export async function getInspectionsByDot(
   dotNumber: number,
   limit = 100
 ): Promise<SocrataInspection[]> {
-  return socrataFetch<SocrataInspection>(INSPECTION_RESOURCE, {
+  const cacheKey = `socrata:insp:${dotNumber}:${limit}`;
+  const cached = await cacheGet<SocrataInspection[]>(cacheKey);
+  if (cached !== null) return cached;
+
+  const results = await socrataFetch<SocrataInspection>(INSPECTION_RESOURCE, {
     $where: `dot_number='${dotNumber}'`,
     $order: "insp_date DESC",
     $limit: String(limit),
   });
+  await cacheSet(cacheKey, results, 3600); // 1 hour
+  return results;
 }
 
 export async function getCrashesByDot(
   dotNumber: number,
   limit = 50
 ): Promise<SocrataCrash[]> {
-  return socrataFetch<SocrataCrash>(CRASH_RESOURCE, {
+  const cacheKey = `socrata:crash:${dotNumber}:${limit}`;
+  const cached = await cacheGet<SocrataCrash[]>(cacheKey);
+  if (cached !== null) return cached;
+
+  const results = await socrataFetch<SocrataCrash>(CRASH_RESOURCE, {
     $where: `dot_number='${dotNumber}'`,
     $order: "report_date DESC",
     $limit: String(limit),
   });
+  await cacheSet(cacheKey, results, 3600); // 1 hour
+  return results;
 }
 
 /* ── New Socrata Types ────────────────────────────────────────── */
@@ -237,10 +257,16 @@ export async function getInsuranceByDot(
   dotNumber: number,
   limit = 50
 ): Promise<SocrataInsurance[]> {
-  return socrataFetch<SocrataInsurance>(INSURANCE_RESOURCE, {
+  const cacheKey = `socrata:ins:${dotNumber}:${limit}`;
+  const cached = await cacheGet<SocrataInsurance[]>(cacheKey);
+  if (cached !== null) return cached;
+
+  const results = await socrataFetch<SocrataInsurance>(INSURANCE_RESOURCE, {
     $where: `dot_number='${padDot(dotNumber)}'`,
     $limit: String(limit),
   });
+  await cacheSet(cacheKey, results, 3600); // 1 hour
+  return results;
 }
 
 export async function getAuthorityHistoryByDot(

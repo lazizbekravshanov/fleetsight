@@ -4,9 +4,14 @@ This branch exists to track incremental fixes and improvements after the custome
 
 Primary tracking issue: #1
 
+## Completed
+
+- ~~Harden distributed rate limiting~~ — Redis-backed via @upstash/ratelimit with in-memory fallback
+- ~~Add Redis caching layer~~ — Upstash Redis for FMCSA + Socrata with in-memory fallback
+- ~~Add error monitoring~~ — Sentry integration (client + server + edge)
+
 ## Planned follow-ups
 
-- Harden distributed rate limiting (replace in-memory limiter with Redis-based store)
 - Add automated integration tests for auth/onboarding/api flows
 - Add webhook replay protection and idempotency keys
 - Improve FMCSA payload normalization across schema variants

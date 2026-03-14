@@ -1,12 +1,7 @@
+import { cacheGet, cacheSet } from "@/lib/cache";
+
 const BASE_URL = "https://mobile.fmcsa.dot.gov/qc/services";
-
-type CacheEntry = {
-  expiresAt: number;
-  value: unknown;
-};
-
-const CACHE = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL = 300; // 5 minutes in seconds
 
 export class FmcsaHttpError extends Error {
   status: number;
@@ -26,12 +21,9 @@ function getWebKey(): string {
 }
 
 async function fetchJson(pathname: string): Promise<unknown> {
-  const cacheKey = pathname;
-  const now = Date.now();
-  const cached = CACHE.get(cacheKey);
-  if (cached && cached.expiresAt > now) {
-    return cached.value;
-  }
+  const cacheKey = `fmcsa:${pathname}`;
+  const cached = await cacheGet<unknown>(cacheKey);
+  if (cached !== null) return cached;
 
   const url = new URL(`${BASE_URL}/${pathname.replace(/^\/+/, "")}`);
   url.searchParams.set("webKey", getWebKey());
@@ -49,7 +41,7 @@ async function fetchJson(pathname: string): Promise<unknown> {
   }
 
   const json = await res.json();
-  CACHE.set(cacheKey, { value: json, expiresAt: now + CACHE_TTL_MS });
+  await cacheSet(cacheKey, json, CACHE_TTL);
   return json;
 }
 

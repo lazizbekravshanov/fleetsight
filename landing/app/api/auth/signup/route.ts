@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const ip = getClientIp(req);
   const key = `signup:${parsed.data.email}:${ip}`;
-  const gate = checkRateLimit(key, {
+  const gate = await checkRateLimit(key, {
     windowMs: 10 * 60 * 1000,
     maxAttempts: 5,
     lockMs: 15 * 60 * 1000
