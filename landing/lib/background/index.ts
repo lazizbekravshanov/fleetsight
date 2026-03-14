@@ -1,6 +1,6 @@
 import type { SocrataCarrier } from "@/lib/socrata";
 import { searchCarriersByOfficer, searchCarriersByMailingAddress } from "@/lib/socrata";
-import { searchOfficers } from "@/lib/opencorporates";
+import { searchOfficers, buildCorporateNetwork } from "@/lib/opencorporates";
 import { screenOfac } from "./ofac";
 import { searchSamExclusions } from "./sam";
 import { searchEdgar } from "./edgar";
@@ -14,6 +14,7 @@ import type {
   OfficerCrossRef,
   OfficerProfile,
   OcOfficerCompany,
+  CorporateNetwork,
   DigitalFootprint,
   AddressIntelligence,
   OshaViolation,
@@ -74,6 +75,7 @@ export async function runBackgroundChecks(
     bankruptcyResult,
     oshaResult,
     epaResult,
+    corporateNetworkResult,
     ...ocResults
   ] = await Promise.allSettled([
     // 1. Officer cross-references (one query per officer)
@@ -130,7 +132,10 @@ export async function runBackgroundChecks(
     // 9. EPA enforcement
     searchEpaEnforcement(companyName, state),
 
-    // 10+. OpenCorporates officer search (one per officer)
+    // 10. Corporate network: all-state business registry search
+    buildCorporateNetwork(companyName, officers, state),
+
+    // 11+. OpenCorporates officer search (one per officer)
     ...officers.map((name) => searchOfficers(name, 5)),
   ]);
 
@@ -169,6 +174,13 @@ export async function runBackgroundChecks(
 
   const epaEnforcements: EpaEnforcement[] = epaResult.status === "fulfilled" ? epaResult.value : [];
   if (epaResult.status === "rejected") errors.push("EPA enforcement search failed");
+
+  let corporateNetwork: CorporateNetwork | null = null;
+  if (corporateNetworkResult.status === "fulfilled") {
+    corporateNetwork = corporateNetworkResult.value as CorporateNetwork;
+  } else {
+    errors.push("Corporate registry search failed");
+  }
 
   const corporateAffiliations: OcOfficerCompany[] = [];
   for (const r of ocResults) {
@@ -237,6 +249,7 @@ export async function runBackgroundChecks(
     oshaViolations,
     epaEnforcements,
     bankruptcyCases,
+    corporateNetwork,
     riskNarrative: null,
     errors,
   };

@@ -218,6 +218,39 @@ export type OcOfficerCompany = {
   companies: OcOfficerRole[];
 };
 
+export type OcCompanyOfficer = {
+  name: string;
+  position: string | null;
+  startDate: string | null;
+  endDate: string | null;
+};
+
+export type OcCompanyDetail = {
+  companyNumber: string;
+  name: string;
+  jurisdiction: string;          // e.g. "us_il"
+  jurisdictionLabel: string;     // e.g. "Illinois"
+  status: string | null;
+  companyType: string | null;
+  incorporationDate: string | null;
+  dissolutionDate: string | null;
+  registeredAddress: string | null;
+  officers: OcCompanyOfficer[];
+  registryUrl: string | null;
+  opencorporatesUrl: string | null;
+};
+
+export type CorporateNetworkSignal = {
+  severity: "high" | "medium" | "low";
+  label: string;
+  detail: string;
+};
+
+export type CorporateNetwork = {
+  companyRegistrations: OcCompanyDetail[];
+  riskSignals: CorporateNetworkSignal[];
+};
+
 export type OfficerProfile = {
   name: string;
   /** Other FMCSA-registered carriers listing this officer */
@@ -316,6 +349,7 @@ export type BackgroundData = {
   oshaViolations: OshaViolation[];
   epaEnforcements: EpaEnforcement[];
   bankruptcyCases: BankruptcyCase[];
+  corporateNetwork: CorporateNetwork | null;
   riskNarrative: string | null;
   aiGated?: AiGated;
   errors: string[];

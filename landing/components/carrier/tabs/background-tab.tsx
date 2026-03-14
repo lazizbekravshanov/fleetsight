@@ -12,6 +12,8 @@ import type {
   EdgarFiling,
   CourtCase,
   OcOfficerCompany,
+  CorporateNetwork,
+  OcCompanyDetail,
   DigitalFootprint,
   AddressIntelligence,
   OshaViolation,
@@ -122,10 +124,15 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
     { label: "OSHA", count: data.oshaViolations.length, color: "text-yellow-600" },
     { label: "EPA", count: data.epaEnforcements.length, color: "text-green-600" },
     { label: "Address Matches", count: data.mailingAddressMatches.length, color: "text-amber-600" },
+    { label: "State Registrations", count: data.corporateNetwork?.companyRegistrations.length ?? 0, color: "text-indigo-600" },
   ];
   const totalFindings = categories.reduce((s, c) => s + c.count, 0);
   const addressFlags = data.addressIntelligence?.flags.length ?? 0;
-  const hasCritical = data.ofacMatches.length > 0 || data.samExclusions.length > 0 || data.bankruptcyCases.length > 0;
+  const hasCritical =
+    data.ofacMatches.length > 0 ||
+    data.samExclusions.length > 0 ||
+    data.bankruptcyCases.length > 0 ||
+    (data.corporateNetwork?.riskSignals.some((s) => s.severity === "high") ?? false);
 
   return (
     <div className={`bg-white border shadow-sm rounded-2xl px-5 py-4 ${hasCritical ? "border-rose-200" : "border-gray-200"}`}>
@@ -908,6 +915,197 @@ function OfficerProfilesCard({ profiles }: { profiles: OfficerProfile[] }) {
   );
 }
 
+/* ── Corporate Registry Card ──────────────────────────────────────────── */
+
+function RegistryIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="2" y="1.5" width="10" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M4.5 4.5H9.5M4.5 7H9.5M4.5 9.5H7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <circle cx="10.5" cy="10.5" r="2.5" fill="white" stroke="currentColor" strokeWidth="1" />
+      <path d="M9.5 10.5h2M10.5 9.5v2" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
+  const isActive = company.status && !["dissolved", "inactive", "struck off", "cancelled", "revoked", "withdrawn"]
+    .some((s) => company.status!.toLowerCase().includes(s));
+  const isPrivacy = ["us_wy", "us_nv", "us_nm", "us_sd"].includes(company.jurisdiction);
+
+  return (
+    <div className={`rounded-xl border p-4 ${isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"}`}>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900 truncate">{company.name}</p>
+          {company.registeredAddress && (
+            <p className="mt-0.5 text-[11px] text-gray-400 truncate">{company.registeredAddress}</p>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
+          {/* State badge */}
+          <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ${
+            isPrivacy
+              ? "bg-amber-50 text-amber-800 ring-amber-300"
+              : "bg-indigo-50 text-indigo-700 ring-indigo-200"
+          }`}>
+            {company.jurisdictionLabel}
+            {isPrivacy && " ⚠"}
+          </span>
+          {/* Status badge */}
+          {company.status && (
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ${
+              isActive
+                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                : "bg-gray-100 text-gray-600 ring-gray-300"
+            }`}>
+              {company.status}
+            </span>
+          )}
+          {/* Company type */}
+          {company.companyType && (
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 ring-1 ring-gray-200">
+              {company.companyType}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Meta row */}
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-gray-400">
+        {company.companyNumber && <span>#{company.companyNumber}</span>}
+        {company.incorporationDate && (
+          <span>Formed {company.incorporationDate}</span>
+        )}
+        {company.dissolutionDate && (
+          <span className="text-rose-500">Dissolved {company.dissolutionDate}</span>
+        )}
+      </div>
+
+      {/* Officers */}
+      {company.officers.length > 0 && (
+        <div className="mt-3 border-t border-gray-100 pt-3">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+            Registered Officers
+          </p>
+          <div className="space-y-1">
+            {company.officers.map((o, i) => (
+              <div key={i} className="flex items-center gap-2 text-[11px]">
+                <span className="font-medium text-gray-700">{o.name}</span>
+                {o.position && (
+                  <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-700 ring-1 ring-teal-200 capitalize">
+                    {o.position}
+                  </span>
+                )}
+                {o.endDate && (
+                  <span className="text-gray-400">(former)</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* OC link */}
+      {company.opencorporatesUrl && (
+        <div className="mt-3">
+          <a
+            href={company.opencorporatesUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:underline"
+          >
+            View on OpenCorporates
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50">
+              <path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+          {company.registryUrl && (
+            <>
+              <span className="mx-2 text-gray-300">·</span>
+              <a
+                href={company.registryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] text-purple-600 hover:underline"
+              >
+                State Registry
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50">
+                  <path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
+  if (network.companyRegistrations.length === 0 && network.riskSignals.length === 0) return null;
+
+  const hasHighSignal = network.riskSignals.some((s) => s.severity === "high");
+  const hasMediumSignal = network.riskSignals.some((s) => s.severity === "medium");
+
+  return (
+    <div className={`bg-white border shadow-sm rounded-2xl p-5 ${
+      hasHighSignal ? "border-rose-200" : hasMediumSignal ? "border-amber-200" : "border-gray-200"
+    }`}>
+      <SectionHeader
+        icon={<RegistryIcon />}
+        title="State Business Registry"
+        count={network.companyRegistrations.length}
+        color={hasHighSignal ? "text-rose-500" : hasMediumSignal ? "text-amber-500" : "text-indigo-500"}
+      />
+      <p className="mb-4 -mt-1 text-xs text-gray-400">
+        Business registrations found across all 50 US state SOS databases via OpenCorporates.
+      </p>
+
+      {/* Risk signals */}
+      {network.riskSignals.length > 0 && (
+        <div className="mb-4 space-y-1.5">
+          {network.riskSignals.map((sig, i) => (
+            <div
+              key={i}
+              className={`flex items-start gap-2.5 rounded-lg border px-3.5 py-2.5 ${
+                sig.severity === "high"
+                  ? "border-rose-200 bg-rose-50"
+                  : sig.severity === "medium"
+                  ? "border-amber-200 bg-amber-50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <div className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${
+                sig.severity === "high" ? "bg-rose-500" : sig.severity === "medium" ? "bg-amber-500" : "bg-gray-400"
+              }`} />
+              <div className="min-w-0">
+                <p className={`text-xs font-semibold ${
+                  sig.severity === "high" ? "text-rose-800" : sig.severity === "medium" ? "text-amber-800" : "text-gray-700"
+                }`}>
+                  {sig.label}
+                </p>
+                <p className="text-[11px] text-gray-500">{sig.detail}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Registration cards */}
+      {network.companyRegistrations.length > 0 ? (
+        <div className="space-y-3">
+          {network.companyRegistrations.map((co, i) => (
+            <StateRegistrationRow key={`${co.jurisdiction}-${co.companyNumber}-${i}`} company={co} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-gray-400">No matching registrations found in state business databases.</p>
+      )}
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════════════════
    Main Export
    ══════════════════════════════════════════════════════════════════════ */
@@ -956,6 +1154,10 @@ export function BackgroundTab({
     data.oshaViolations.length === 0 &&
     data.epaEnforcements.length === 0 &&
     data.bankruptcyCases.length === 0 &&
+    (!data.corporateNetwork || (
+      data.corporateNetwork.companyRegistrations.length === 0 &&
+      data.corporateNetwork.riskSignals.length === 0
+    )) &&
     (!data.addressIntelligence || data.addressIntelligence.flags.length === 0) &&
     !data.digitalFootprint;
 
@@ -998,6 +1200,9 @@ export function BackgroundTab({
 
       {/* Officers — consolidated profiles */}
       <OfficerProfilesCard profiles={data.officerProfiles ?? []} />
+
+      {/* State Business Registry — all-50-state company search */}
+      {data.corporateNetwork && <CorporateRegistryCard network={data.corporateNetwork} />}
 
       {/* Sanctions & Exclusions (company-level) */}
       <SanctionsScreeningCard matches={data.ofacMatches} />
