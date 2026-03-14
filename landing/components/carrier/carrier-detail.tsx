@@ -55,8 +55,8 @@ export function CarrierDetailView({
   useEffect(() => {
     fetch(`/api/watchlist?dot=${c.dot_number}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => setWatched(data?.watched ?? false))
-      .catch(() => setWatched(false));
+      .then((data) => { if (data) setWatched(data.watched ?? false); })
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c.dot_number]);
 
