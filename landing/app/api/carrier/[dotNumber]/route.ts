@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
+import { prisma } from "@/lib/prisma";
 import {
   getCarrierByDot,
   getInspectionsByDot,
@@ -143,6 +144,11 @@ export async function GET(
   // SmartWay partner check
   const smartwayPartner = isSmartWayPartner(carrier.legal_name);
 
+  // Community report summary
+  const reportSummary = await prisma.communityReportSummary.findUnique({
+    where: { dotNumber: String(dotNumber) },
+  }).catch(() => null);
+
   // Parallel: peer benchmark, VoIP check, SoS check, affiliated carriers
   const [peerBenchmark, voip, sosResult, addressMatches] = await Promise.all([
     getPeerBenchmark(carrier.fleetsize).catch(() => null),
@@ -184,5 +190,13 @@ export async function GET(
     voip,
     sosResult,
     affiliatedCarriers: affiliatedCarriers.length > 0 ? affiliatedCarriers : undefined,
+    communityReportSummary: reportSummary
+      ? {
+          totalReports12m: reportSummary.totalReports12m,
+          communityScore: reportSummary.communityScore,
+          isFlagged: reportSummary.isFlagged,
+          reportsByType: JSON.parse(reportSummary.reportsByType),
+        }
+      : null,
   });
 }

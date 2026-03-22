@@ -140,6 +140,7 @@ export type CarrierDetail = {
   voip?: VoipResult;
   sosResult?: SosResult;
   affiliatedCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
+  communityReportSummary?: CommunityReportData | null;
   // Lazy-loaded fields (populated after tab activation)
   inspections?: SocrataInspection[];
   crashes?: SocrataCrash[];
@@ -160,7 +161,15 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background" | "notes";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background" | "notes" | "reports";
+
+export type CommunityReportData = {
+  totalReports12m: number;
+  communityScore: number;
+  isFlagged: boolean;
+  reportsByType: Record<string, number>;
+  lastReportAt: string | null;
+};
 
 /* ── Background Check Types ─────────────────────────────────── */
 

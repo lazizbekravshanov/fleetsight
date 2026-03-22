@@ -14,6 +14,7 @@ import { FleetTab } from "./tabs/fleet-tab";
 import { DetectionTab } from "./tabs/detection-tab";
 import { BackgroundTab } from "./tabs/background-tab";
 import { NotesTab } from "./tabs/notes-tab";
+import { ReportsTab } from "./tabs/reports-tab";
 import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
@@ -240,6 +241,7 @@ export function CarrierDetailView({
     { key: "detection", label: "Detection", group: "compliance" },
     { key: "background", label: "Background", group: "compliance" },
     { key: "notes", label: "Notes", group: "compliance" },
+    { key: "reports", label: "Reports", count: detail.communityReportSummary?.totalReports12m, group: "compliance" },
   ];
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
@@ -440,6 +442,7 @@ export function CarrierDetailView({
               sosResult={detail.sosResult}
               affiliatedCarriers={detail.affiliatedCarriers}
               fmcsaStatus={detail.fmcsaStatus}
+              communityReportSummary={detail.communityReportSummary}
             />
           )}
           {activeTab === "safety" && (
@@ -495,6 +498,9 @@ export function CarrierDetailView({
           )}
           {activeTab === "notes" && (
             <NotesTab dotNumber={c.dot_number} />
+          )}
+          {activeTab === "reports" && (
+            <ReportsTab dotNumber={c.dot_number} />
           )}
         </motion.div>
       </AnimatePresence>

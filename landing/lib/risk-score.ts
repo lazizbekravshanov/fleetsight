@@ -15,6 +15,7 @@ type RiskInput = {
   isHazmat?: boolean;
   isVoip?: boolean;
   sosMatchQuality?: "exact" | "partial" | "none";
+  communityScore?: number;
 };
 
 function clamp(v: number, min = 0, max = 100): number {
@@ -167,15 +168,30 @@ export function computeRiskScore(input: RiskInput): RiskScore {
     }
   }
 
-  const weights = [
-    { cat: "BASIC Percentiles", weight: 25, value: basicVal },
-    { cat: "OOS Rate", weight: 15, value: oosVal },
-    { cat: "Crash Severity", weight: 20, value: crashVal },
-    { cat: "Authority Status", weight: 15, value: authVal },
-    { cat: "MCS-150 Staleness", weight: 10, value: mcs150Adjusted },
-    { cat: "Insurance Compliance", weight: 10, value: insVal },
-    { cat: "Shell Indicators", weight: 5, value: shellVal },
-  ];
+  // When communityScore is present, add it as 8th factor (5% weight)
+  // and reduce Shell to 3%, Insurance to 8% to keep total at 100%
+  const hasCommunity = input.communityScore !== undefined && input.communityScore > 0;
+
+  const weights = hasCommunity
+    ? [
+        { cat: "BASIC Percentiles", weight: 25, value: basicVal },
+        { cat: "OOS Rate", weight: 15, value: oosVal },
+        { cat: "Crash Severity", weight: 20, value: crashVal },
+        { cat: "Authority Status", weight: 15, value: authVal },
+        { cat: "MCS-150 Staleness", weight: 9, value: mcs150Adjusted },
+        { cat: "Insurance Compliance", weight: 8, value: insVal },
+        { cat: "Shell Indicators", weight: 3, value: shellVal },
+        { cat: "Community Reports", weight: 5, value: input.communityScore! },
+      ]
+    : [
+        { cat: "BASIC Percentiles", weight: 25, value: basicVal },
+        { cat: "OOS Rate", weight: 15, value: oosVal },
+        { cat: "Crash Severity", weight: 20, value: crashVal },
+        { cat: "Authority Status", weight: 15, value: authVal },
+        { cat: "MCS-150 Staleness", weight: 10, value: mcs150Adjusted },
+        { cat: "Insurance Compliance", weight: 10, value: insVal },
+        { cat: "Shell Indicators", weight: 5, value: shellVal },
+      ];
 
   const factors: RiskFactor[] = weights.map((w) => {
     const weighted = (w.value * w.weight) / 100;
@@ -219,6 +235,8 @@ function describeScore(category: string, value: number): string {
       return `${level}: Insurance coverage concerns`;
     case "Shell Indicators":
       return `${level}: Possible shell company indicators`;
+    case "Community Reports":
+      return `${level}: Community-reported incidents on record`;
     default:
       return `${level} risk detected`;
   }

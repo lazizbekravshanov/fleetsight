@@ -7,7 +7,7 @@ import {
   decodeClassdef,
 } from "@/lib/fmcsa-codes";
 import { Row, extractArray, str, parseBasics } from "../shared";
-import type { BasicScore, PeerBenchmark, VoipResult, SosResult, RiskScore, FmcsaStatus } from "../types";
+import type { BasicScore, PeerBenchmark, VoipResult, SosResult, RiskScore, FmcsaStatus, CommunityReportData } from "../types";
 import { computeRiskScore } from "@/lib/risk-score";
 
 export function OverviewTab({
@@ -25,6 +25,7 @@ export function OverviewTab({
   sosResult,
   affiliatedCarriers,
   fmcsaStatus,
+  communityReportSummary,
 }: {
   carrier: SocrataCarrier;
   authority: unknown;
@@ -40,6 +41,7 @@ export function OverviewTab({
   sosResult?: SosResult;
   affiliatedCarriers?: { dotNumber: string; legalName: string; statusCode?: string }[];
   fmcsaStatus?: FmcsaStatus | null;
+  communityReportSummary?: CommunityReportData | null;
 }) {
   const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
     .filter(Boolean)
@@ -63,6 +65,29 @@ export function OverviewTab({
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
+      {/* Community Flagged Banner */}
+      {communityReportSummary?.isFlagged && (
+        <div className="col-span-full rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.45l6.705 13.363H1.295L8 1.45zM8 10a.75.75 0 110 1.5.75.75 0 010-1.5zm-.5-4v3h1V6h-1z"/></svg>
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-rose-800">
+                Community Flagged
+                <span className="ml-2 text-xs font-normal text-rose-600">
+                  {communityReportSummary.totalReports12m} report{communityReportSummary.totalReports12m !== 1 ? "s" : ""} in last 12 months
+                </span>
+              </p>
+              <p className="text-xs text-rose-600">
+                This carrier has been flagged by multiple community members.{" "}
+                <button onClick={() => onSwitchTab?.("reports")} className="underline hover:text-rose-800">View reports</button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Risk Summary Card */}
       <RiskSummaryCard
         basics={basics}
