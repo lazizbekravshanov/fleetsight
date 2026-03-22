@@ -7,7 +7,8 @@ import { prisma } from "@/lib/prisma";
 
 const bodySchema = z.object({
   scope: z.string().min(1).max(120).default("carrier:read"),
-  ttlDays: z.number().int().min(1).max(90).default(30)
+  ttlDays: z.number().int().min(1).max(90).default(30),
+  tier: z.enum(["free", "starter", "professional", "enterprise"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -23,14 +24,17 @@ export async function POST(req: NextRequest) {
     where: { id: session.user.id },
     select: { profile: { select: { usdotNumber: true } } }
   });
-  if (!user?.profile?.usdotNumber) {
-    return jsonError("Complete onboarding before generating OpenClaw tokens", 403);
-  }
-
   const payload = await req.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(payload);
   if (!parsed.success) {
     return jsonError("Invalid token request", 400);
+  }
+
+  // risk:read scope does NOT require USDOT (can query any carrier)
+  const scopes = parsed.data.scope.split(",").map((s: string) => s.trim());
+  const needsUsdot = scopes.some((s: string) => s !== "risk:read");
+  if (needsUsdot && !user?.profile?.usdotNumber) {
+    return jsonError("Complete onboarding before generating OpenClaw tokens", 403);
   }
 
   const { token, tokenHash } = generateScopedToken({
@@ -44,6 +48,7 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       tokenHash,
       scope: parsed.data.scope,
+      tier: parsed.data.tier ?? "free",
       expiresAt
     }
   });

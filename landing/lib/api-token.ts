@@ -45,5 +45,10 @@ export async function authenticateApiToken(authHeader: string | null) {
     }
   });
 
-  return row;
+  if (!row) return null;
+
+  return {
+    ...row,
+    tier: row.tier ?? "free",
+  };
 }
