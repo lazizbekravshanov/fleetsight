@@ -24,3 +24,35 @@ export const CREDIT_PACKS: CreditPack[] = [
   { id: "pack_200", credits: 200, priceCents: 1500, label: "200 Credits", priceLabel: "$15" },
   { id: "pack_500", credits: 500, priceCents: 3000, label: "500 Credits", priceLabel: "$30" },
 ];
+
+/* ── Subscription helpers ──────────────────────────────────────── */
+
+export async function createSubscriptionCheckout(input: {
+  customerId: string;
+  priceId: string;
+  userId: string;
+  successUrl: string;
+  cancelUrl: string;
+}) {
+  const stripe = getStripe();
+  return stripe.checkout.sessions.create({
+    customer: input.customerId,
+    mode: "subscription",
+    line_items: [{ price: input.priceId, quantity: 1 }],
+    success_url: input.successUrl,
+    cancel_url: input.cancelUrl,
+    metadata: { userId: input.userId },
+    subscription_data: { metadata: { userId: input.userId } },
+  });
+}
+
+export async function createPortalSession(input: {
+  customerId: string;
+  returnUrl: string;
+}) {
+  const stripe = getStripe();
+  return stripe.billingPortal.sessions.create({
+    customer: input.customerId,
+    return_url: input.returnUrl,
+  });
+}

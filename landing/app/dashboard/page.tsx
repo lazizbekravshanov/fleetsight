@@ -7,6 +7,9 @@ import { SignOutButton } from "@/components/signout-button";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { WatchlistSection } from "@/components/dashboard/watchlist-section";
 import { RecentSearchesSection } from "@/components/dashboard/recent-searches-section";
+import { FleetHealthSection } from "@/components/dashboard/fleet-health-section";
+import { AlertsSection } from "@/components/dashboard/alerts-section";
+import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { prisma } from "@/lib/prisma";
 import { getCreditBalance } from "@/lib/credits";
 
@@ -75,6 +78,15 @@ export default async function DashboardPage() {
         </header>
 
         <div className="space-y-6">
+          {/* Subscription Banner */}
+          <SubscriptionBanner />
+
+          {/* Fleet Health Grid (for subscribed users) */}
+          <FleetHealthSection />
+
+          {/* Alerts Feed */}
+          <AlertsSection />
+
           {/* Watchlist */}
           <WatchlistSection initial={watchedCarriers} />
 

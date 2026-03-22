@@ -88,6 +88,16 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
         </h2>
       </div>
       <div className="space-y-2">
+        {/* Upgrade CTA */}
+        <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/30 px-4 py-3">
+          <p className="text-xs text-gray-500">
+            Want automated monitoring every 6 hours?{" "}
+            <a href="/dashboard?upgrade=true" className="font-semibold text-indigo-600 hover:text-indigo-700">
+              Upgrade to Continuous Monitoring
+            </a>
+          </p>
+        </div>
+
         {carriers.map((c) => (
           <div
             key={c.dotNumber}

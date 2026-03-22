@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { grantCredits } from "@/lib/credits";
+import { getTierByPriceId } from "@/lib/subscriptions";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -37,38 +38,104 @@ export async function POST(req: NextRequest) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const userId = session.metadata?.userId;
-    const credits = parseInt(session.metadata?.credits ?? "0", 10);
-    const packId = session.metadata?.packId;
 
-    if (!userId || !credits || !packId) {
-      return new Response("Missing metadata", { status: 400 });
-    }
+    // Handle credit pack purchases (mode: "payment")
+    if (session.mode === "payment") {
+      const credits = parseInt(session.metadata?.credits ?? "0", 10);
+      const packId = session.metadata?.packId;
 
-    // Idempotency: check if already processed
-    const existing = await prisma.creditPurchase.findUnique({
-      where: { stripeCheckoutSessionId: session.id },
-    });
+      if (!userId || !credits || !packId) {
+        return new Response("Missing metadata", { status: 400 });
+      }
 
-    if (!existing) {
-      const pack = (await import("@/lib/stripe")).CREDIT_PACKS.find(
-        (p) => p.id === packId
-      );
-
-      await prisma.creditPurchase.create({
-        data: {
-          userId,
-          stripeCheckoutSessionId: session.id,
-          stripePaymentIntentId:
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : null,
-          packCredits: credits,
-          packPriceCents: pack?.priceCents ?? 0,
-          status: "completed",
-        },
+      const existing = await prisma.creditPurchase.findUnique({
+        where: { stripeCheckoutSessionId: session.id },
       });
 
-      await grantCredits(userId, credits, "purchase", session.id);
+      if (!existing) {
+        const pack = (await import("@/lib/stripe")).CREDIT_PACKS.find(
+          (p) => p.id === packId
+        );
+
+        await prisma.creditPurchase.create({
+          data: {
+            userId,
+            stripeCheckoutSessionId: session.id,
+            stripePaymentIntentId:
+              typeof session.payment_intent === "string"
+                ? session.payment_intent
+                : null,
+            packCredits: credits,
+            packPriceCents: pack?.priceCents ?? 0,
+            status: "completed",
+          },
+        });
+
+        await grantCredits(userId, credits, "purchase", session.id);
+      }
+    }
+    // Subscription checkouts are handled via customer.subscription.created
+  }
+
+  // ── Subscription lifecycle events ───────────────────────────
+
+  if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+    const sub = event.data.object as unknown as Record<string, unknown>;
+    const metadata = sub.metadata as Record<string, string> | undefined;
+    const userId = metadata?.userId;
+    if (!userId) return new Response("ok", { status: 200 });
+
+    const items = sub.items as { data?: { price?: { id?: string } }[] } | undefined;
+    const priceId = items?.data?.[0]?.price?.id;
+    const tierConfig = priceId ? getTierByPriceId(priceId) : null;
+    const tier = tierConfig?.tier ?? "starter";
+
+    const periodStart = typeof sub.current_period_start === "number" ? sub.current_period_start : Math.floor(Date.now() / 1000);
+    const periodEnd = typeof sub.current_period_end === "number" ? sub.current_period_end : Math.floor(Date.now() / 1000) + 30 * 86400;
+
+    await prisma.subscription.upsert({
+      where: { userId },
+      create: {
+        userId,
+        tier,
+        status: String(sub.status ?? "active"),
+        stripeSubscriptionId: String(sub.id),
+        stripePriceId: priceId ?? "",
+        currentPeriodStart: new Date(periodStart * 1000),
+        currentPeriodEnd: new Date(periodEnd * 1000),
+        cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
+      },
+      update: {
+        tier,
+        status: String(sub.status ?? "active"),
+        stripePriceId: priceId ?? "",
+        currentPeriodStart: new Date(periodStart * 1000),
+        currentPeriodEnd: new Date(periodEnd * 1000),
+        cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end),
+      },
+    });
+  }
+
+  if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object as unknown as Record<string, unknown>;
+    const metadata = sub.metadata as Record<string, string> | undefined;
+    const userId = metadata?.userId;
+    if (userId) {
+      await prisma.subscription.updateMany({
+        where: { userId, stripeSubscriptionId: String(sub.id) },
+        data: { status: "canceled" },
+      });
+    }
+  }
+
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as unknown as Record<string, unknown>;
+    const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+    if (subscriptionId) {
+      await prisma.subscription.updateMany({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: { status: "past_due" },
+      });
     }
   }
 
