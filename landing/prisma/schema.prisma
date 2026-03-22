@@ -23,6 +23,10 @@ model User {
   watchedCarriers     WatchedCarrier[]
   searchHistory       SearchHistory[]
   carrierNotes        CarrierNote[]
+  subscription        Subscription?
+  monitoredRosters    MonitoredRoster[]
+  monitoringAlerts    MonitoringAlert[]
+  communityReports    CommunityReport[]
 
   @@index([createdAt])
 }
@@ -121,13 +125,15 @@ model CustomerProfile {
 }
 
 model ApiToken {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   userId    String
-  tokenHash String   @unique
+  tokenHash String        @unique
   scope     String
-  createdAt DateTime @default(now())
+  tier      String        @default("free")
+  createdAt DateTime      @default(now())
   expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageLogs ApiKeyUsage[]
 
   @@index([userId])
   @@index([expiresAt])
@@ -279,4 +285,109 @@ model SyncRun {
   errorMessage  String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ── Continuous Monitoring SaaS ──────────────────────────────────
+
+model Subscription {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  tier                  String
+  status                String   @default("active")
+  stripeSubscriptionId  String   @unique
+  stripePriceId         String
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MonitoredRoster {
+  id        String          @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  carriers  RosterCarrier[]
+
+  @@index([userId])
+}
+
+model RosterCarrier {
+  id            String          @id @default(cuid())
+  rosterId      String
+  dotNumber     String
+  legalName     String
+  healthStatus  String          @default("unknown")
+  lastGrade     String?
+  lastScore     Int?
+  lastCheckedAt DateTime?
+  createdAt     DateTime        @default(now())
+  roster        MonitoredRoster @relation(fields: [rosterId], references: [id], onDelete: Cascade)
+
+  @@unique([rosterId, dotNumber])
+  @@index([rosterId])
+}
+
+model MonitoringAlert {
+  id            String    @id @default(cuid())
+  userId        String
+  dotNumber     String
+  legalName     String
+  alertType     String
+  severity      String
+  title         String
+  detail        String
+  previousValue String?
+  newValue      String?
+  readAt        DateTime?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+// ── Community Risk Reports ──────────────────────────────────────
+
+model CommunityReport {
+  id          String   @id @default(cuid())
+  userId      String
+  dotNumber   String
+  reportType  String
+  description String
+  severity    String
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([dotNumber, createdAt])
+  @@index([dotNumber, status])
+  @@index([userId, dotNumber, reportType])
+}
+
+model CommunityReportSummary {
+  dotNumber       String   @id @unique
+  totalReports12m Int      @default(0)
+  reportsByType   String   @default("{}")
+  communityScore  Int      @default(0)
+  isFlagged       Boolean  @default(false)
+  lastReportAt    DateTime?
+  updatedAt       DateTime @updatedAt
+}
+
+// ── API Key Usage Tracking ──────────────────────────────────────
+
+model ApiKeyUsage {
+  id        String   @id @default(cuid())
+  tokenId   String
+  endpoint  String
+  dotNumber String?
+  createdAt DateTime @default(now())
+  token     ApiToken @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, createdAt])
 }
