@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
-import { getSharedVinsForCarrier } from "@/lib/affiliation-detection";
-import { prisma } from "@/lib/prisma";
+import { getAffiliationsForCarrier } from "@/lib/affiliation-detection";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
 const paramSchema = z.object({
@@ -21,34 +20,38 @@ export async function GET(
   const dotNumber = parseInt(parsed.data.dotNumber, 10);
 
   // Check 1-hour cache
-  const cacheKey = `affiliations:${dotNumber}`;
+  const cacheKey = `affiliations:v2:${dotNumber}`;
   const cached = await cacheGet<object>(cacheKey);
-  if (cached) {
-    return Response.json(cached);
-  }
+  if (cached) return Response.json(cached);
 
-  // Get live shared VIN analysis
-  const affiliations = await getSharedVinsForCarrier(dotNumber);
-
-  // Also get total VIN count for this carrier
-  const totalVins = await prisma.carrierVehicle.count({
-    where: { dotNumber },
-  });
+  const data = await getAffiliationsForCarrier(dotNumber);
 
   const response = {
     dotNumber,
-    totalVins,
-    affiliatedCarrierCount: affiliations.length,
-    totalSharedVinCount: affiliations.reduce((s, a) => s + a.sharedVinCount, 0),
-    affiliations: affiliations.map((a) => ({
+    totalVins: data.totalVins,
+    affiliatedCarrierCount: data.affiliations.length,
+    totalSharedVinCount: data.affiliations.reduce((s, a) => s + a.sharedVinCount, 0),
+    cluster: data.cluster,
+    affiliations: data.affiliations.map((a) => ({
       dotNumber: a.dotNumber,
       legalName: a.legalName,
       statusCode: a.statusCode,
       sharedVinCount: a.sharedVinCount,
-      sharedVins: a.sharedVins,
-      affiliationScore: a.affiliationScore,
-      affiliationType: a.affiliationType,
+      score: a.score,
+      type: a.type,
       signals: a.signals,
+      reasons: a.reasons,
+      sharedVins: a.sharedVins.map((v) => ({
+        vin: v.vin,
+        vehicleType: v.vehicleType,
+        overlapDays: v.overlapDays,
+        gapDays: v.gapDays,
+        transferDirection: v.transferDirection,
+        carrierAFirstSeen: v.carrierAFirstSeen?.toISOString() ?? null,
+        carrierALastSeen: v.carrierALastSeen?.toISOString() ?? null,
+        carrierBFirstSeen: v.carrierBFirstSeen?.toISOString() ?? null,
+        carrierBLastSeen: v.carrierBLastSeen?.toISOString() ?? null,
+      })),
     })),
   };
 

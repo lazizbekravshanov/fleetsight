@@ -290,6 +290,28 @@ model SyncRun {
 
 // ── Shared VIN & Carrier Affiliation Detection ─────────────────
 
+model VinObservation {
+  id             String    @id @default(cuid())
+  vin            String
+  dotNumber      Int
+  inspectionDate DateTime
+  inspectionId   String?
+  state          String?
+  vehicleType    String    @default("TRUCK")
+  unitMake       String?
+  unitYear       Int?
+  licensePlate   String?
+  licenseState   String?
+  source         String    @default("MCMIS")
+  ingestedAt     DateTime  @default(now())
+
+  @@unique([vin, dotNumber, inspectionDate])
+  @@index([vin])
+  @@index([dotNumber])
+  @@index([inspectionDate])
+  @@index([vin, dotNumber])
+}
+
 model Vehicle {
   id          String   @id @default(cuid())
   vin         String   @unique
@@ -308,14 +330,15 @@ model Vehicle {
 }
 
 model CarrierVehicle {
-  id          String    @id @default(cuid())
-  dotNumber   Int
-  vin         String
-  unitType    String    @default("TRUCK")
-  firstSeenAt DateTime  @default(now())
-  lastSeenAt  DateTime  @default(now())
-  source      String    @default("inspection")
-  createdAt   DateTime  @default(now())
+  id              String    @id @default(cuid())
+  dotNumber       Int
+  vin             String
+  unitType        String    @default("TRUCK")
+  observationCount Int      @default(1)
+  firstSeenAt     DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
+  source          String    @default("inspection")
+  createdAt       DateTime  @default(now())
 
   carrier     FmcsaCarrier? @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
   vehicle     Vehicle       @relation(fields: [vin], references: [vin], onDelete: Cascade)
@@ -326,22 +349,67 @@ model CarrierVehicle {
 }
 
 model CarrierAffiliation {
-  id              String   @id @default(cuid())
-  dotNumberA      Int
-  dotNumberB      Int
-  sharedVinCount  Int
+  id               String   @id @default(cuid())
+  clusterId        String?
+  dotNumberA       Int
+  dotNumberB       Int
+  sharedVinCount   Int
   affiliationScore Float
-  affiliationType String   @default("UNKNOWN")
-  sharedVinsJson  String   @default("[]")
-  firstDetectedAt DateTime @default(now())
-  lastUpdatedAt   DateTime @updatedAt
-  flagged         Boolean  @default(false)
-  notes           String?
+  affiliationType  String   @default("UNKNOWN")
+  sharedVinsJson   String   @default("[]")
+  sigVinRatio      Float    @default(0)
+  sigTemporal      Float    @default(0)
+  sigConcurrent    Float    @default(0)
+  sigAddress       Float    @default(0)
+  sigName          Float    @default(0)
+  sigOosReincarnation Float @default(0)
+  sigFleetAbsorption  Float @default(0)
+  reasonsJson      String   @default("[]")
+  firstDetectedAt  DateTime @default(now())
+  lastUpdatedAt    DateTime @updatedAt
+  flagged          Boolean  @default(false)
+  notes            String?
+
+  edgeVins AffiliationEdgeVin[]
 
   @@unique([dotNumberA, dotNumberB])
   @@index([dotNumberA])
   @@index([dotNumberB])
   @@index([affiliationScore])
+  @@index([affiliationType])
+  @@index([clusterId])
+}
+
+model AffiliationEdgeVin {
+  id                 String   @id @default(cuid())
+  edgeId             String
+  vin                String
+  vehicleType        String?
+  unitMake           String?
+  unitYear           Int?
+  dotAFirstSeen      DateTime?
+  dotALastSeen       DateTime?
+  dotBFirstSeen      DateTime?
+  dotBLastSeen       DateTime?
+  overlapDays        Int      @default(0)
+  gapDays            Int      @default(0)
+  transferDirection  String   @default("UNCLEAR")
+
+  edge CarrierAffiliation @relation(fields: [edgeId], references: [id], onDelete: Cascade)
+
+  @@unique([edgeId, vin])
+  @@index([edgeId])
+}
+
+model AffiliationCluster {
+  id          String   @id @default(cuid())
+  clusterId   String   @unique
+  memberCount Int
+  dotNumbers  String
+  maxScore    Float    @default(0)
+  worstType   String   @default("UNKNOWN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ── Continuous Monitoring SaaS ──────────────────────────────────

@@ -163,15 +163,38 @@ export type InsuranceData = {
 
 export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports";
 
+export type SharedVinInfo = {
+  vin: string;
+  vehicleType: string;
+  overlapDays: number;
+  gapDays: number;
+  transferDirection: "A_TO_B" | "B_TO_A" | "CONCURRENT" | "UNCLEAR";
+  carrierAFirstSeen: string | null;
+  carrierALastSeen: string | null;
+  carrierBFirstSeen: string | null;
+  carrierBLastSeen: string | null;
+};
+
+export type SignalBreakdown = {
+  sharedVinRatio: number;
+  temporalPattern: number;
+  concurrentOps: number;
+  addressMatch: number;
+  nameMatch: number;
+  oosReincarnation: number;
+  fleetAbsorption: number;
+};
+
 export type AffiliationEntry = {
   dotNumber: number;
   legalName: string | null;
   statusCode: string | null;
   sharedVinCount: number;
-  sharedVins: string[];
-  affiliationScore: number;
-  affiliationType: string;
-  signals: string[];
+  sharedVins: SharedVinInfo[];
+  score: number;
+  type: string;
+  signals: SignalBreakdown;
+  reasons: string[];
 };
 
 export type AffiliationsData = {
@@ -179,6 +202,7 @@ export type AffiliationsData = {
   totalVins: number;
   affiliatedCarrierCount: number;
   totalSharedVinCount: number;
+  cluster: { id: string; members: number[] } | null;
   affiliations: AffiliationEntry[];
 };
 
