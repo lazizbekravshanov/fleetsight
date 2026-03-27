@@ -166,6 +166,25 @@ export async function GET(
       : Promise.resolve([]),
   ]);
 
+  // VIN-based affiliation count (lightweight query)
+  const vinAffiliationCount = await prisma.carrierVehicle.count({
+    where: { dotNumber },
+  }).then(async (vinCount) => {
+    if (vinCount === 0) return 0;
+    // Count distinct affiliated carriers
+    const myVins = await prisma.carrierVehicle.findMany({
+      where: { dotNumber },
+      select: { vin: true },
+    });
+    if (myVins.length === 0) return 0;
+    const shared = await prisma.carrierVehicle.findMany({
+      where: { vin: { in: myVins.map((v) => v.vin) }, dotNumber: { not: dotNumber } },
+      select: { dotNumber: true },
+      distinct: ["dotNumber"],
+    });
+    return shared.length;
+  }).catch(() => 0);
+
   // Filter affiliated carriers (exclude self)
   const affiliatedCarriers = addressMatches
     .filter((m) => m.dot_number !== String(dotNumber))
@@ -190,6 +209,7 @@ export async function GET(
     voip,
     sosResult,
     affiliatedCarriers: affiliatedCarriers.length > 0 ? affiliatedCarriers : undefined,
+    vinAffiliationCount,
     communityReportSummary: reportSummary
       ? {
           totalReports12m: reportSummary.totalReports12m,

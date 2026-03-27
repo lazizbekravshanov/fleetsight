@@ -15,7 +15,8 @@ import { DetectionTab } from "./tabs/detection-tab";
 import { BackgroundTab } from "./tabs/background-tab";
 import { NotesTab } from "./tabs/notes-tab";
 import { ReportsTab } from "./tabs/reports-tab";
-import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus } from "./types";
+import { AffiliationsTab } from "./tabs/affiliations-tab";
+import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
   Satisfactory: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -111,6 +112,11 @@ export function CarrierDetailView({
   const [detectionData, setDetectionData] = useState<DetectionData | null>(null);
   const [detectionLoading, setDetectionLoading] = useState(false);
   const [detectionError, setDetectionError] = useState<string | null>(null);
+
+  // Lazy affiliations state
+  const [affiliationsData, setAffiliationsData] = useState<AffiliationsData | null>(null);
+  const [affiliationsLoading, setAffiliationsLoading] = useState(false);
+  const [affiliationsError, setAffiliationsError] = useState<string | null>(null);
 
   // Lazy background state
   const [backgroundData, setBackgroundData] = useState<BackgroundData | null>(null);
@@ -213,6 +219,21 @@ export function CarrierDetailView({
   }, [activeTab, c.dot_number, detectionData, detectionLoading]);
 
   useEffect(() => {
+    if (activeTab !== "affiliations" || affiliationsData || affiliationsLoading) return;
+
+    setAffiliationsLoading(true);
+    setAffiliationsError(null);
+    fetch(`/api/carrier/${c.dot_number}/affiliations`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Affiliations returned ${res.status}`);
+        return res.json();
+      })
+      .then((data: AffiliationsData) => setAffiliationsData(data))
+      .catch(() => setAffiliationsError("Failed to load affiliations."))
+      .finally(() => setAffiliationsLoading(false));
+  }, [activeTab, c.dot_number, affiliationsData, affiliationsLoading]);
+
+  useEffect(() => {
     if (activeTab !== "background" || backgroundData || backgroundLoading) return;
 
     setBackgroundLoading(true);
@@ -239,6 +260,7 @@ export function CarrierDetailView({
     { key: "insurance", label: "Insurance", group: "compliance" },
     { key: "fleet", label: "Fleet", group: "compliance" },
     { key: "detection", label: "Detection", group: "compliance" },
+    { key: "affiliations", label: "Affiliations", count: affiliationsData?.affiliatedCarrierCount, group: "compliance" },
     { key: "background", label: "Background", group: "compliance" },
     { key: "notes", label: "Notes", group: "compliance" },
     { key: "reports", label: "Reports", count: detail.communityReportSummary?.totalReports12m, group: "compliance" },
@@ -487,6 +509,14 @@ export function CarrierDetailView({
               data={detectionData}
               loading={detectionLoading}
               error={detectionError}
+            />
+          )}
+          {activeTab === "affiliations" && (
+            <AffiliationsTab
+              data={affiliationsData}
+              loading={affiliationsLoading}
+              error={affiliationsError}
+              dotNumber={c.dot_number}
             />
           )}
           {activeTab === "background" && (

@@ -161,7 +161,26 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "background" | "notes" | "reports";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports";
+
+export type AffiliationEntry = {
+  dotNumber: number;
+  legalName: string | null;
+  statusCode: string | null;
+  sharedVinCount: number;
+  sharedVins: string[];
+  affiliationScore: number;
+  affiliationType: string;
+  signals: string[];
+};
+
+export type AffiliationsData = {
+  dotNumber: number;
+  totalVins: number;
+  affiliatedCarrierCount: number;
+  totalSharedVinCount: number;
+  affiliations: AffiliationEntry[];
+};
 
 export type CommunityReportData = {
   totalReports12m: number;

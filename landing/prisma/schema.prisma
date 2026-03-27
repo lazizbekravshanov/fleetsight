@@ -182,6 +182,7 @@ model FmcsaCarrier {
   inspections FmcsaInspection[]
   riskScore   CarrierRiskScore?
   clusterMemberships ClusterMember[]
+  carrierVehicles    CarrierVehicle[]
 
   @@index([phone])
   @@index([phyStreet, phyCity, phyState])
@@ -285,6 +286,62 @@ model SyncRun {
   errorMessage  String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ── Shared VIN & Carrier Affiliation Detection ─────────────────
+
+model Vehicle {
+  id          String   @id @default(cuid())
+  vin         String   @unique
+  make        String?
+  model       String?
+  modelYear   Int?
+  bodyClass   String?
+  vehicleType String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  carrierVehicles CarrierVehicle[]
+
+  @@index([make])
+  @@index([modelYear])
+}
+
+model CarrierVehicle {
+  id          String    @id @default(cuid())
+  dotNumber   Int
+  vin         String
+  unitType    String    @default("TRUCK")
+  firstSeenAt DateTime  @default(now())
+  lastSeenAt  DateTime  @default(now())
+  source      String    @default("inspection")
+  createdAt   DateTime  @default(now())
+
+  carrier     FmcsaCarrier? @relation(fields: [dotNumber], references: [dotNumber], onDelete: Cascade)
+  vehicle     Vehicle       @relation(fields: [vin], references: [vin], onDelete: Cascade)
+
+  @@unique([dotNumber, vin])
+  @@index([dotNumber])
+  @@index([vin])
+}
+
+model CarrierAffiliation {
+  id              String   @id @default(cuid())
+  dotNumberA      Int
+  dotNumberB      Int
+  sharedVinCount  Int
+  affiliationScore Float
+  affiliationType String   @default("UNKNOWN")
+  sharedVinsJson  String   @default("[]")
+  firstDetectedAt DateTime @default(now())
+  lastUpdatedAt   DateTime @updatedAt
+  flagged         Boolean  @default(false)
+  notes           String?
+
+  @@unique([dotNumberA, dotNumberB])
+  @@index([dotNumberA])
+  @@index([dotNumberB])
+  @@index([affiliationScore])
 }
 
 // ── Continuous Monitoring SaaS ──────────────────────────────────
