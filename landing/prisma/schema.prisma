@@ -622,3 +622,106 @@ model ApiKeyUsage {
 
   @@index([tokenId, createdAt])
 }
+
+// ── Inspection Violations & Carrier Intelligence ─────────────
+
+model InspectionViolation {
+  id                String   @id @default(cuid())
+  inspectionId      String
+  dotNumber         Int
+  vinClean          String?
+  cdlKey            String?
+  inspectionDate    DateTime
+  inspectionLevel   Int?
+  inspectionState   String?
+  inspectionFacility String?
+
+  violationCode     String
+  violationGroup    String?
+  violationDescription String?
+  oosViolation      Boolean  @default(false)
+  violationSeverity String?
+
+  source            String   @default("MCMIS")
+  ingestedAt        DateTime @default(now())
+
+  @@unique([inspectionId, violationCode])
+  @@index([dotNumber])
+  @@index([vinClean])
+  @@index([cdlKey])
+  @@index([violationCode])
+  @@index([violationGroup])
+  @@index([inspectionDate])
+  @@index([inspectionFacility])
+}
+
+model ViolationCode {
+  id          String @id @default(cuid())
+  code        String @unique
+  groupName   String
+  section     String
+  description String
+  severity    String   @default("other")
+  fixAction   String?
+  checkItem   String?
+
+  @@index([groupName])
+}
+
+// ── Enabler Network ─────────────────────────────────────────
+
+model Enabler {
+  id                    String   @id @default(cuid())
+  enablerType           String
+  name                  String
+  nameNormalized        String
+  address               String?
+  addressNormalized     String?
+  city                  String?
+  state                 String?
+  zip                   String?
+  phone                 String?
+  phoneNormalized       String?
+  lat                   Float?
+  lng                   Float?
+
+  clientCount           Int      @default(0)
+  activeClientCount     Int      @default(0)
+  oosClientCount        Int      @default(0)
+  chameleonClientCount  Int      @default(0)
+  avgClientLifespanDays Int?
+  riskScore             Float    @default(0)
+  riskTier              String?
+
+  firstSeenAt           DateTime?
+  lastSeenAt            DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  carrierLinks EnablerCarrierLink[]
+
+  @@index([nameNormalized])
+  @@index([enablerType])
+  @@index([riskScore])
+  @@index([phoneNormalized])
+}
+
+model EnablerCarrierLink {
+  id              String    @id @default(cuid())
+  enablerId       String
+  dotNumber       String
+  relationship    String
+  effectiveDate   DateTime?
+  terminationDate DateTime?
+  isCurrent       Boolean   @default(true)
+  source          String
+
+  createdAt       DateTime  @default(now())
+
+  enabler Enabler @relation(fields: [enablerId], references: [id], onDelete: Cascade)
+
+  @@unique([enablerId, dotNumber, relationship])
+  @@index([enablerId])
+  @@index([dotNumber])
+  @@index([isCurrent])
+}

@@ -29,9 +29,22 @@ export async function GET(
   if (cached) return Response.json(cached);
 
   // Auto-populate VINs from Socrata if this carrier has no VINs stored yet
-  const existingVinCount = await prisma.carrierVehicle.count({
-    where: { dotNumber },
-  });
+  let existingVinCount = 0;
+  try {
+    existingVinCount = await prisma.carrierVehicle.count({
+      where: { dotNumber },
+    });
+  } catch {
+    // Table may not exist yet — return empty response
+    return Response.json({
+      dotNumber,
+      totalVins: 0,
+      affiliatedCarrierCount: 0,
+      totalSharedVinCount: 0,
+      cluster: null,
+      affiliations: [],
+    });
+  }
 
   if (existingVinCount === 0) {
     try {
@@ -57,7 +70,19 @@ export async function GET(
     }
   }
 
-  const data = await getAffiliationsForCarrier(dotNumber);
+  let data;
+  try {
+    data = await getAffiliationsForCarrier(dotNumber);
+  } catch {
+    return Response.json({
+      dotNumber,
+      totalVins: existingVinCount,
+      affiliatedCarrierCount: 0,
+      totalSharedVinCount: 0,
+      cluster: null,
+      affiliations: [],
+    });
+  }
 
   const response = {
     dotNumber,
