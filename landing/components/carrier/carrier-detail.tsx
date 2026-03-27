@@ -16,7 +16,12 @@ import { BackgroundTab } from "./tabs/background-tab";
 import { NotesTab } from "./tabs/notes-tab";
 import { ReportsTab } from "./tabs/reports-tab";
 import { AffiliationsTab } from "./tabs/affiliations-tab";
-import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData } from "./types";
+import { VulnerabilityTab } from "./tabs/vulnerability-tab";
+import { CostImpactTab } from "./tabs/cost-impact-tab";
+import { DriverScorecardTab } from "./tabs/driver-scorecard-tab";
+import { EnforcementTab } from "./tabs/enforcement-tab";
+import { EnablerWarningPanel } from "../enablers/enabler-risk-badge";
+import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData, FleetVulnerabilityReport, CostImpactReport, DriverScorecardData, HeatmapData, CarrierEnablersData } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
   Satisfactory: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -122,6 +127,31 @@ export function CarrierDetailView({
   const [backgroundData, setBackgroundData] = useState<BackgroundData | null>(null);
   const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [backgroundError, setBackgroundError] = useState<string | null>(null);
+
+  // Lazy vulnerability report state
+  const [vulnerabilityData, setVulnerabilityData] = useState<FleetVulnerabilityReport | null>(null);
+  const [vulnerabilityLoading, setVulnerabilityLoading] = useState(false);
+  const [vulnerabilityError, setVulnerabilityError] = useState<string | null>(null);
+
+  // Lazy cost impact state
+  const [costImpactData, setCostImpactData] = useState<CostImpactReport | null>(null);
+  const [costImpactLoading, setCostImpactLoading] = useState(false);
+  const [costImpactError, setCostImpactError] = useState<string | null>(null);
+
+  // Lazy driver scorecards state
+  const [driverScorecards, setDriverScorecards] = useState<Map<string, DriverScorecardData>>(new Map());
+  const [driverList, setDriverList] = useState<{ cdlKey: string; inspections: number; violations: number; oosEvents: number; cleanRate: number }[]>([]);
+  const [driversLoading, setDriversLoading] = useState(false);
+  const [driversError, setDriversError] = useState<string | null>(null);
+
+  // Lazy enforcement heatmap state
+  const [enforcementData, setEnforcementData] = useState<HeatmapData | null>(null);
+  const [enforcementLoading, setEnforcementLoading] = useState(false);
+  const [enforcementError, setEnforcementError] = useState<string | null>(null);
+
+  // Lazy enabler data state
+  const [enablerData, setEnablerData] = useState<CarrierEnablersData | null>(null);
+  const [enablerLoading, setEnablerLoading] = useState(false);
 
   // Tabs that need inspections data: overview, safety, inspections
   const needsInspections =
@@ -248,11 +278,103 @@ export function CarrierDetailView({
       .finally(() => setBackgroundLoading(false));
   }, [activeTab, c.dot_number, backgroundData, backgroundLoading]);
 
+  // Lazy load: vulnerability report
+  useEffect(() => {
+    if (activeTab !== "vulnerability" || vulnerabilityData || vulnerabilityLoading) return;
+    setVulnerabilityLoading(true);
+    setVulnerabilityError(null);
+    fetch(`/api/carriers/${c.dot_number}/vulnerability`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: FleetVulnerabilityReport) => setVulnerabilityData(data))
+      .catch(() => setVulnerabilityError("Failed to load vulnerability report."))
+      .finally(() => setVulnerabilityLoading(false));
+  }, [activeTab, c.dot_number, vulnerabilityData, vulnerabilityLoading]);
+
+  // Lazy load: cost impact
+  useEffect(() => {
+    if (activeTab !== "cost-impact" || costImpactData || costImpactLoading) return;
+    setCostImpactLoading(true);
+    setCostImpactError(null);
+    fetch(`/api/carriers/${c.dot_number}/cost-impact`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: CostImpactReport) => setCostImpactData(data))
+      .catch(() => setCostImpactError("Failed to load cost impact data."))
+      .finally(() => setCostImpactLoading(false));
+  }, [activeTab, c.dot_number, costImpactData, costImpactLoading]);
+
+  // Lazy load: driver list (from vulnerability report)
+  useEffect(() => {
+    if (activeTab !== "drivers" || driverList.length > 0 || driversLoading) return;
+    setDriversLoading(true);
+    setDriversError(null);
+    fetch(`/api/carriers/${c.dot_number}/vulnerability`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: FleetVulnerabilityReport) => {
+        setDriverList(
+          data.driverRisk.map((d) => ({
+            cdlKey: d.cdlKey,
+            inspections: d.inspections,
+            violations: d.violations,
+            oosEvents: d.oosEvents,
+            cleanRate: d.inspections > 0 ? ((d.inspections - d.oosEvents) / d.inspections) * 100 : 100,
+          }))
+        );
+      })
+      .catch(() => setDriversError("Failed to load driver data."))
+      .finally(() => setDriversLoading(false));
+  }, [activeTab, c.dot_number, driverList.length, driversLoading]);
+
+  // Lazy load: enforcement heatmap
+  useEffect(() => {
+    if (activeTab !== "enforcement" || enforcementData || enforcementLoading) return;
+    setEnforcementLoading(true);
+    setEnforcementError(null);
+    fetch("/api/enforcement/heatmap")
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: HeatmapData) => setEnforcementData(data))
+      .catch(() => setEnforcementError("Failed to load enforcement data."))
+      .finally(() => setEnforcementLoading(false));
+  }, [activeTab, enforcementData, enforcementLoading]);
+
+  // Lazy load: enabler data
+  useEffect(() => {
+    if (activeTab !== "enablers" || enablerData || enablerLoading) return;
+    setEnablerLoading(true);
+    fetch(`/api/carriers/${c.dot_number}/enablers`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: CarrierEnablersData) => setEnablerData(data))
+      .catch(() => {})
+      .finally(() => setEnablerLoading(false));
+  }, [activeTab, c.dot_number, enablerData, enablerLoading]);
+
+  // Also eagerly load enabler data for overview warning panel
+  useEffect(() => {
+    if (enablerData || enablerLoading) return;
+    setEnablerLoading(true);
+    fetch(`/api/carriers/${c.dot_number}/enablers`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: CarrierEnablersData) => setEnablerData(data))
+      .catch(() => {})
+      .finally(() => setEnablerLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.dot_number]);
+
+  // Fetch individual driver scorecard on selection
+  function handleDriverSelect(cdlKey: string) {
+    if (driverScorecards.has(cdlKey)) return;
+    fetch(`/api/drivers/${encodeURIComponent(cdlKey)}/scorecard?dot=${c.dot_number}`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: DriverScorecardData) => {
+        setDriverScorecards((prev) => new Map(prev).set(cdlKey, data));
+      })
+      .catch(() => {});
+  }
+
   // Use counts from the main response, or fall back to loaded data length
   const inspectionCount = inspections?.length ?? detail.inspectionCount ?? 0;
   const crashCount = crashes?.length ?? detail.crashCount ?? 0;
 
-  const tabs: { key: Tab; label: string; count?: number; group?: "ops" | "compliance" }[] = [
+  const tabs: { key: Tab; label: string; count?: number; group?: "ops" | "compliance" | "intelligence" }[] = [
     { key: "overview", label: "Overview", group: "ops" },
     { key: "safety", label: "Safety", group: "ops" },
     { key: "inspections", label: "Inspections", count: inspectionCount, group: "ops" },
@@ -262,8 +384,13 @@ export function CarrierDetailView({
     { key: "detection", label: "Detection", group: "compliance" },
     { key: "affiliations", label: "Affiliations", count: affiliationsData?.affiliatedCarrierCount, group: "compliance" },
     { key: "background", label: "Background", group: "compliance" },
-    { key: "notes", label: "Notes", group: "compliance" },
-    { key: "reports", label: "Reports", count: detail.communityReportSummary?.totalReports12m, group: "compliance" },
+    { key: "vulnerability", label: "Violations", group: "intelligence" },
+    { key: "drivers", label: "Drivers", group: "intelligence" },
+    { key: "cost-impact", label: "Cost Impact", group: "intelligence" },
+    { key: "enforcement", label: "Enforcement", group: "intelligence" },
+    { key: "enablers", label: "Enablers", count: enablerData?.enablers?.length, group: "intelligence" },
+    { key: "notes", label: "Notes", group: "intelligence" },
+    { key: "reports", label: "Reports", count: detail.communityReportSummary?.totalReports12m, group: "intelligence" },
   ];
 
   function handleTabKeyDown(e: React.KeyboardEvent) {
@@ -448,6 +575,12 @@ export function CarrierDetailView({
           transition={{ duration: 0.2 }}
           className="mt-4"
         >
+          {activeTab === "overview" && enablerData && (
+            <EnablerWarningPanel
+              enablers={enablerData.enablers}
+              warnings={enablerData.warnings}
+            />
+          )}
           {activeTab === "overview" && (
             <OverviewTab
               carrier={c}
@@ -524,6 +657,42 @@ export function CarrierDetailView({
               data={backgroundData}
               loading={backgroundLoading}
               error={backgroundError}
+            />
+          )}
+          {activeTab === "vulnerability" && (
+            <VulnerabilityTab
+              data={vulnerabilityData}
+              loading={vulnerabilityLoading}
+              error={vulnerabilityError}
+            />
+          )}
+          {activeTab === "cost-impact" && (
+            <CostImpactTab
+              data={costImpactData}
+              loading={costImpactLoading}
+              error={costImpactError}
+            />
+          )}
+          {activeTab === "drivers" && (
+            <DriverScorecardTab
+              scorecards={driverScorecards}
+              driverList={driverList}
+              loading={driversLoading}
+              error={driversError}
+              onSelectDriver={handleDriverSelect}
+            />
+          )}
+          {activeTab === "enforcement" && (
+            <EnforcementTab
+              data={enforcementData}
+              loading={enforcementLoading}
+              error={enforcementError}
+            />
+          )}
+          {activeTab === "enablers" && enablerData && (
+            <EnablerWarningPanel
+              enablers={enablerData.enablers}
+              warnings={enablerData.warnings}
             />
           )}
           {activeTab === "notes" && (

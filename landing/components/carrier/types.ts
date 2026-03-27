@@ -161,7 +161,7 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports" | "vulnerability" | "cost-impact" | "drivers" | "enforcement" | "enablers";
 
 export type SharedVinInfo = {
   vin: string;
@@ -386,6 +386,145 @@ export type BankruptcyCase = {
 };
 
 export type AiGated = { skipped: true; reason: "not_authenticated" | "no_credits" };
+
+/* ── Carrier Intelligence Types ────────────────────────────── */
+
+export type ViolationSummary = {
+  code: string;
+  description: string;
+  group: string;
+  count: number;
+  oosCount: number;
+  percentOfAllViolations: number;
+  trend: "INCREASING" | "STABLE" | "DECREASING";
+  fixAction: string;
+  estimatedCostPerOOS: number;
+};
+
+export type VehicleRisk = {
+  vin: string;
+  inspections: number;
+  violations: number;
+  oosEvents: number;
+  topViolation: string | null;
+  riskRank: number;
+  recommendation: string;
+};
+
+export type DriverRisk = {
+  cdlKey: string;
+  inspections: number;
+  violations: number;
+  oosEvents: number;
+  topViolation: string | null;
+  riskRank: number;
+  recommendation: string;
+};
+
+export type FleetVulnerabilityReport = {
+  dotNumber: number;
+  period: { start: string; end: string };
+  totalInspections: number;
+  cleanInspections: number;
+  cleanRate: number;
+  vehicleOOSRate: number;
+  driverOOSRate: number;
+  topViolations: ViolationSummary[];
+  vehicleRisk: VehicleRisk[];
+  driverRisk: DriverRisk[];
+  projectedSavings: {
+    ifTopViolationFixed: number;
+    ifTop3Fixed: number;
+    methodology: string;
+  };
+};
+
+export type CostImpactReport = {
+  dotNumber: number;
+  period: { start: string; end: string };
+  inputs: { avgTowCost: number; avgRepairCost: number; avgDelayHours: number; revenuePerMile: number; avgDailyMiles: number };
+  dailyRevenuePerTruck: number;
+  annualOOSEvents: number;
+  annualDirectCost: number;
+  annualRevenueLost: number;
+  estimatedInsurancePremiumIncrease: number;
+  totalAnnualImpact: number;
+  projectedOOSEventsIfFixed: number;
+  projectedAnnualSavings: number;
+  projectedInsuranceSavings: number;
+  totalProjectedSavings: number;
+  topCostlyViolations: { code: string; description: string; oosCount: number; estimatedDirectCost: number; estimatedRevenueLost: number; estimatedTotal: number }[];
+  topActions: { action: string; eliminates: number; savings: number }[];
+};
+
+export type PreTripFocusSheet = {
+  vin: string;
+  dotNumber: number | null;
+  period: { start: string; end: string };
+  totalInspections: number;
+  cleanInspections: number;
+  currentCleanRate: number;
+  projectedCleanRate: number;
+  focusItems: {
+    rank: number;
+    code: string;
+    description: string;
+    group: string;
+    count: number;
+    oosCount: number;
+    checkItem: string;
+    fixAction: string;
+    lastViolationDate: string | null;
+    lastViolationLocation: string | null;
+  }[];
+};
+
+export type DriverScorecardData = {
+  cdlKey: string;
+  dotNumber: number | null;
+  period: { start: string; end: string };
+  totalInspections: number;
+  cleanInspections: number;
+  cleanRate: number;
+  driverOOSEvents: number;
+  vehicleOOSEvents: number;
+  topDriverViolations: { code: string; description: string; count: number; group: string }[];
+  topVehicleViolations: { code: string; description: string; count: number; group: string }[];
+  companyAvgCleanRate: number | null;
+  performanceTrend: "IMPROVING" | "STABLE" | "DECLINING";
+  trainingRecommendations: string[];
+  estimatedRiskReduction: string;
+};
+
+export type HeatmapData = {
+  period: { start: string; end: string };
+  facilities: {
+    state: string;
+    facility: string;
+    totalInspections: number;
+    oosInspections: number;
+    oosRate: number;
+    mostCommonGroup: string;
+    topViolationCodes: { code: string; count: number }[];
+  }[];
+  stateStats: { state: string; totalInspections: number; oosRate: number }[];
+  nationalAvgOosRate: number;
+};
+
+export type EnablerRiskInfo = {
+  id: string;
+  name: string;
+  type: string;
+  relationship: string;
+  riskScore: number;
+  riskTier: string | null;
+  isCurrent: boolean;
+};
+
+export type CarrierEnablersData = {
+  enablers: EnablerRiskInfo[];
+  warnings: string[];
+};
 
 export type BackgroundData = {
   officerProfiles: OfficerProfile[];
