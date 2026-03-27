@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { socrataFetch } from "@/lib/socrata";
 import { categorizeViolation } from "@/lib/inspections/violation-codes";
+import { normalizeVin } from "@/lib/vin-utils";
 
 // Socrata violation dataset
 const VIOLATION_RESOURCE = "svh4-vk4w";
@@ -188,5 +189,101 @@ export async function ingestViolationsFromJson(
     }
   }
 
+  // ── Feed VINs into chameleon detection pipeline ──────────────
+  // Every VIN+DOT pair from violation records should also appear in
+  // VinObservation and CarrierVehicle so the affiliation detection
+  // pipeline can find shared equipment across carriers.
+  await persistViolationVins(violations);
+
   return { ingested, skipped, errors };
+}
+
+/**
+ * Persist unique VIN+DOT+date tuples from violation records into
+ * VinObservation and CarrierVehicle tables. This is the bridge between
+ * violation ingestion and chameleon detection — when the same VIN
+ * appears under different DOT numbers, the affiliation pipeline
+ * flags it as a shared-equipment signal.
+ */
+async function persistViolationVins(
+  violations: SocrataViolation[]
+): Promise<void> {
+  // Collect unique VIN+DOT+date combos
+  const seen = new Set<string>();
+  const vinDotPairs = new Map<string, Set<number>>(); // vin → set of dots
+
+  for (const v of violations) {
+    const vin = v.unit_vin ? normalizeVin(v.unit_vin) : null;
+    if (!vin) continue;
+
+    const dotNum = v.dot_number ? parseInt(v.dot_number, 10) : null;
+    if (!dotNum || isNaN(dotNum)) continue;
+
+    const inspDate = v.insp_date ? new Date(v.insp_date) : null;
+    if (!inspDate || isNaN(inspDate.getTime())) continue;
+
+    const key = `${vin}:${dotNum}:${inspDate.toISOString().slice(0, 10)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    // Track which dots each VIN is seen under
+    if (!vinDotPairs.has(vin)) vinDotPairs.set(vin, new Set());
+    vinDotPairs.get(vin)!.add(dotNum);
+
+    // Upsert VinObservation
+    try {
+      await prisma.vinObservation.upsert({
+        where: {
+          vin_dotNumber_inspectionDate: {
+            vin,
+            dotNumber: dotNum,
+            inspectionDate: inspDate,
+          },
+        },
+        create: {
+          vin,
+          dotNumber: dotNum,
+          inspectionDate: inspDate,
+          inspectionId: v.inspection_id?.trim() ?? null,
+          state: v.report_state?.trim() ?? null,
+          vehicleType: "TRUCK",
+          unitMake: null,
+          unitYear: null,
+          source: "VIOLATION_INGEST",
+        },
+        update: {},
+      });
+    } catch {
+      // Skip duplicates / constraint errors
+    }
+
+    // Upsert CarrierVehicle link
+    try {
+      // Ensure Vehicle record exists
+      await prisma.vehicle.upsert({
+        where: { vin },
+        create: { vin },
+        update: {},
+      });
+
+      await prisma.carrierVehicle.upsert({
+        where: { dotNumber_vin: { dotNumber: dotNum, vin } },
+        create: {
+          dotNumber: dotNum,
+          vin,
+          unitType: "TRUCK",
+          source: "violation_ingest",
+          firstSeenAt: inspDate,
+          lastSeenAt: inspDate,
+          observationCount: 1,
+        },
+        update: {
+          lastSeenAt: inspDate,
+          observationCount: { increment: 1 },
+        },
+      });
+    } catch {
+      // Skip constraint errors
+    }
+  }
 }

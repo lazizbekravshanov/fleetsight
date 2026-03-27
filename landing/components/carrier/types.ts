@@ -409,6 +409,7 @@ export type VehicleRisk = {
   topViolation: string | null;
   riskRank: number;
   recommendation: string;
+  otherCarriers: { dotNumber: number; legalName: string | null; statusCode: string | null }[];
 };
 
 export type DriverRisk = {
