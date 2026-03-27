@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "installCommand": "npm install",
-  "buildCommand": "npx prisma generate && npm run build",
+  "buildCommand": "npx prisma generate && npx prisma db push --accept-data-loss && npm run build",
   "crons": [
     {
       "path": "/api/cron/watchlist-check",

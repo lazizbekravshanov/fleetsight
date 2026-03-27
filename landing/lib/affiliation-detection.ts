@@ -222,16 +222,16 @@ export async function runDetectionPipeline(): Promise<{
     { dotA: number; dotB: number; sharedCount: number; vins: string }[]
   >(Prisma.sql`
     SELECT
-      a."dotNumber" AS "dotA",
-      b."dotNumber" AS "dotB",
-      COUNT(DISTINCT a.vin)::int AS "sharedCount",
-      STRING_AGG(DISTINCT a.vin, ',') AS vins
-    FROM "CarrierVehicle" a
-    JOIN "CarrierVehicle" b
-      ON a.vin = b.vin AND a."dotNumber" < b."dotNumber"
-    GROUP BY a."dotNumber", b."dotNumber"
+      a.dotNumber AS dotA,
+      b.dotNumber AS dotB,
+      COUNT(DISTINCT a.vin) AS sharedCount,
+      GROUP_CONCAT(DISTINCT a.vin) AS vins
+    FROM CarrierVehicle a
+    JOIN CarrierVehicle b
+      ON a.vin = b.vin AND a.dotNumber < b.dotNumber
+    GROUP BY a.dotNumber, b.dotNumber
     HAVING COUNT(DISTINCT a.vin) >= 1
-    ORDER BY "sharedCount" DESC
+    ORDER BY sharedCount DESC
   `);
 
   if (pairs.length === 0) {
