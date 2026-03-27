@@ -3,6 +3,10 @@ import { z } from "zod";
 import { jsonError } from "@/lib/http";
 import { getAffiliationsForCarrier } from "@/lib/affiliation-detection";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { prisma } from "@/lib/prisma";
+import { getInspectionsByDot, getFleetUnitsByInspectionIds } from "@/lib/socrata";
+import { decodeVinBatch } from "@/lib/nhtsa";
+import { persistFleetVins } from "@/lib/vin-persistence";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -23,6 +27,35 @@ export async function GET(
   const cacheKey = `affiliations:v2:${dotNumber}`;
   const cached = await cacheGet<object>(cacheKey);
   if (cached) return Response.json(cached);
+
+  // Auto-populate VINs from Socrata if this carrier has no VINs stored yet
+  const existingVinCount = await prisma.carrierVehicle.count({
+    where: { dotNumber },
+  });
+
+  if (existingVinCount === 0) {
+    try {
+      const inspections = await getInspectionsByDot(dotNumber, 50).catch(() => []);
+      const inspectionIds = inspections
+        .map((i) => i.inspection_id)
+        .filter((id): id is string => !!id);
+
+      if (inspectionIds.length > 0) {
+        const units = await getFleetUnitsByInspectionIds(inspectionIds).catch(() => []);
+        const uniqueVins = [
+          ...new Set(
+            units
+              .map((u) => u.insp_unit_vehicle_id_number?.trim())
+              .filter((v): v is string => !!v && v.length >= 11)
+          ),
+        ];
+        const decoded = await decodeVinBatch(uniqueVins).catch(() => []);
+        await persistFleetVins(dotNumber, units, decoded);
+      }
+    } catch {
+      // Non-fatal — proceed with whatever data we have
+    }
+  }
 
   const data = await getAffiliationsForCarrier(dotNumber);
 

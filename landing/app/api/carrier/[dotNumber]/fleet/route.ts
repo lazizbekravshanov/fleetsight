@@ -3,6 +3,7 @@ import { z } from "zod";
 import { jsonError } from "@/lib/http";
 import { getInspectionsByDot, getFleetUnitsByInspectionIds } from "@/lib/socrata";
 import { decodeVinBatch, getRecallsByVehicle, getComplaintsByVehicle } from "@/lib/nhtsa";
+import { persistFleetVins } from "@/lib/vin-persistence";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -63,6 +64,9 @@ export async function GET(
   ]);
   const recalls = recallArrays.flat();
   const complaints = complaintArrays.flat();
+
+  // 7. Persist VINs to CarrierVehicle for affiliation detection (fire-and-forget)
+  persistFleetVins(dotNumber, units, decodedVehicles).catch(() => {});
 
   return Response.json({ units, decodedVehicles, recalls, complaints });
 }
