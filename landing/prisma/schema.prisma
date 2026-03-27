@@ -412,6 +412,112 @@ model AffiliationCluster {
   updatedAt   DateTime @updatedAt
 }
 
+// ── Freight Identity Graph ───────────────────────────────────────
+
+model DriverObservation {
+  id             String   @id @default(cuid())
+  cdlNumber      String
+  cdlState       String
+  cdlKey         String
+  driverName     String?
+  dotNumber      Int
+  inspectionDate DateTime
+  inspectionId   String?
+  state          String?
+  source         String   @default("MCMIS")
+  ingestedAt     DateTime @default(now())
+
+  @@unique([cdlKey, dotNumber, inspectionDate])
+  @@index([cdlKey])
+  @@index([dotNumber])
+}
+
+model CarrierAddress {
+  id          String @id @default(cuid())
+  dotNumber   Int
+  addressType String
+  rawAddress  String
+  normalized  String
+  city        String?
+  state       String?
+  zip         String?
+  lat         Float?
+  lng         Float?
+  geohash     String?
+
+  @@index([normalized])
+  @@index([dotNumber])
+  @@index([geohash])
+  @@index([city, state])
+}
+
+model CarrierPrincipal {
+  id             String    @id @default(cuid())
+  dotNumber      Int
+  principalName  String
+  nameNormalized String
+  title          String?
+  sourceDate     DateTime?
+
+  @@index([nameNormalized])
+  @@index([dotNumber])
+}
+
+model CarrierAgent {
+  id              String    @id @default(cuid())
+  dotNumber       Int
+  agentType       String
+  agentName       String
+  agentNormalized String
+  agentAddress    String?
+  effectiveDate   DateTime?
+  source          String    @default("FMCSA_LI")
+
+  @@index([agentNormalized])
+  @@index([dotNumber])
+}
+
+model CarrierInsuranceRecord {
+  id              String    @id @default(cuid())
+  dotNumber       Int
+  insuranceType   String?
+  insurerName     String?
+  policyNumber    String?
+  coverageAmount  BigInt?
+  effectiveDate   DateTime?
+  expirationDate  DateTime?
+  status          String?
+  lapseCount      Int       @default(0)
+  source          String    @default("FMCSA_LI")
+
+  @@index([dotNumber])
+  @@index([insurerName])
+  @@index([status])
+}
+
+model CarrierTrustScore {
+  id             String   @id @default(cuid())
+  dotNumber      Int      @unique
+  overallScore   Int
+  grade          String
+  identity       Int      @default(0)
+  safety         Int      @default(0)
+  insurance      Int      @default(0)
+  network        Int      @default(0)
+  operational    Int      @default(0)
+  compliance     Int      @default(0)
+  financial      Int      @default(0)
+  flagsJson      String   @default("[]")
+  clusterSize    Int      @default(0)
+  clusterAvgScore Float   @default(0)
+  oosProb90d     Float?
+  trend          String   @default("STABLE")
+  updatedAt      DateTime @updatedAt
+
+  @@index([overallScore])
+  @@index([grade])
+}
+
 // ── Continuous Monitoring SaaS ──────────────────────────────────
 
 model Subscription {
