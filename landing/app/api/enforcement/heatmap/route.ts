@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
     const data = await getEnforcementHeatmap({ state, months });
     return Response.json(data);
   } catch (err) {
-    console.error("Enforcement heatmap error:", err);
-    return jsonError("Failed to generate heatmap data", 500);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Enforcement heatmap error:", msg);
+    return jsonError(`Failed to generate heatmap data: ${msg}`, 500);
   }
 }

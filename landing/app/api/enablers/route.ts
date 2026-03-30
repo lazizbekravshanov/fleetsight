@@ -55,7 +55,8 @@ export async function GET(req: NextRequest) {
 
     return Response.json({ enablers, total: enablers.length });
   } catch (err) {
-    console.error("Enabler search error:", err);
-    return jsonError("Failed to search enablers", 500);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Enabler search error:", msg);
+    return jsonError(`Failed to search enablers: ${msg}`, 500);
   }
 }

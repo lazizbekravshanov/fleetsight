@@ -76,7 +76,8 @@ export async function GET(
 
     return Response.json({ months });
   } catch (err) {
-    console.error("Violation trend error:", err);
-    return jsonError("Failed to fetch violation trend", 500);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Violation trend error:", msg);
+    return jsonError(`Failed to fetch violation trend: ${msg}`, 500);
   }
 }
