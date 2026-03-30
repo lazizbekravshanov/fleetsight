@@ -37,12 +37,12 @@ export function PreTripTab({
 }) {
   if (loading) return <SkeletonRows count={3} />;
   if (error) return <p className="py-12 text-center text-sm text-rose-600">{error}</p>;
-  if (!data) return <p className="py-12 text-center text-base text-gray-400 tracking-wide">Select a vehicle to view its pre-trip focus sheet.</p>;
+  if (!data) return <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">Select a vehicle to view its pre-trip focus sheet.</p>;
   if (data.focusItems.length === 0) {
     return (
       <div className="py-12 text-center">
         <p className="text-base text-emerald-600 font-medium">No violation history for this vehicle.</p>
-        <p className="mt-1 text-sm text-gray-400">Standard pre-trip inspection procedures apply.</p>
+        <p className="mt-1 text-sm text-[var(--ink-muted)]">Standard pre-trip inspection procedures apply.</p>
       </div>
     );
   }
@@ -50,18 +50,18 @@ export function PreTripTab({
   return (
     <div>
       {/* Header */}
-      <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
+      <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-[var(--ink)]">
               Pre-Trip Focus Sheet
             </h3>
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
               VIN: {data.vin}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[var(--ink-soft)]">
               {new Date(data.period.start).toLocaleDateString()} &ndash;{" "}
               {new Date(data.period.end).toLocaleDateString()}
             </p>
@@ -97,7 +97,7 @@ export function PreTripTab({
         {data.focusItems.map((item) => (
           <div
             key={item.code}
-            className="rounded-xl border border-gray-200 bg-white p-4"
+            className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -105,10 +105,10 @@ export function PreTripTab({
                   {item.rank}
                 </span>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-[var(--ink)]">
                     {item.code} &mdash; {item.description}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-500">
+                  <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
                     Group: {item.group} &middot; Flagged{" "}
                     <span className="font-medium text-rose-600">
                       {item.count} time{item.count !== 1 ? "s" : ""}
@@ -123,12 +123,12 @@ export function PreTripTab({
               </div>
               {item.lastViolationDate && (
                 <div className="shrink-0 text-right">
-                  <p className="text-xs text-gray-400">Last violation</p>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-[var(--ink-muted)]">Last violation</p>
+                  <p className="text-xs text-[var(--ink-soft)]">
                     {new Date(item.lastViolationDate).toLocaleDateString()}
                   </p>
                   {item.lastViolationLocation && (
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[var(--ink-muted)]">
                       {item.lastViolationLocation}
                     </p>
                   )}
@@ -137,7 +137,7 @@ export function PreTripTab({
             </div>
 
             {/* Action items */}
-            <div className="mt-3 space-y-2 border-t border-gray-100 pt-3">
+            <div className="mt-3 space-y-2 border-t border-[var(--border)] pt-3">
               <div className="flex items-start gap-2">
                 <span className="mt-0.5 text-indigo-500">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -145,8 +145,8 @@ export function PreTripTab({
                   </svg>
                 </span>
                 <div>
-                  <p className="text-xs font-medium text-gray-700">Check</p>
-                  <p className="text-xs text-gray-600">{item.checkItem}</p>
+                  <p className="text-xs font-medium text-[var(--ink-soft)]">Check</p>
+                  <p className="text-xs text-[var(--ink-soft)]">{item.checkItem}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
@@ -156,8 +156,8 @@ export function PreTripTab({
                   </svg>
                 </span>
                 <div>
-                  <p className="text-xs font-medium text-gray-700">Fix Action</p>
-                  <p className="text-xs text-gray-600">{item.fixAction}</p>
+                  <p className="text-xs font-medium text-[var(--ink-soft)]">Fix Action</p>
+                  <p className="text-xs text-[var(--ink-soft)]">{item.fixAction}</p>
                 </div>
               </div>
             </div>

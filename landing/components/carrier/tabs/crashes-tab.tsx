@@ -39,7 +39,7 @@ export function CrashesTab({
 
   if (crashes.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No crash records found.
       </p>
     );
@@ -104,7 +104,7 @@ export function CrashesTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -114,14 +114,14 @@ export function CrashesTab({
         <select
           value={filterSeverity}
           onChange={(e) => setFilterSeverity(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All Severities</option>
           <option value="fatal">Fatal only</option>
           <option value="injury">Injuries only</option>
           <option value="tow">Tow-away only</option>
         </select>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-[var(--ink-soft)] cursor-pointer">
           <input
             type="checkbox"
             checked={fedRecordable}
@@ -160,10 +160,10 @@ export function CrashesTab({
       <TruncationWarning count={crashes.length} limit={50} noun="crashes" />
 
       {/* Table */}
-      <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
-        <table className="w-full text-left text-xs text-gray-700">
-          <thead className="sticky top-0 bg-gray-50">
-            <tr className="border-b border-gray-200 text-gray-500">
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-[var(--border)]">
+        <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+          <thead className="sticky top-0 bg-[var(--surface-2)]">
+            <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
               <SortHeader label="Date" sortKey="_date" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Report #" sortKey="report_number" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="hidden sm:table-cell" />
               <SortHeader label="State" sortKey="report_state" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -182,30 +182,30 @@ export function CrashesTab({
             {sorted.map((cr, i) => (
               <tr
                 key={cr.crash_id ?? i}
-                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
               >
                 <td className="px-3 py-2 whitespace-nowrap">
                   {cr.report_date
                     ? new Date(cr.report_date).toLocaleDateString()
                     : "\u2014"}
                   {cr.report_time && (
-                    <span className="ml-1 text-gray-400">
+                    <span className="ml-1 text-[var(--ink-muted)]">
                       {cr.report_time}
                     </span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
+                <td className="hidden px-3 py-2 sm:table-cell text-[var(--ink-muted)]">
                   {cr.report_number ?? "\u2014"}
                 </td>
                 <td className="px-3 py-2">{cr.report_state ?? "\u2014"}</td>
                 <td className="hidden px-3 py-2 sm:table-cell">
                   {cr.city ?? "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
+                <td className="hidden px-3 py-2 sm:table-cell text-[var(--ink-muted)]">
                   {cr.location ?? "\u2014"}
                 </td>
                 <td
-                  className="hidden px-3 py-2 md:table-cell text-gray-500"
+                  className="hidden px-3 py-2 md:table-cell text-[var(--ink-soft)]"
                   title={
                     cr.vehicle_configuration_id
                       ? decodeVehicleConfig(cr.vehicle_configuration_id)
@@ -218,12 +218,12 @@ export function CrashesTab({
                       ? "Bus"
                       : cr.truck_bus_ind ?? "\u2014"}
                   {cr.vehicle_configuration_id && (
-                    <span className="ml-1 text-gray-400">
+                    <span className="ml-1 text-[var(--ink-muted)]">
                       ({decodeVehicleConfig(cr.vehicle_configuration_id)})
                     </span>
                   )}
                 </td>
-                <td className="hidden px-3 py-2 md:table-cell text-gray-400">
+                <td className="hidden px-3 py-2 md:table-cell text-[var(--ink-muted)]">
                   {cr.cargo_body_type_id
                     ? decodeCargoBodyType(cr.cargo_body_type_id)
                     : "\u2014"}
@@ -251,9 +251,9 @@ export function CrashesTab({
                       Yes
                     </span>
                   ) : cr.federal_recordable === "N" ? (
-                    <span className="text-gray-400">No</span>
+                    <span className="text-[var(--ink-muted)]">No</span>
                   ) : (
-                    <span className="text-gray-400">{"\u2014"}</span>
+                    <span className="text-[var(--ink-muted)]">{"\u2014"}</span>
                   )}
                 </td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
@@ -262,9 +262,9 @@ export function CrashesTab({
                       Yes
                     </span>
                   ) : cr.state_recordable === "N" ? (
-                    <span className="text-gray-400">No</span>
+                    <span className="text-[var(--ink-muted)]">No</span>
                   ) : (
-                    <span className="text-gray-400">{"\u2014"}</span>
+                    <span className="text-[var(--ink-muted)]">{"\u2014"}</span>
                   )}
                 </td>
               </tr>

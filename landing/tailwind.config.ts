@@ -10,16 +10,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#e4e4e7",
-        "ink-soft": "#a1a1aa",
-        surface: {
-          0: "#09090b",
-          1: "#0f0f13",
-          2: "#16161d",
-          3: "#1e1e28",
+        ink: {
+          DEFAULT: "var(--ink)",
+          soft: "var(--ink-soft)",
+          muted: "var(--ink-muted)",
         },
-        accent: "#6366f1",
-        "accent-light": "#818cf8",
+        surface: {
+          0: "var(--surface-0)",
+          1: "var(--surface-1)",
+          2: "var(--surface-2)",
+          3: "var(--surface-3)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          hover: "var(--border-hover)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          soft: "var(--accent-soft)",
+          light: "#818cf8",
+        },
+      },
+      fontSize: {
+        xxs: ["0.625rem", { lineHeight: "0.875rem" }],
+        "xs-plus": ["0.6875rem", { lineHeight: "1rem" }],
       },
       fontFamily: {
         sans: ["Inter", ...defaultTheme.fontFamily.sans],

@@ -61,7 +61,7 @@ export function InspectionsTab({
 
   if (inspections.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No inspection records found.
       </p>
     );
@@ -135,7 +135,7 @@ export function InspectionsTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -145,14 +145,14 @@ export function InspectionsTab({
         <select
           value={filterLevel}
           onChange={(e) => setFilterLevel(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All Levels</option>
           {uniqueLevels.map((l) => (
             <option key={l} value={l}>{l}</option>
           ))}
         </select>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-[var(--ink-soft)] cursor-pointer">
           <input
             type="checkbox"
             checked={hasViolations}
@@ -161,7 +161,7 @@ export function InspectionsTab({
           />
           Has violations
         </label>
-        <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-1.5 text-xs text-[var(--ink-soft)] cursor-pointer">
           <input
             type="checkbox"
             checked={hasOos}
@@ -203,14 +203,14 @@ export function InspectionsTab({
 
       {/* Level Distribution */}
       {sortedLevels.length > 1 && (
-        <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Inspection Level Distribution</p>
+        <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)] mb-2">Inspection Level Distribution</p>
           <div className="space-y-1.5">
             {sortedLevels.map(([level, count]) => (
               <div key={level}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-gray-700">{level}</span>
-                  <span className="text-gray-500">{count}</span>
+                  <span className="text-[var(--ink-soft)]">{level}</span>
+                  <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
@@ -225,10 +225,10 @@ export function InspectionsTab({
       )}
 
       {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
-        <table className="w-full text-left text-xs text-gray-700">
-          <thead className="sticky top-0 bg-gray-50">
-            <tr className="border-b border-gray-200 text-gray-500">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-[var(--border)]">
+        <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+          <thead className="sticky top-0 bg-[var(--surface-2)]">
+            <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
               <SortHeader label="Date" sortKey="_date" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Report #" sortKey="report_number" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} className="hidden sm:table-cell" />
               <SortHeader label="State" sortKey="report_state" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -257,14 +257,14 @@ export function InspectionsTab({
               return (
                 <tr
                   key={insp.inspection_id ?? i}
-                  className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                  className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
                 >
                   <td className="px-3 py-2 whitespace-nowrap">
                     {insp.insp_date
                       ? new Date(insp.insp_date).toLocaleDateString()
                       : "\u2014"}
                   </td>
-                  <td className="hidden px-3 py-2 sm:table-cell text-gray-400">
+                  <td className="hidden px-3 py-2 sm:table-cell text-[var(--ink-muted)]">
                     {insp.report_number ?? "\u2014"}
                   </td>
                   <td className="px-3 py-2">{insp.report_state ?? "\u2014"}</td>
@@ -279,12 +279,12 @@ export function InspectionsTab({
                       "0"
                     )}
                   </td>
-                  <td className={`hidden px-3 py-2 md:table-cell text-right ${isShortL1 ? "text-rose-600" : "text-gray-400"}`}>
+                  <td className={`hidden px-3 py-2 md:table-cell text-right ${isShortL1 ? "text-rose-600" : "text-[var(--ink-muted)]"}`}>
                     {insp._duration !== null
                       ? `${insp._duration} min`
                       : "\u2014"}
                   </td>
-                  <td className={`hidden px-3 py-2 lg:table-cell ${namesDiffer ? "text-amber-600" : "text-gray-400"}`}>
+                  <td className={`hidden px-3 py-2 lg:table-cell ${namesDiffer ? "text-amber-600" : "text-[var(--ink-muted)]"}`}>
                     {insp.insp_carrier_name ?? "\u2014"}
                   </td>
                   <td className="hidden px-3 py-2 text-center md:table-cell">
@@ -293,16 +293,16 @@ export function InspectionsTab({
                         Yes
                       </span>
                     ) : (
-                      <span className="text-gray-400">{"\u2014"}</span>
+                      <span className="text-[var(--ink-muted)]">{"\u2014"}</span>
                     )}
                   </td>
-                  <td className="hidden px-3 py-2 text-right lg:table-cell text-gray-400">
+                  <td className="hidden px-3 py-2 text-right lg:table-cell text-[var(--ink-muted)]">
                     {insp.gross_comb_veh_wt
                       ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString()
                       : "\u2014"}
                   </td>
                   <td
-                    className="hidden px-3 py-2 sm:table-cell text-gray-400"
+                    className="hidden px-3 py-2 sm:table-cell text-[var(--ink-muted)]"
                     title={insp.insp_facility ?? undefined}
                   >
                     {insp.location_desc ?? "\u2014"}

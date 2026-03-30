@@ -26,7 +26,7 @@ export function FleetTab({
 
   if (!data) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         Fleet data will load when this tab is selected.
       </p>
     );
@@ -36,7 +36,7 @@ export function FleetTab({
 
   if (units.length === 0 && decodedVehicles.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No fleet unit records found for this carrier.
       </p>
     );
@@ -84,8 +84,8 @@ function FleetSummary({
     .slice(0, 3);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
         Fleet Summary
       </h3>
@@ -95,13 +95,13 @@ function FleetSummary({
         {avgAge !== null && <Stat label="Avg Fleet Age" value={`${avgAge} yr`} />}
       </div>
       {topMakes.length > 0 && (
-        <div className="text-xs text-gray-500">
-          <span className="text-gray-400">Top makes: </span>
+        <div className="text-xs text-[var(--ink-soft)]">
+          <span className="text-[var(--ink-muted)]">Top makes: </span>
           {topMakes.map(([make, count], i) => (
             <span key={make}>
               {i > 0 && ", "}
-              <span className="text-gray-700">{make}</span>{" "}
-              <span className="text-gray-400">({count})</span>
+              <span className="text-[var(--ink-soft)]">{make}</span>{" "}
+              <span className="text-[var(--ink-muted)]">({count})</span>
             </span>
           ))}
         </div>
@@ -139,21 +139,21 @@ function FleetComposition({
   const makeMax = sortedMakes[0]?.[1] ?? 1;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
         Fleet Composition
       </h3>
       <div className="grid gap-6 md:grid-cols-2">
         {/* GVWR Breakdown */}
         <div>
-          <p className="text-xs text-gray-400 mb-2">GVWR Class</p>
+          <p className="text-xs text-[var(--ink-muted)] mb-2">GVWR Class</p>
           <div className="space-y-2">
             {sortedGvwr.slice(0, 6).map(([cls, count]) => (
               <div key={cls}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-gray-700 truncate max-w-[70%]">{cls}</span>
-                  <span className="text-gray-500">{count}</span>
+                  <span className="text-[var(--ink-soft)] truncate max-w-[70%]">{cls}</span>
+                  <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
@@ -168,13 +168,13 @@ function FleetComposition({
 
         {/* Make Distribution */}
         <div>
-          <p className="text-xs text-gray-400 mb-2">Make Distribution</p>
+          <p className="text-xs text-[var(--ink-muted)] mb-2">Make Distribution</p>
           <div className="space-y-2">
             {sortedMakes.slice(0, 6).map(([make, count]) => (
               <div key={make}>
                 <div className="flex justify-between text-xs mb-0.5">
-                  <span className="text-gray-700">{make}</span>
-                  <span className="text-gray-500">{count}</span>
+                  <span className="text-[var(--ink-soft)]">{make}</span>
+                  <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                   <div
@@ -215,8 +215,8 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-400" />
         Vehicle Recall Alerts
         <span className="ml-auto rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
@@ -228,39 +228,39 @@ function RecallAlerts({ recalls }: { recalls: NhtsaRecall[] }) {
           const [make, model, year] = key.split("|");
           const isOpen = expanded.has(key);
           return (
-            <div key={key} className="rounded-lg border border-gray-100 bg-gray-50">
+            <div key={key} className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
               <button
                 onClick={() => toggleExpand(key)}
                 className="flex w-full items-center justify-between px-3 py-2 text-left text-xs"
               >
-                <span className="text-gray-700 font-medium">
+                <span className="text-[var(--ink-soft)] font-medium">
                   {year} {make} {model}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] text-rose-700 ring-1 ring-rose-600/20">
                     {groupRecalls.length}
                   </span>
-                  <span className="text-gray-400">{isOpen ? "\u25B2" : "\u25BC"}</span>
+                  <span className="text-[var(--ink-muted)]">{isOpen ? "\u25B2" : "\u25BC"}</span>
                 </div>
               </button>
               {isOpen && (
-                <div className="border-t border-gray-200 px-3 py-2 space-y-3">
+                <div className="border-t border-[var(--border)] px-3 py-2 space-y-3">
                   {groupRecalls.map((r, i) => (
                     <div key={i} className="text-xs">
-                      <p className="text-gray-700 font-medium">
+                      <p className="text-[var(--ink-soft)] font-medium">
                         Campaign #{r.nhtsaCampaignNumber}
                       </p>
-                      <p className="text-gray-400 mt-0.5">
+                      <p className="text-[var(--ink-muted)] mt-0.5">
                         Component: {r.component}
                       </p>
-                      <p className="text-gray-500 mt-0.5">{r.summary}</p>
+                      <p className="text-[var(--ink-soft)] mt-0.5">{r.summary}</p>
                       {r.consequence && (
                         <p className="text-rose-600 mt-0.5">
                           Consequence: {r.consequence}
                         </p>
                       )}
                       {r.remedy && (
-                        <p className="text-gray-400 mt-0.5">
+                        <p className="text-[var(--ink-muted)] mt-0.5">
                           Remedy: {r.remedy}
                         </p>
                       )}
@@ -302,8 +302,8 @@ function ComplaintAlerts({ complaints }: { complaints: NhtsaComplaint[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
         NHTSA Complaints
         <span className="ml-auto rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-600/20">
@@ -321,12 +321,12 @@ function ComplaintAlerts({ complaints }: { complaints: NhtsaComplaint[] }) {
           const isOpen = expanded.has(key);
           const groupCrashFire = groupComplaints.filter((c) => c.crash || c.fire).length;
           return (
-            <div key={key} className="rounded-lg border border-gray-100 bg-gray-50">
+            <div key={key} className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
               <button
                 onClick={() => toggleExpand(key)}
                 className="flex w-full items-center justify-between px-3 py-2 text-left text-xs"
               >
-                <span className="text-gray-700 font-medium">
+                <span className="text-[var(--ink-soft)] font-medium">
                   {year} {make} {model}
                 </span>
                 <div className="flex items-center gap-2">
@@ -338,15 +338,15 @@ function ComplaintAlerts({ complaints }: { complaints: NhtsaComplaint[] }) {
                   <span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-700 ring-1 ring-amber-600/20">
                     {groupComplaints.length}
                   </span>
-                  <span className="text-gray-400">{isOpen ? "\u25B2" : "\u25BC"}</span>
+                  <span className="text-[var(--ink-muted)]">{isOpen ? "\u25B2" : "\u25BC"}</span>
                 </div>
               </button>
               {isOpen && (
-                <div className="border-t border-gray-200 px-3 py-2 space-y-3">
+                <div className="border-t border-[var(--border)] px-3 py-2 space-y-3">
                   {groupComplaints.map((c, i) => (
                     <div key={c.odiNumber || i} className="text-xs">
                       <div className="flex items-center gap-2">
-                        <p className="text-gray-700 font-medium">
+                        <p className="text-[var(--ink-soft)] font-medium">
                           ODI #{c.odiNumber}
                         </p>
                         {c.crash && (
@@ -367,17 +367,17 @@ function ComplaintAlerts({ complaints }: { complaints: NhtsaComplaint[] }) {
                         )}
                       </div>
                       {c.components && (
-                        <p className="text-gray-400 mt-0.5">
+                        <p className="text-[var(--ink-muted)] mt-0.5">
                           Component: {c.components}
                         </p>
                       )}
                       {c.dateOfIncident && (
-                        <p className="text-gray-400 mt-0.5">
+                        <p className="text-[var(--ink-muted)] mt-0.5">
                           Incident: {c.dateOfIncident}
                         </p>
                       )}
                       {c.summary && (
-                        <p className="text-gray-500 mt-0.5 line-clamp-3">{c.summary}</p>
+                        <p className="text-[var(--ink-soft)] mt-0.5 line-clamp-3">{c.summary}</p>
                       )}
                     </div>
                   ))}
@@ -444,19 +444,19 @@ function FleetDetailTable({
   ];
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-purple-400" />
           Fleet Details
         </h3>
         <ExportButton onClick={() => downloadCsv(rows as unknown as Record<string, unknown>[], csvColumns as CsvColumn<Record<string, unknown>>[], "fleet.csv")} />
       </div>
       <TruncationWarning count={units.length} limit={200} noun="fleet units" />
-      <div className="mt-2 max-h-[32rem] overflow-auto rounded-lg border border-gray-200">
-        <table className="w-full text-left text-xs text-gray-700">
-          <thead className="sticky top-0 bg-gray-50">
-            <tr className="border-b border-gray-200 text-gray-500">
+      <div className="mt-2 max-h-[32rem] overflow-auto rounded-lg border border-[var(--border)]">
+        <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+          <thead className="sticky top-0 bg-[var(--surface-2)]">
+            <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
               <th className="px-3 py-2">VIN</th>
               <SortHeader label="Make" sortKey="make" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
               <SortHeader label="Model" sortKey="model" currentKey={sortKey} currentDir={sortDir} onToggle={toggle} />
@@ -471,24 +471,24 @@ function FleetDetailTable({
             {sorted.map((v, i) => (
               <tr
                 key={v.vin || i}
-                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
               >
-                <td className="px-3 py-2 font-mono text-gray-400">
+                <td className="px-3 py-2 font-mono text-[var(--ink-muted)]">
                   {v.vin || "\u2014"}
                 </td>
                 <td className="px-3 py-2">{v.make || "\u2014"}</td>
                 <td className="px-3 py-2">{v.model || "\u2014"}</td>
                 <td className="px-3 py-2">{v.modelYear || "\u2014"}</td>
-                <td className="hidden px-3 py-2 sm:table-cell text-gray-500">
+                <td className="hidden px-3 py-2 sm:table-cell text-[var(--ink-soft)]">
                   {v.bodyClass || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 lg:table-cell text-gray-500">
+                <td className="hidden px-3 py-2 lg:table-cell text-[var(--ink-soft)]">
                   {v.vehicleType || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 md:table-cell text-gray-500">
+                <td className="hidden px-3 py-2 md:table-cell text-[var(--ink-soft)]">
                   {v.gvwr || "\u2014"}
                 </td>
-                <td className="hidden px-3 py-2 lg:table-cell text-gray-500">
+                <td className="hidden px-3 py-2 lg:table-cell text-[var(--ink-soft)]">
                   {v._license
                     ? `${v._license}${v._licenseState ? ` (${v._licenseState})` : ""}`
                     : "\u2014"}

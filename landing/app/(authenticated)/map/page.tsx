@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function MapPage() {
   return (
-    <div className="h-screen w-full">
+    <div className="h-full w-full">
       <FleetMap />
     </div>
   );

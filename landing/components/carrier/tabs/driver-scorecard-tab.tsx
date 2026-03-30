@@ -47,7 +47,7 @@ export function DriverScorecardTab({
   if (error) return <p className="py-12 text-center text-sm text-rose-600">{error}</p>;
   if (driverList.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No driver inspection data available.
       </p>
     );
@@ -69,13 +69,13 @@ export function DriverScorecardTab({
     <div>
       {/* Driver Comparison Table */}
       <div className="mb-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
           Driver Comparison
         </p>
-        <div className="max-h-64 overflow-auto rounded-xl border border-gray-200">
-          <table className="w-full text-left text-xs text-gray-700">
-            <thead className="sticky top-0 bg-gray-50">
-              <tr className="border-b border-gray-200 text-gray-500">
+        <div className="max-h-64 overflow-auto rounded-xl border border-[var(--border)]">
+          <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+            <thead className="sticky top-0 bg-[var(--surface-2)]">
+              <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
                 <th className="px-3 py-2">CDL Key</th>
                 <th className="px-3 py-2 text-right">Inspections</th>
                 <th className="px-3 py-2 text-right">Violations</th>
@@ -88,12 +88,12 @@ export function DriverScorecardTab({
                 <tr
                   key={d.cdlKey}
                   onClick={() => handleSelect(d.cdlKey)}
-                  className={`cursor-pointer border-b border-gray-100 transition hover:bg-indigo-50 ${
+                  className={`cursor-pointer border-b border-[var(--border)] transition hover:bg-indigo-50 ${
                     selectedCdl === d.cdlKey
                       ? "bg-indigo-50"
                       : i < 3 && d.oosEvents > 0
                         ? "bg-rose-50/30"
-                        : "even:bg-gray-50/50"
+                        : "even:bg-[var(--surface-2)]/50"
                   }`}
                 >
                   <td className="px-3 py-2 font-medium">
@@ -124,13 +124,13 @@ export function DriverScorecardTab({
       {selected && (
         <div className="space-y-4">
           {/* Header */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-[var(--ink)]">
                   Driver: {selected.cdlKey}
                 </p>
-                <p className="mt-0.5 text-xs text-gray-500">
+                <p className="mt-0.5 text-xs text-[var(--ink-soft)]">
                   {new Date(selected.period.start).toLocaleDateString()} &ndash;{" "}
                   {new Date(selected.period.end).toLocaleDateString()}
                 </p>
@@ -156,17 +156,17 @@ export function DriverScorecardTab({
           {/* Violation Breakdown */}
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Driver Violations */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
                 Driver Violations
               </p>
               {selected.topDriverViolations.length === 0 ? (
-                <p className="text-xs text-gray-400">None</p>
+                <p className="text-xs text-[var(--ink-muted)]">None</p>
               ) : (
                 <div className="space-y-1.5">
                   {selected.topDriverViolations.map((v) => (
                     <div key={v.code} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-700 truncate mr-2" title={v.description}>
+                      <span className="text-[var(--ink-soft)] truncate mr-2" title={v.description}>
                         {v.code}
                       </span>
                       <span className="shrink-0 rounded-full bg-rose-100 px-2 py-0.5 text-rose-700">
@@ -179,17 +179,17 @@ export function DriverScorecardTab({
             </div>
 
             {/* Vehicle Violations */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
                 Vehicle Violations
               </p>
               {selected.topVehicleViolations.length === 0 ? (
-                <p className="text-xs text-gray-400">None</p>
+                <p className="text-xs text-[var(--ink-muted)]">None</p>
               ) : (
                 <div className="space-y-1.5">
                   {selected.topVehicleViolations.map((v) => (
                     <div key={v.code} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-700 truncate mr-2" title={v.description}>
+                      <span className="text-[var(--ink-soft)] truncate mr-2" title={v.description}>
                         {v.code}
                       </span>
                       <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
@@ -227,7 +227,7 @@ export function DriverScorecardTab({
       )}
 
       {!selected && (
-        <p className="py-8 text-center text-sm text-gray-400">
+        <p className="py-8 text-center text-sm text-[var(--ink-muted)]">
           Click a driver above to view their detailed scorecard.
         </p>
       )}
@@ -238,7 +238,7 @@ export function DriverScorecardTab({
 function TrendBadge({ trend }: { trend: "IMPROVING" | "STABLE" | "DECLINING" }) {
   const config = {
     IMPROVING: { label: "Improving", className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" },
-    STABLE: { label: "Stable", className: "bg-gray-100 text-gray-600 ring-1 ring-gray-400/20" },
+    STABLE: { label: "Stable", className: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-400/20" },
     DECLINING: { label: "Declining", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20" },
   };
   const c = config[trend];

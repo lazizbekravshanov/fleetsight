@@ -70,8 +70,8 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
   return (
     <div className="space-y-4">
       {/* Compose */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
+        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
           Add a note
         </label>
         <textarea
@@ -82,10 +82,10 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
           }}
           placeholder="Internal notes, red flags, broker decisions…"
           rows={3}
-          className="w-full resize-none rounded-lg border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         />
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-gray-400">{draft.length}/5000 · ⌘Enter to save</span>
+          <span className="text-xs text-[var(--ink-muted)]">{draft.length}/5000 · ⌘Enter to save</span>
           <button
             onClick={addNote}
             disabled={!draft.trim() || saving}
@@ -98,18 +98,18 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
 
       {/* Notes list */}
       {loading ? (
-        <div className="text-sm text-gray-400">Loading notes…</div>
+        <div className="text-sm text-[var(--ink-muted)]">Loading notes…</div>
       ) : notes.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-sm text-gray-500">No notes yet.</p>
-          <p className="mt-1 text-xs text-gray-400">Notes are private to your account.</p>
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)] p-8 text-center">
+          <p className="text-sm text-[var(--ink-soft)]">No notes yet.</p>
+          <p className="mt-1 text-xs text-[var(--ink-muted)]">Notes are private to your account.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {notes.map((note) => (
             <div
               key={note.id}
-              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm"
             >
               {editingId === note.id ? (
                 <div className="space-y-2">
@@ -117,7 +117,7 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     rows={4}
-                    className="w-full resize-none rounded-lg border border-gray-200 p-3 text-sm text-gray-900 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     autoFocus
                   />
                   <div className="flex gap-2">
@@ -129,7 +129,7 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                      className="rounded-lg border border-[var(--border)] px-3 py-1 text-xs font-medium text-[var(--ink-soft)] hover:bg-[var(--surface-2)]"
                     >
                       Cancel
                     </button>
@@ -137,9 +137,9 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                 </div>
               ) : (
                 <>
-                  <p className="whitespace-pre-wrap text-sm text-gray-800">{note.content}</p>
+                  <p className="whitespace-pre-wrap text-sm text-[var(--ink)]">{note.content}</p>
                   <div className="mt-2 flex items-center justify-between">
-                    <time className="text-xs text-gray-400">
+                    <time className="text-xs text-[var(--ink-muted)]">
                       {new Date(note.createdAt).toLocaleString()}
                       {note.updatedAt !== note.createdAt && " · edited"}
                     </time>
@@ -149,13 +149,13 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                           setEditingId(note.id);
                           setEditContent(note.content);
                         }}
-                        className="text-xs text-gray-400 hover:text-indigo-600"
+                        className="text-xs text-[var(--ink-muted)] hover:text-indigo-600"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => deleteNote(note.id)}
-                        className="text-xs text-gray-400 hover:text-rose-600"
+                        className="text-xs text-[var(--ink-muted)] hover:text-rose-600"
                       >
                         Delete
                       </button>

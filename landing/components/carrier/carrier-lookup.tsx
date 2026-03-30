@@ -151,9 +151,9 @@ export function CarrierLookup() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
+    <main className="min-h-screen bg-[var(--surface-2)] text-[var(--ink)]">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-[var(--border)] bg-[var(--surface-1)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <p className="text-sm font-semibold tracking-wide text-indigo-600">
             FleetSight
@@ -165,10 +165,10 @@ export function CarrierLookup() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {/* Search */}
         <div className="text-center">
-          <h1 className="text-4xl font-semibold text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-semibold text-[var(--ink)] sm:text-5xl">
             FMCSA Carrier Lookup
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-[var(--ink-soft)]">
             Search 4.4M FMCSA-registered carriers, brokers &amp; freight
             forwarders by name, DOT number, or MC number
           </p>
@@ -181,7 +181,7 @@ export function CarrierLookup() {
         >
           <div className="relative flex-1">
             <svg
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--ink-muted)]"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -200,7 +200,7 @@ export function CarrierLookup() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="DOT, MC, company name, or try &quot;large carriers in Texas&quot;..."
               aria-label="Search carriers by name, DOT number, MC number, or natural language"
-              className="w-full rounded-xl border border-gray-300 bg-white py-3 pl-11 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-xl border border-gray-300 bg-[var(--surface-1)] py-3 pl-11 pr-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
           <button
@@ -212,21 +212,21 @@ export function CarrierLookup() {
           </button>
         </form>
         <div className="mx-auto mt-1.5 max-w-2xl flex items-center justify-between">
-          <p className="text-xs text-gray-400">
-            Press <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500">/</kbd> to search
+          <p className="text-xs text-[var(--ink-muted)]">
+            Press <kbd className="rounded border border-gray-300 bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-soft)]">/</kbd> to search
           </p>
         </div>
 
         {/* Example query chips */}
         {!searched && !selectedDot && (
           <div className="mx-auto mt-3 max-w-2xl">
-            <p className="mb-1.5 text-xs text-gray-400">Try a smart search:</p>
+            <p className="mb-1.5 text-xs text-[var(--ink-muted)]">Try a smart search:</p>
             <div className="flex flex-wrap gap-1.5">
               {EXAMPLE_QUERIES.map((eq) => (
                 <button
                   key={eq}
                   onClick={() => handleExampleClick(eq)}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface-1)] px-3 py-1 text-xs text-[var(--ink-soft)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
                 >
                   {eq}
                 </button>
@@ -245,7 +245,7 @@ export function CarrierLookup() {
             }`}>
               {searchMode === "ai" ? "AI Search" : "Smart Search"}
             </span>
-            <span className="text-xs text-gray-500">{searchDescription}</span>
+            <span className="text-xs text-[var(--ink-soft)]">{searchDescription}</span>
           </div>
         )}
 
@@ -294,10 +294,10 @@ export function CarrierLookup() {
                 d="M13.5 10.5L10.5 7.5m0 3l3-3"
               />
             </svg>
-            <h3 className="mt-3 text-base font-medium text-gray-900">
+            <h3 className="mt-3 text-base font-medium text-[var(--ink)]">
               No carriers found
             </h3>
-            <ul className="mt-2 space-y-1 text-sm text-gray-500">
+            <ul className="mt-2 space-y-1 text-sm text-[var(--ink-soft)]">
               <li>Try searching by DOT number</li>
               <li>Check spelling of company name</li>
               <li>
@@ -310,7 +310,7 @@ export function CarrierLookup() {
 
         {results.length > 0 && (
           <div className="mx-auto mt-6 max-w-2xl">
-            <p className="mb-2 text-xs text-gray-500">
+            <p className="mb-2 text-xs text-[var(--ink-soft)]">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
             <motion.ul
@@ -335,14 +335,14 @@ export function CarrierLookup() {
                   >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition-colors hover:bg-gray-100 ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition-colors hover:bg-[var(--surface-2)] ${
                         selectedDot === r.dotNumber
-                          ? "bg-gray-100 ring-1 ring-indigo-500/40"
+                          ? "bg-[var(--surface-2)] ring-1 ring-indigo-500/40"
                           : ""
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 truncate text-sm font-medium text-gray-900">
+                        <p className="flex items-center gap-1.5 truncate text-sm font-medium text-[var(--ink)]">
                           {r.statusCode && r.statusCode !== "A" && (
                             <svg className="h-4 w-4 shrink-0 text-rose-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                               <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
@@ -350,12 +350,12 @@ export function CarrierLookup() {
                           )}
                           <span className="truncate">{r.legalName}</span>
                           {r.dbaName && (
-                            <span className="ml-2 text-gray-400">
+                            <span className="ml-2 text-[var(--ink-muted)]">
                               DBA {r.dbaName}
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--ink-soft)]">
                           DOT {r.dotNumber}
                           {r.mcNumber && (
                             <span className="ml-2">{r.mcNumber}</span>

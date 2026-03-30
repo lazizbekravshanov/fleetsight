@@ -66,7 +66,7 @@ export function CostImpactTab({
 
   if (!data) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No cost impact data available.
       </p>
     );
@@ -75,7 +75,7 @@ export function CostImpactTab({
   return (
     <div className="space-y-6">
       {/* Period header */}
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[var(--ink-soft)]">
         Analysis period: {data.period.start} &ndash; {data.period.end} &middot; DOT #{data.dotNumber}
       </p>
 
@@ -99,7 +99,7 @@ export function CostImpactTab({
             warn
           />
         </div>
-        <p className="mt-3 text-xs text-gray-500">
+        <p className="mt-3 text-xs text-[var(--ink-soft)]">
           Based on avg tow {fmtCurrency(data.inputs.avgTowCost)}, repair {fmtCurrency(data.inputs.avgRepairCost)}, {data.inputs.avgDelayHours}h delay, {fmtCurrency(data.inputs.revenuePerMile)}/mi, {data.inputs.avgDailyMiles.toLocaleString()} mi/day ({fmtCurrency(data.dailyRevenuePerTruck)}/day/truck)
         </p>
       </div>
@@ -110,40 +110,40 @@ export function CostImpactTab({
           Projected Savings If Top Violations Fixed
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-1)]">
             <div className="h-0.5 bg-emerald-500" />
             <div className="px-4 py-2">
-              <p className="text-xs text-gray-500">Projected OOS Events</p>
-              <p className="text-xl font-semibold text-gray-900">
+              <p className="text-xs text-[var(--ink-soft)]">Projected OOS Events</p>
+              <p className="text-xl font-semibold text-[var(--ink)]">
                 {data.projectedOOSEventsIfFixed}
-                <span className="ml-1 text-xs font-normal text-gray-400">
+                <span className="ml-1 text-xs font-normal text-[var(--ink-muted)]">
                   (down from {data.annualOOSEvents})
                 </span>
               </p>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-1)]">
             <div className="h-0.5 bg-emerald-500" />
             <div className="px-4 py-2">
-              <p className="text-xs text-gray-500">Projected Savings</p>
+              <p className="text-xs text-[var(--ink-soft)]">Projected Savings</p>
               <p className="text-xl font-semibold text-emerald-700">
                 {fmtCurrency(data.projectedAnnualSavings)}
               </p>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-1)]">
             <div className="h-0.5 bg-emerald-500" />
             <div className="px-4 py-2">
-              <p className="text-xs text-gray-500">Insurance Savings</p>
+              <p className="text-xs text-[var(--ink-soft)]">Insurance Savings</p>
               <p className="text-xl font-semibold text-emerald-700">
                 {fmtCurrency(data.projectedInsuranceSavings)}
               </p>
             </div>
           </div>
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-1)]">
             <div className="h-0.5 bg-emerald-500" />
             <div className="px-4 py-2">
-              <p className="text-xs text-gray-500">Total Projected Savings</p>
+              <p className="text-xs text-[var(--ink-soft)]">Total Projected Savings</p>
               <p className="text-xl font-semibold text-emerald-700">
                 {fmtCurrency(data.totalProjectedSavings)}
               </p>
@@ -176,7 +176,7 @@ function TopCostlyViolationsTable({
 
   if (violations.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-gray-400">
+      <p className="py-8 text-center text-sm text-[var(--ink-muted)]">
         No violation cost breakdowns available.
       </p>
     );
@@ -184,13 +184,13 @@ function TopCostlyViolationsTable({
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold text-gray-800">
+      <h3 className="mb-2 text-sm font-semibold text-[var(--ink)]">
         Top Costly Violations
       </h3>
-      <div className="max-h-[28rem] overflow-auto rounded-xl border border-gray-200">
-        <table className="w-full text-left text-xs text-gray-700">
-          <thead className="sticky top-0 bg-gray-50">
-            <tr className="border-b border-gray-200 text-gray-500">
+      <div className="max-h-[28rem] overflow-auto rounded-xl border border-[var(--border)]">
+        <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+          <thead className="sticky top-0 bg-[var(--surface-2)]">
+            <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
               <SortHeader
                 label="Code"
                 sortKey="code"
@@ -237,7 +237,7 @@ function TopCostlyViolationsTable({
             {sorted.map((v, i) => (
               <tr
                 key={v.code + "-" + i}
-                className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
               >
                 <td className="px-3 py-2 whitespace-nowrap font-mono text-indigo-700">
                   {v.code}
@@ -275,14 +275,14 @@ function TopActionsPanel({
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold text-gray-800">
+      <h3 className="mb-2 text-sm font-semibold text-[var(--ink)]">
         Recommended Actions
       </h3>
       <div className="space-y-2">
         {actions.map((a, i) => (
           <div
             key={i}
-            className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 transition hover:bg-gray-50"
+            className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 transition hover:bg-[var(--surface-2)]"
           >
             {/* checkbox-style indicator */}
             <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-indigo-300 bg-indigo-50 text-indigo-600">
@@ -304,11 +304,11 @@ function TopActionsPanel({
               <span className="absolute text-xs font-bold">{i + 1}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-gray-800">{a.action}</p>
-              <div className="mt-1 flex flex-wrap gap-3 text-xs text-gray-500">
+              <p className="text-sm text-[var(--ink)]">{a.action}</p>
+              <div className="mt-1 flex flex-wrap gap-3 text-xs text-[var(--ink-soft)]">
                 <span>
                   Eliminates{" "}
-                  <span className="font-semibold text-gray-700">
+                  <span className="font-semibold text-[var(--ink-soft)]">
                     {a.eliminates}
                   </span>{" "}
                   OOS events

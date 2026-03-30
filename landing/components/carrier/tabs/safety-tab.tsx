@@ -43,12 +43,12 @@ function BasicGauges({
 }) {
   if (!basicsAvailable) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
           BASIC Safety Scores
         </h3>
-        <p className="text-sm text-gray-400 tracking-wide">
+        <p className="text-sm text-[var(--ink-muted)] tracking-wide">
           Safety scores unavailable &mdash; FMCSA WEBKEY not configured
         </p>
       </div>
@@ -57,12 +57,12 @@ function BasicGauges({
 
   if (scores.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
           BASIC Safety Scores
         </h3>
-        <p className="text-sm text-gray-400 tracking-wide">
+        <p className="text-sm text-[var(--ink-muted)] tracking-wide">
           No BASIC scores available for this carrier.
         </p>
       </div>
@@ -72,8 +72,8 @@ function BasicGauges({
   const hasAlert = scores.some((s) => s.rdDeficient);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
         BASIC Safety Scores
       </h3>
@@ -94,20 +94,20 @@ function BasicGauges({
             <div key={s.code || s.name}>
               <div className="flex items-center justify-between text-xs mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-700 font-medium">{s.name}</span>
+                  <span className="text-[var(--ink-soft)] font-medium">{s.name}</span>
                   {s.rdDeficient && (
                     <span className="rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 ring-1 ring-rose-600/20">
                       ALERT
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-3 text-gray-500">
+                <div className="flex items-center gap-3 text-[var(--ink-soft)]">
                   <span>{s.totalViolations} violations</span>
                   <span>{s.totalInspections} inspections</span>
                   {s.serious > 0 && (
                     <span className="text-rose-600">{s.serious} serious</span>
                   )}
-                  <span className={`font-semibold ${s.rdDeficient ? "text-rose-600" : "text-gray-900"}`}>
+                  <span className={`font-semibold ${s.rdDeficient ? "text-rose-600" : "text-[var(--ink)]"}`}>
                     {s.percentile}%
                   </span>
                 </div>
@@ -125,7 +125,7 @@ function BasicGauges({
                 />
               </div>
               {s.measureValue > 0 && (
-                <p className="mt-0.5 text-[10px] text-gray-400">
+                <p className="mt-0.5 text-[10px] text-[var(--ink-muted)]">
                   Measure value: {s.measureValue.toFixed(2)}
                 </p>
               )}
@@ -133,7 +133,7 @@ function BasicGauges({
           );
         })}
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[10px] text-gray-400">
+      <div className="mt-3 flex items-center gap-2 text-[10px] text-[var(--ink-muted)]">
         <span className="inline-block w-3 border-t border-dashed border-gray-500" />
         <span>FMCSA intervention threshold (75th percentile)</span>
       </div>
@@ -146,12 +146,12 @@ function BasicGauges({
 function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] }) {
   if (inspections.length === 0) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
           Violation Breakdown
         </h3>
-        <p className="text-sm text-gray-400 tracking-wide">No inspection records found.</p>
+        <p className="text-sm text-[var(--ink-muted)] tracking-wide">No inspection records found.</p>
       </div>
     );
   }
@@ -185,8 +185,8 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
   const topCat = categories[0]?.name ?? "N/A";
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
         Violation Breakdown
       </h3>
@@ -200,8 +200,8 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
           {categories.map(({ name, total, oos }) => (
             <div key={name}>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-700">{name}</span>
-                <div className="flex items-center gap-2 text-gray-500">
+                <span className="text-[var(--ink-soft)]">{name}</span>
+                <div className="flex items-center gap-2 text-[var(--ink-soft)]">
                   <span>{total} total</span>
                   {oos > 0 && <span className="text-rose-600">{oos} OOS</span>}
                 </div>
@@ -364,8 +364,8 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
   }, [inspections]);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
         Violation Trend ({dateRangeLabel})
       </h3>
@@ -473,8 +473,8 @@ function OosRateTrendChart({ inspections }: { inspections: SocrataInspection[] }
   }, [inspections]);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
+      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-600" />
         OOS Rate Trend (Monthly %)
       </h3>

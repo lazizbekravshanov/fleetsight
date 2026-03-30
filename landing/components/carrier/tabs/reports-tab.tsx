@@ -88,11 +88,11 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
   return (
     <div className="space-y-4">
       {/* Submit Report */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
+        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
           Submit a Report
         </label>
-        <p className="mb-3 text-xs text-gray-400">
+        <p className="mb-3 text-xs text-[var(--ink-muted)]">
           Reports are anonymous to other users. Limit: 1 report per type per carrier every 30 days.
         </p>
 
@@ -108,8 +108,8 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
                   selectedType === rt.value
                     ? "border-indigo-400 bg-indigo-50 text-indigo-700"
                     : onCooldown
-                      ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                      ? "border-[var(--border)] bg-[var(--surface-2)] text-gray-300 cursor-not-allowed"
+                      : "border-[var(--border)] bg-[var(--surface-1)] text-[var(--ink-soft)] hover:border-gray-300 hover:bg-[var(--surface-2)]"
                 }`}
               >
                 {rt.label}
@@ -124,11 +124,11 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the incident (minimum 10 characters)..."
           rows={3}
-          className="w-full resize-none rounded-lg border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
         />
 
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-gray-400">{description.length}/2000</span>
+          <span className="text-xs text-[var(--ink-muted)]">{description.length}/2000</span>
           <button
             onClick={submitReport}
             disabled={!selectedType || description.length < 10 || submitting}
@@ -148,16 +148,16 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
 
       {/* Aggregate Stats */}
       {loading ? (
-        <div className="text-sm text-gray-400">Loading reports...</div>
+        <div className="text-sm text-[var(--ink-muted)]">Loading reports...</div>
       ) : !summary || summary.totalReports12m === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-sm text-gray-500">No community reports for this carrier.</p>
-          <p className="mt-1 text-xs text-gray-400">Be the first to submit a report if you have concerns.</p>
+        <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface-2)] p-8 text-center">
+          <p className="text-sm text-[var(--ink-soft)]">No community reports for this carrier.</p>
+          <p className="mt-1 text-xs text-[var(--ink-muted)]">Be the first to submit a report if you have concerns.</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-700">Community Reports</h3>
+            <h3 className="text-sm font-semibold text-[var(--ink-soft)]">Community Reports</h3>
             {summary.isFlagged && (
               <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 ring-1 ring-rose-600/20">
                 FLAGGED
@@ -167,18 +167,18 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
 
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <p className="text-2xl font-bold text-gray-900">{summary.totalReports12m}</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Reports (12mo)</p>
+              <p className="text-2xl font-bold text-[var(--ink)]">{summary.totalReports12m}</p>
+              <p className="text-[10px] text-[var(--ink-muted)] uppercase tracking-wide">Reports (12mo)</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{summary.communityScore}</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Risk Score</p>
+              <p className="text-2xl font-bold text-[var(--ink)]">{summary.communityScore}</p>
+              <p className="text-[10px] text-[var(--ink-muted)] uppercase tracking-wide">Risk Score</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-2xl font-bold text-[var(--ink)]">
                 {Object.keys(summary.reportsByType).length}
               </p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wide">Report Types</p>
+              <p className="text-[10px] text-[var(--ink-muted)] uppercase tracking-wide">Report Types</p>
             </div>
           </div>
 
@@ -188,8 +188,8 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
                 const label = REPORT_TYPES.find((rt) => rt.value === type)?.label ?? type;
                 return (
                   <div key={type} className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">{label}</span>
-                    <span className="font-medium text-gray-900">{count}</span>
+                    <span className="text-[var(--ink-soft)]">{label}</span>
+                    <span className="font-medium text-[var(--ink)]">{count}</span>
                   </div>
                 );
               })}
@@ -197,7 +197,7 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
           )}
 
           {summary.lastReportAt && (
-            <p className="mt-3 text-[10px] text-gray-400">
+            <p className="mt-3 text-[10px] text-[var(--ink-muted)]">
               Last report: {new Date(summary.lastReportAt).toLocaleDateString()}
             </p>
           )}

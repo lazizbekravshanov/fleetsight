@@ -36,7 +36,7 @@ export function EnforcementTab({
   if (error) return <p className="py-12 text-center text-sm text-rose-600">{error}</p>;
   if (!data || data.facilities.length === 0) {
     return (
-      <p className="py-12 text-center text-base text-gray-400 tracking-wide">
+      <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">
         No enforcement data available.
       </p>
     );
@@ -74,7 +74,7 @@ export function EnforcementTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -84,7 +84,7 @@ export function EnforcementTab({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as "oosRate" | "totalInspections")}
-          className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
         >
           <option value="oosRate">Sort by OOS Rate</option>
           <option value="totalInspections">Sort by Volume</option>
@@ -93,8 +93,8 @@ export function EnforcementTab({
 
       {/* State Summary Bar Chart */}
       {!filterState && data.stateStats.length > 0 && (
-        <div className="mb-4 rounded-xl border border-gray-200 bg-white p-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
             OOS Rate by State
           </p>
           <div className="max-h-48 overflow-auto space-y-1">
@@ -106,8 +106,8 @@ export function EnforcementTab({
                 return (
                   <div key={s.state}>
                     <div className="flex justify-between text-xs mb-0.5">
-                      <span className="text-gray-700 font-medium">{s.state}</span>
-                      <span className={aboveAvg ? "text-rose-600 font-medium" : "text-gray-500"}>
+                      <span className="text-[var(--ink-soft)] font-medium">{s.state}</span>
+                      <span className={aboveAvg ? "text-rose-600 font-medium" : "text-[var(--ink-soft)]"}>
                         {s.oosRate.toFixed(1)}% ({s.totalInspections.toLocaleString()})
                       </span>
                     </div>
@@ -125,10 +125,10 @@ export function EnforcementTab({
       )}
 
       {/* Facility Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-gray-200">
-        <table className="w-full text-left text-xs text-gray-700">
-          <thead className="sticky top-0 bg-gray-50">
-            <tr className="border-b border-gray-200 text-gray-500">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-[var(--border)]">
+        <table className="w-full text-left text-xs text-[var(--ink-soft)]">
+          <thead className="sticky top-0 bg-[var(--surface-2)]">
+            <tr className="border-b border-[var(--border)] text-[var(--ink-soft)]">
               <th className="px-3 py-2">State</th>
               <th className="px-3 py-2">Facility</th>
               <th className="px-3 py-2 text-right">Inspections</th>
@@ -144,7 +144,7 @@ export function EnforcementTab({
               return (
                 <tr
                   key={`${f.state}-${f.facility}-${i}`}
-                  className="border-b border-gray-100 transition hover:bg-gray-50 even:bg-gray-50/50"
+                  className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
                 >
                   <td className="px-3 py-2 font-medium">{f.state}</td>
                   <td className="px-3 py-2 max-w-xs truncate" title={f.facility}>
@@ -174,15 +174,15 @@ export function EnforcementTab({
                   </td>
                   <td className="px-3 py-2 text-right">
                     <span
-                      className={`font-medium ${aboveAvg ? "text-rose-600" : "text-gray-700"}`}
+                      className={`font-medium ${aboveAvg ? "text-rose-600" : "text-[var(--ink-soft)]"}`}
                     >
                       {f.oosRate.toFixed(1)}%
                     </span>
                   </td>
-                  <td className="hidden px-3 py-2 sm:table-cell text-gray-500">
+                  <td className="hidden px-3 py-2 sm:table-cell text-[var(--ink-soft)]">
                     {f.mostCommonGroup}
                   </td>
-                  <td className="hidden px-3 py-2 md:table-cell text-gray-400">
+                  <td className="hidden px-3 py-2 md:table-cell text-[var(--ink-muted)]">
                     {f.topViolationCodes.map((c) => c.code).join(", ")}
                   </td>
                 </tr>
@@ -193,7 +193,7 @@ export function EnforcementTab({
       </div>
 
       {filtered.length > 100 && (
-        <p className="mt-2 text-center text-xs text-gray-400">
+        <p className="mt-2 text-center text-xs text-[var(--ink-muted)]">
           Showing top 100 of {filtered.length} facilities
         </p>
       )}

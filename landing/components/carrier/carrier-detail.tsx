@@ -427,18 +427,18 @@ export function CarrierDetailView({
   return (
     <div className="mx-auto max-w-5xl">
       {/* Carrier Header */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl shadow-sm" style={{ background: "var(--surface-1)", border: "1px solid var(--border)" }}>
         <div className="h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-400" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold" style={{ color: "var(--ink)" }}>
                 {c.legal_name}
               </h2>
               {c.dba_name && (
-                <p className="text-sm text-gray-500">DBA {c.dba_name}</p>
+                <p className="text-sm" style={{ color: "var(--ink-soft)" }}>DBA {c.dba_name}</p>
               )}
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs" style={{ color: "var(--ink-muted)" }}>
                 USDOT {c.dot_number}
               </p>
             </div>
@@ -449,7 +449,7 @@ export function CarrierDetailView({
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Open print-ready vetting report"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-[var(--surface-1)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)] transition-colors"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 13h8M8 2v8M5 7l3 3 3-3" /><rect x="2" y="11" width="12" height="4" rx="1" />
@@ -465,7 +465,7 @@ export function CarrierDetailView({
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 transition-colors ${
                     watched
                       ? "bg-indigo-50 text-indigo-700 ring-indigo-300 hover:bg-indigo-100"
-                      : "bg-white text-gray-500 ring-gray-200 hover:bg-gray-50 hover:text-gray-700"
+                      : "bg-[var(--surface-1)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)]"
                   } disabled:opacity-50`}
                 >
                   <svg
@@ -511,7 +511,7 @@ export function CarrierDetailView({
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-medium ${
                     SAFETY_RATING_COLORS[detail.safetyRating] ??
-                    "bg-gray-50 text-gray-700 ring-1 ring-gray-600/20"
+                    "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-600/20"
                   }`}
                   title={
                     detail.safetyRatingDate
@@ -543,13 +543,13 @@ export function CarrierDetailView({
         role="tablist"
         aria-label="Carrier detail sections"
         onKeyDown={handleTabKeyDown}
-        className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide border-b border-gray-200"
+        className="mt-4 flex gap-1 overflow-x-auto scrollbar-hide"
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
         {tabs.map((t, i) => (
           <span key={t.key} className="flex items-center">
-            {/* Separator between ops and compliance groups */}
             {i > 0 && tabs[i - 1].group !== t.group && (
-              <span className="mx-1 h-4 w-px bg-gray-300" aria-hidden="true" />
+              <span className="mx-1 h-4 w-px" style={{ background: "var(--border)" }} aria-hidden="true" />
             )}
             <button
               id={`tab-${t.key}`}
@@ -560,13 +560,16 @@ export function CarrierDetailView({
               onClick={() => setActiveTab(t.key)}
               className={`whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition ${
                 activeTab === t.key
-                  ? "border-b-2 border-indigo-500 text-indigo-600"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "border-b-2 border-indigo-500 text-indigo-500"
+                  : ""
               }`}
+              style={{
+                color: activeTab === t.key ? undefined : "var(--ink-soft)",
+              }}
             >
               {t.label}
               {t.count != null && (
-                <span className="ml-1.5 text-xs text-gray-400">
+                <span className="ml-1.5 text-xs" style={{ color: "var(--ink-muted)" }}>
                   ({t.count})
                 </span>
               )}
@@ -595,12 +598,12 @@ export function CarrierDetailView({
             />
           )}
           {activeTab === "overview" && violationTrend && violationTrend.some((m) => m.violations > 0) && (
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
+            <div className="rounded-xl p-4" style={{ background: "var(--surface-1)", border: "1px solid var(--border)" }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Violation Trend (12mo)</p>
-                  <p className="mt-0.5 text-[10px] text-gray-400">
-                    <span className="text-gray-500">&#x2014;</span> total &nbsp;
+                  <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--ink-soft)" }}>Violation Trend (12mo)</p>
+                  <p className="mt-0.5 text-[10px]" style={{ color: "var(--ink-muted)" }}>
+                    <span style={{ color: "var(--ink-soft)" }}>&#x2014;</span> total &nbsp;
                     <span className="text-rose-500">&#x2014;</span> OOS
                   </p>
                 </div>

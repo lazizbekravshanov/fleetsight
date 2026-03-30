@@ -37,9 +37,9 @@ function SectionHeader({ icon, title, count, color }: { icon: React.ReactNode; t
   return (
     <div className="mb-3 flex items-center gap-2.5">
       <span className={color}>{icon}</span>
-      <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900">{title}</h3>
+      <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--ink)]">{title}</h3>
       {count !== undefined && (
-        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-gray-100 ring-1 ring-gray-200`}>{count}</span>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-[var(--surface-2)] ring-1 ring-gray-200`}>{count}</span>
       )}
     </div>
   );
@@ -90,7 +90,7 @@ const LINK_COLORS: Record<string, string> = {
   social: "bg-blue-50 text-blue-700 ring-blue-200 hover:bg-blue-100",
   business: "bg-amber-50 text-amber-700 ring-amber-200 hover:bg-amber-100",
   registry: "bg-purple-50 text-purple-700 ring-purple-200 hover:bg-purple-100",
-  search: "bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100",
+  search: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)]",
 };
 
 function LinkPill({ link }: { link: SearchLink }) {
@@ -135,13 +135,13 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
     (data.corporateNetwork?.riskSignals.some((s) => s.severity === "high") ?? false);
 
   return (
-    <div className={`bg-white border shadow-sm rounded-2xl px-5 py-4 ${hasCritical ? "border-rose-200" : "border-gray-200"}`}>
+    <div className={`bg-[var(--surface-1)] border shadow-sm rounded-2xl px-5 py-4 ${hasCritical ? "border-rose-200" : "border-[var(--border)]"}`}>
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-baseline gap-3">
-          <span className={`text-3xl font-extrabold tabular-nums ${hasCritical ? "text-rose-600" : "text-gray-900"}`}>
+          <span className={`text-3xl font-extrabold tabular-nums ${hasCritical ? "text-rose-600" : "text-[var(--ink)]"}`}>
             {totalFindings + addressFlags}
           </span>
-          <span className="text-sm font-medium text-gray-500">
+          <span className="text-sm font-medium text-[var(--ink-soft)]">
             background finding{totalFindings + addressFlags !== 1 ? "s" : ""}
           </span>
         </div>
@@ -149,7 +149,7 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
           {categories.filter((c) => c.count > 0).map((c) => (
             <div key={c.label} className="flex items-center gap-1.5">
               <span className={`text-xs font-semibold tabular-nums ${c.color}`}>{c.count}</span>
-              <span className="text-[10px] uppercase tracking-wide text-gray-400">{c.label}</span>
+              <span className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">{c.label}</span>
             </div>
           ))}
         </div>
@@ -169,9 +169,9 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
 
 function DigitalFootprintCard({ footprint }: { footprint: DigitalFootprint }) {
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<GlobeIcon />} title="Digital Footprint" color="text-sky-500" />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">
         Web presence, business profiles, and registry links.
       </p>
 
@@ -180,22 +180,22 @@ function DigitalFootprintCard({ footprint }: { footprint: DigitalFootprint }) {
         {footprint.websiteUrl && (
           <div className="flex items-center gap-2 rounded-lg bg-sky-50 border border-sky-200 px-4 py-2.5">
             <GlobeIcon />
-            <span className="text-xs text-gray-500">Website:</span>
+            <span className="text-xs text-[var(--ink-soft)]">Website:</span>
             <a href={footprint.websiteUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-sky-700 hover:underline">
               {footprint.websiteDomain}
             </a>
           </div>
         )}
         {footprint.emailDomain && !footprint.websiteDomain && (
-          <div className="flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-2.5">
-            <span className="text-xs text-gray-500">Email domain:</span>
-            <span className="text-sm text-gray-700">{footprint.emailDomain}</span>
-            <span className="text-[10px] text-gray-400">(free provider)</span>
+          <div className="flex items-center gap-2 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] px-4 py-2.5">
+            <span className="text-xs text-[var(--ink-soft)]">Email domain:</span>
+            <span className="text-sm text-[var(--ink-soft)]">{footprint.emailDomain}</span>
+            <span className="text-[10px] text-[var(--ink-muted)]">(free provider)</span>
           </div>
         )}
         {footprint.dnbNumber && (
-          <div className="flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-200 px-4 py-2.5">
-            <span className="text-xs text-gray-500">D&B Number:</span>
+          <div className="flex items-center gap-2 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] px-4 py-2.5">
+            <span className="text-xs text-[var(--ink-soft)]">D&B Number:</span>
             <a href={footprint.dnbUrl!} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-700 hover:underline tabular-nums">
               {footprint.dnbNumber}
             </a>
@@ -205,7 +205,7 @@ function DigitalFootprintCard({ footprint }: { footprint: DigitalFootprint }) {
 
       {/* Company search links */}
       <div className="mb-4">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">Company Lookup</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-soft)] mb-2">Company Lookup</p>
         <div className="flex flex-wrap gap-1.5">
           {footprint.companySearchLinks.map((link) => (
             <LinkPill key={link.label} link={link} />
@@ -228,11 +228,11 @@ function DigitalFootprintCard({ footprint }: { footprint: DigitalFootprint }) {
       {/* Officer search links */}
       {footprint.officerSearchLinks.length > 0 && (
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mb-2">Officer Lookup</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-soft)] mb-2">Officer Lookup</p>
           <div className="space-y-3">
             {footprint.officerSearchLinks.map((officer) => (
               <div key={officer.officerName}>
-                <p className="text-xs font-semibold text-gray-700 mb-1.5">{officer.officerName}</p>
+                <p className="text-xs font-semibold text-[var(--ink-soft)] mb-1.5">{officer.officerName}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {officer.links.map((link) => (
                     <LinkPill key={link.label} link={link} />
@@ -253,7 +253,7 @@ function AddressIntelligenceCard({ intel }: { intel: AddressIntelligence }) {
   const hasFlags = intel.flags.length > 0;
 
   return (
-    <div className={`bg-white border shadow-sm rounded-2xl p-5 ${hasFlags ? "border-amber-200" : "border-gray-200"}`}>
+    <div className={`bg-[var(--surface-1)] border shadow-sm rounded-2xl p-5 ${hasFlags ? "border-amber-200" : "border-[var(--border)]"}`}>
       <SectionHeader
         icon={<MapPinIcon />}
         title="Address Intelligence"
@@ -277,11 +277,11 @@ function AddressIntelligenceCard({ intel }: { intel: AddressIntelligence }) {
       )}
 
       <div className="flex flex-wrap gap-1.5">
-        <a href={intel.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100 transition-colors">
+        <a href={intel.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] transition-colors">
           Google Maps
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50"><path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </a>
-        <a href={intel.streetViewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-gray-50 text-gray-700 ring-gray-200 hover:bg-gray-100 transition-colors">
+        <a href={intel.streetViewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] transition-colors">
           Street View
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50"><path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </a>
@@ -295,9 +295,9 @@ function AddressIntelligenceCard({ intel }: { intel: AddressIntelligence }) {
 function OshaViolationsCard({ violations }: { violations: OshaViolation[] }) {
   if (violations.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
-        <SectionHeader icon={<HardHatIcon />} title="OSHA Violations" color="text-gray-400" />
-        <p className="text-xs text-gray-400">No OSHA workplace safety violations found.</p>
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
+        <SectionHeader icon={<HardHatIcon />} title="OSHA Violations" color="text-[var(--ink-muted)]" />
+        <p className="text-xs text-[var(--ink-muted)]">No OSHA workplace safety violations found.</p>
       </div>
     );
   }
@@ -305,10 +305,10 @@ function OshaViolationsCard({ violations }: { violations: OshaViolation[] }) {
   const totalPenalties = violations.reduce((s, v) => s + v.penalty, 0);
 
   return (
-    <div className="bg-white border border-yellow-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-yellow-200 shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<HardHatIcon />} title="OSHA Violations" count={violations.length} color="text-yellow-600" />
       {totalPenalties > 0 && (
-        <p className="mb-3 -mt-1 text-xs text-gray-500">
+        <p className="mb-3 -mt-1 text-xs text-[var(--ink-soft)]">
           Total penalties: <span className="font-semibold text-yellow-700">${totalPenalties.toLocaleString()}</span>
         </p>
       )}
@@ -316,19 +316,19 @@ function OshaViolationsCard({ violations }: { violations: OshaViolation[] }) {
         {violations.map((v, i) => (
           <div key={i} className="rounded-lg border border-yellow-200 bg-yellow-50 px-3.5 py-2.5">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-gray-900 truncate">{v.establishment || "Inspection"}</p>
+              <p className="text-sm font-medium text-[var(--ink)] truncate">{v.establishment || "Inspection"}</p>
               {v.penalty > 0 && (
                 <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800 tabular-nums">
                   ${v.penalty.toLocaleString()}
                 </span>
               )}
             </div>
-            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-500">
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--ink-soft)]">
               {v.inspectionDate && <span>{v.inspectionDate}</span>}
               {v.violationType && <><span>&middot;</span><span>{v.violationType}</span></>}
               {v.city && <><span>&middot;</span><span>{v.city}, {v.state}</span></>}
             </div>
-            {v.description && <p className="mt-1 text-xs text-gray-500 truncate">{v.description}</p>}
+            {v.description && <p className="mt-1 text-xs text-[var(--ink-soft)] truncate">{v.description}</p>}
           </div>
         ))}
       </div>
@@ -341,15 +341,15 @@ function OshaViolationsCard({ violations }: { violations: OshaViolation[] }) {
 function EpaEnforcementCard({ enforcements }: { enforcements: EpaEnforcement[] }) {
   if (enforcements.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
-        <SectionHeader icon={<LeafIcon />} title="EPA Enforcement" color="text-gray-400" />
-        <p className="text-xs text-gray-400">No EPA environmental enforcement records found.</p>
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
+        <SectionHeader icon={<LeafIcon />} title="EPA Enforcement" color="text-[var(--ink-muted)]" />
+        <p className="text-xs text-[var(--ink-muted)]">No EPA environmental enforcement records found.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-green-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-green-200 shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<LeafIcon />} title="EPA Enforcement" count={enforcements.length} color="text-green-600" />
       <div className="space-y-2">
         {enforcements.map((e, i) => (
@@ -361,7 +361,7 @@ function EpaEnforcementCard({ enforcements }: { enforcements: EpaEnforcement[] }
             className="block rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 hover:bg-green-100 transition-colors"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium text-gray-900 truncate">{e.facilityName}</p>
+              <p className="text-sm font-medium text-[var(--ink)] truncate">{e.facilityName}</p>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                 e.violationStatus.toLowerCase().includes("violation")
                   ? "bg-rose-50 text-rose-700 ring-1 ring-rose-200"
@@ -370,7 +370,7 @@ function EpaEnforcementCard({ enforcements }: { enforcements: EpaEnforcement[] }
                 {e.violationStatus}
               </span>
             </div>
-            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-500">
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--ink-soft)]">
               {e.city && <span>{e.city}, {e.state}</span>}
               {e.programAreas.length > 0 && <><span>&middot;</span><span>{e.programAreas.join(", ")}</span></>}
               {e.penalties > 0 && <><span>&middot;</span><span className="text-rose-600 font-semibold">${e.penalties.toLocaleString()}</span></>}
@@ -388,9 +388,9 @@ function BankruptcyCard({ cases }: { cases: BankruptcyCase[] }) {
   if (cases.length === 0) return null;
 
   return (
-    <div className="bg-white border border-rose-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-rose-200 shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<ScaleIcon />} title="Bankruptcy Records" count={cases.length} color="text-rose-500" />
-      <p className="mb-3 -mt-1 text-xs text-gray-400">
+      <p className="mb-3 -mt-1 text-xs text-[var(--ink-muted)]">
         Bankruptcy filings found via federal court records.
       </p>
       <div className="space-y-2">
@@ -402,8 +402,8 @@ function BankruptcyCard({ cases }: { cases: BankruptcyCase[] }) {
             rel="noopener noreferrer"
             className="block rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 hover:bg-rose-100 transition-colors"
           >
-            <p className="text-sm font-medium text-gray-900 truncate">{c.caseName}</p>
-            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-500">
+            <p className="text-sm font-medium text-[var(--ink)] truncate">{c.caseName}</p>
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--ink-soft)]">
               <span>{c.court}</span>
               {c.chapter !== "unknown" && <><span>&middot;</span><span className="font-semibold text-rose-700">{c.chapter}</span></>}
               {c.docketNumber && <><span>&middot;</span><span className="tabular-nums">{c.docketNumber}</span></>}
@@ -423,19 +423,19 @@ function OfficerNetworkCard({ crossRefs }: { crossRefs: OfficerCrossRef[] }) {
   if (nonEmpty.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<UsersIcon />} title="Officer Network" count={nonEmpty.reduce((s, r) => s + r.carriers.length, 0)} color="text-indigo-500" />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">Other FMCSA-registered carriers listing the same officers.</p>
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">Other FMCSA-registered carriers listing the same officers.</p>
       <div className="space-y-4">
         {nonEmpty.map((ref) => (
           <div key={ref.officerName}>
-            <p className="text-xs font-semibold text-gray-700 mb-2">{ref.officerName}</p>
+            <p className="text-xs font-semibold text-[var(--ink-soft)] mb-2">{ref.officerName}</p>
             <div className="space-y-1.5">
               {ref.carriers.map((c) => (
-                <div key={c.dotNumber} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div key={c.dotNumber} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{c.legalName}</p>
-                    <p className="text-[11px] text-gray-400 tabular-nums">DOT {c.dotNumber}</p>
+                    <p className="text-xs font-medium text-[var(--ink)] truncate">{c.legalName}</p>
+                    <p className="text-[11px] text-[var(--ink-muted)] tabular-nums">DOT {c.dotNumber}</p>
                   </div>
                   {c.statusCode && (
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${c.statusCode === "A" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"}`}>
@@ -457,7 +457,7 @@ function OfficerNetworkCard({ crossRefs }: { crossRefs: OfficerCrossRef[] }) {
 function SanctionsScreeningCard({ matches }: { matches: OfacMatch[] }) {
   if (matches.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
         <SectionHeader icon={<ShieldIcon />} title="OFAC Sanctions Screening" color="text-emerald-500" />
         <div className="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
           <span className="text-emerald-600"><ShieldCheckIcon /></span>
@@ -471,19 +471,19 @@ function SanctionsScreeningCard({ matches }: { matches: OfacMatch[] }) {
   }
 
   return (
-    <div className="bg-white border border-rose-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-rose-200 shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<ShieldIcon />} title="OFAC Sanctions Screening" count={matches.length} color="text-rose-500" />
-      <p className="mb-3 -mt-1 text-xs text-gray-400">Potential matches against the US Treasury OFAC SDN list. Review carefully.</p>
+      <p className="mb-3 -mt-1 text-xs text-[var(--ink-muted)]">Potential matches against the US Treasury OFAC SDN list. Review carefully.</p>
       <div className="space-y-2">
         {matches.map((m, i) => (
           <div key={i} className="flex items-start gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5">
             <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-rose-500" />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">{m.matchedName}</span>
+                <span className="text-sm font-medium text-[var(--ink)]">{m.matchedName}</span>
                 <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700">{Math.round(m.score * 100)}% match</span>
               </div>
-              <p className="mt-0.5 text-xs text-gray-500">Queried: &quot;{m.queriedName}&quot; &middot; {m.sdnType}</p>
+              <p className="mt-0.5 text-xs text-[var(--ink-soft)]">Queried: &quot;{m.queriedName}&quot; &middot; {m.sdnType}</p>
             </div>
           </div>
         ))}
@@ -497,7 +497,7 @@ function SanctionsScreeningCard({ matches }: { matches: OfacMatch[] }) {
 function FederalExclusionsCard({ exclusions }: { exclusions: SamExclusion[] }) {
   if (exclusions.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
         <SectionHeader icon={<BanIcon />} title="Federal Exclusions (SAM.gov)" color="text-emerald-500" />
         <div className="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
           <span className="text-emerald-600"><ShieldCheckIcon /></span>
@@ -511,16 +511,16 @@ function FederalExclusionsCard({ exclusions }: { exclusions: SamExclusion[] }) {
   }
 
   return (
-    <div className="bg-white border border-orange-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-orange-200 shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<BanIcon />} title="Federal Exclusions (SAM.gov)" count={exclusions.length} color="text-orange-500" />
       <div className="space-y-2">
         {exclusions.map((e, i) => (
           <div key={i} className="rounded-lg border border-orange-200 bg-orange-50 px-3.5 py-2.5">
-            <p className="text-sm font-medium text-gray-900">{e.name}</p>
-            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-500">
+            <p className="text-sm font-medium text-[var(--ink)]">{e.name}</p>
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--ink-soft)]">
               <span>{e.classification}</span><span>&middot;</span><span>{e.exclusionType}</span><span>&middot;</span><span>{e.agency}</span>
             </div>
-            <p className="mt-1 text-[11px] text-gray-400">{e.activeDateRange}</p>
+            <p className="mt-1 text-[11px] text-[var(--ink-muted)]">{e.activeDateRange}</p>
           </div>
         ))}
       </div>
@@ -533,25 +533,25 @@ function FederalExclusionsCard({ exclusions }: { exclusions: SamExclusion[] }) {
 function SecFilingsCard({ filings }: { filings: EdgarFiling[] }) {
   if (filings.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
-        <SectionHeader icon={<FileTextIcon />} title="SEC Filings (EDGAR)" color="text-gray-400" />
-        <p className="text-xs text-gray-400">No SEC filings found for this entity or its officers.</p>
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
+        <SectionHeader icon={<FileTextIcon />} title="SEC Filings (EDGAR)" color="text-[var(--ink-muted)]" />
+        <p className="text-xs text-[var(--ink-muted)]">No SEC filings found for this entity or its officers.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<FileTextIcon />} title="SEC Filings (EDGAR)" count={filings.length} color="text-blue-500" />
       <div className="space-y-2">
         {filings.map((f, i) => (
-          <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 hover:bg-blue-50 hover:border-blue-200 transition-colors">
+          <a key={i} href={f.url} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 hover:bg-blue-50 hover:border-blue-200 transition-colors">
             <div className="flex items-center gap-2">
               <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold text-blue-700">{f.formType}</span>
-              <span className="text-sm font-medium text-gray-900 truncate">{f.companyName}</span>
+              <span className="text-sm font-medium text-[var(--ink)] truncate">{f.companyName}</span>
             </div>
-            {f.dateFiled && <p className="mt-0.5 text-[11px] text-gray-400">Filed {f.dateFiled}</p>}
-            {f.description && f.description !== f.formType && <p className="mt-0.5 text-xs text-gray-500 truncate">{f.description}</p>}
+            {f.dateFiled && <p className="mt-0.5 text-[11px] text-[var(--ink-muted)]">Filed {f.dateFiled}</p>}
+            {f.description && f.description !== f.formType && <p className="mt-0.5 text-xs text-[var(--ink-soft)] truncate">{f.description}</p>}
           </a>
         ))}
       </div>
@@ -564,21 +564,21 @@ function SecFilingsCard({ filings }: { filings: EdgarFiling[] }) {
 function CourtRecordsCard({ cases }: { cases: CourtCase[] }) {
   if (cases.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
-        <SectionHeader icon={<GavelIcon />} title="Federal Court Records" color="text-gray-400" />
-        <p className="text-xs text-gray-400">No federal court records found.</p>
+      <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
+        <SectionHeader icon={<GavelIcon />} title="Federal Court Records" color="text-[var(--ink-muted)]" />
+        <p className="text-xs text-[var(--ink-muted)]">No federal court records found.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<GavelIcon />} title="Federal Court Records" count={cases.length} color="text-purple-500" />
       <div className="space-y-2">
         {cases.map((c, i) => (
-          <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-            <p className="text-sm font-medium text-gray-900 truncate">{c.caseName}</p>
-            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-gray-500">
+          <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer" className="block rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+            <p className="text-sm font-medium text-[var(--ink)] truncate">{c.caseName}</p>
+            <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-[var(--ink-soft)]">
               <span>{c.court}</span>
               {c.docketNumber && <><span>&middot;</span><span className="tabular-nums">{c.docketNumber}</span></>}
               {c.dateFiled && <><span>&middot;</span><span>Filed {c.dateFiled}</span></>}
@@ -597,21 +597,21 @@ function CorporateAffiliationsCard({ affiliations }: { affiliations: OcOfficerCo
   if (affiliations.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<BuildingIcon />} title="Corporate Affiliations" count={affiliations.reduce((s, a) => s + a.companies.length, 0)} color="text-teal-500" />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">Other companies where these officers hold roles (via OpenCorporates).</p>
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">Other companies where these officers hold roles (via OpenCorporates).</p>
       <div className="space-y-4">
         {affiliations.map((aff) => (
           <div key={aff.officerName}>
-            <p className="text-xs font-semibold text-gray-700 mb-2">{aff.officerName}</p>
+            <p className="text-xs font-semibold text-[var(--ink-soft)] mb-2">{aff.officerName}</p>
             <div className="space-y-1.5">
               {aff.companies.map((co, i) => (
-                <a key={i} href={co.opencorporatesUrl || undefined} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 hover:bg-teal-50 hover:border-teal-200 transition-colors">
+                <a key={i} href={co.opencorporatesUrl || undefined} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 hover:bg-teal-50 hover:border-teal-200 transition-colors">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{co.companyName}</p>
-                    <p className="text-[11px] text-gray-400">{co.jurisdiction.toUpperCase()} &middot; #{co.companyNumber}</p>
+                    <p className="text-xs font-medium text-[var(--ink)] truncate">{co.companyName}</p>
+                    <p className="text-[11px] text-[var(--ink-muted)]">{co.jurisdiction.toUpperCase()} &middot; #{co.companyNumber}</p>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${co.status.toLowerCase().includes("active") ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-gray-100 text-gray-600 ring-1 ring-gray-300"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${co.status.toLowerCase().includes("active") ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-300"}`}>
                     {co.status}
                   </span>
                 </a>
@@ -630,15 +630,15 @@ function MailingAddressMatchesCard({ matches }: { matches: { dotNumber: string; 
   if (matches.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader icon={<MailboxIcon />} title="Mailing Address Matches" count={matches.length} color="text-amber-500" />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">Other carriers using the same mailing address.</p>
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">Other carriers using the same mailing address.</p>
       <div className="space-y-1.5">
         {matches.map((m) => (
-          <div key={m.dotNumber} className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
+          <div key={m.dotNumber} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
             <div className="min-w-0">
-              <p className="text-xs font-medium text-gray-900 truncate">{m.legalName}</p>
-              <p className="text-[11px] text-gray-400 tabular-nums">DOT {m.dotNumber}</p>
+              <p className="text-xs font-medium text-[var(--ink)] truncate">{m.legalName}</p>
+              <p className="text-[11px] text-[var(--ink-muted)] tabular-nums">DOT {m.dotNumber}</p>
             </div>
             {m.statusCode && (
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${m.statusCode === "A" ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"}`}>
@@ -665,11 +665,11 @@ function OfficerRoleRow({ role }: { role: OcOfficerRole }) {
       href={role.opencorporatesUrl || undefined}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-start justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 hover:bg-teal-50 hover:border-teal-200 transition-colors"
+      className="flex items-start justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5 hover:bg-teal-50 hover:border-teal-200 transition-colors"
     >
       <div className="min-w-0">
-        <p className="text-xs font-medium text-gray-900 truncate">{role.companyName}</p>
-        <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+        <p className="text-xs font-medium text-[var(--ink)] truncate">{role.companyName}</p>
+        <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-[var(--ink-muted)]">
           <span>{role.jurisdiction.toUpperCase()}</span>
           {role.companyNumber && <><span>·</span><span>#{role.companyNumber}</span></>}
           {dateRange && <><span>·</span><span>{dateRange}</span></>}
@@ -684,7 +684,7 @@ function OfficerRoleRow({ role }: { role: OcOfficerRole }) {
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
           role.status.toLowerCase().includes("active")
             ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-            : "bg-gray-100 text-gray-500 ring-1 ring-gray-300"
+            : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-300"
         }`}>
           {role.status}
         </span>
@@ -706,7 +706,7 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
     profile.bankruptcyCases.length;
 
   return (
-    <div className={`rounded-2xl border shadow-sm p-5 ${hasCritical ? "border-rose-200 bg-rose-50/30" : "border-gray-200 bg-white"}`}>
+    <div className={`rounded-2xl border shadow-sm p-5 ${hasCritical ? "border-rose-200 bg-rose-50/30" : "border-[var(--border)] bg-[var(--surface-1)]"}`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5">
@@ -717,9 +717,9 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-900">{profile.name}</p>
+            <p className="text-sm font-bold text-[var(--ink)]">{profile.name}</p>
             {totalFindings > 0 && (
-              <p className="text-[11px] text-gray-400">{totalFindings} finding{totalFindings !== 1 ? "s" : ""}</p>
+              <p className="text-[11px] text-[var(--ink-muted)]">{totalFindings} finding{totalFindings !== 1 ? "s" : ""}</p>
             )}
           </div>
         </div>
@@ -756,7 +756,7 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
               {profile.ofacMatches.map((m, i) => (
                 <div key={i} className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2">
                   <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-rose-500" />
-                  <span className="text-xs font-medium text-gray-900">{m.matchedName}</span>
+                  <span className="text-xs font-medium text-[var(--ink)]">{m.matchedName}</span>
                   <span className="ml-auto rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700">
                     {Math.round(m.score * 100)}% match
                   </span>
@@ -775,8 +775,8 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
             <div className="space-y-1.5">
               {profile.samExclusions.map((e, i) => (
                 <div key={i} className="rounded-lg border border-orange-200 bg-orange-50 px-3.5 py-2">
-                  <p className="text-xs font-medium text-gray-900">{e.name}</p>
-                  <p className="mt-0.5 text-[11px] text-gray-500">{e.classification} · {e.agency}</p>
+                  <p className="text-xs font-medium text-[var(--ink)]">{e.name}</p>
+                  <p className="mt-0.5 text-[11px] text-[var(--ink-soft)]">{e.classification} · {e.agency}</p>
                 </div>
               ))}
             </div>
@@ -791,10 +791,10 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
             </p>
             <div className="space-y-1.5">
               {profile.carrierRefs.map((c) => (
-                <div key={c.dotNumber} className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5">
+                <div key={c.dotNumber} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-4 py-2.5">
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-gray-900 truncate">{c.legalName}</p>
-                    <p className="text-[11px] text-gray-400 tabular-nums">USDOT {c.dotNumber}</p>
+                    <p className="text-xs font-medium text-[var(--ink)] truncate">{c.legalName}</p>
+                    <p className="text-[11px] text-[var(--ink-muted)] tabular-nums">USDOT {c.dotNumber}</p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {c.statusCode && (
@@ -852,9 +852,9 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
             <div className="space-y-1.5">
               {profile.courtCases.map((c, i) => (
                 <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer"
-                  className="block rounded-lg border border-gray-200 bg-gray-50 px-3.5 py-2.5 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                  <p className="text-xs font-medium text-gray-900 truncate">{c.caseName}</p>
-                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+                  className="block rounded-lg border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                  <p className="text-xs font-medium text-[var(--ink)] truncate">{c.caseName}</p>
+                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-[var(--ink-muted)]">
                     <span>{c.court}</span>
                     {c.dateFiled && <><span>·</span><span>{c.dateFiled}</span></>}
                     {c.status && c.status !== "unknown" && <><span>·</span><span>{c.status}</span></>}
@@ -875,8 +875,8 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
               {profile.bankruptcyCases.map((c, i) => (
                 <a key={i} href={c.url || undefined} target="_blank" rel="noopener noreferrer"
                   className="block rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 hover:bg-rose-100 transition-colors">
-                  <p className="text-xs font-medium text-gray-900 truncate">{c.caseName}</p>
-                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-gray-400">
+                  <p className="text-xs font-medium text-[var(--ink)] truncate">{c.caseName}</p>
+                  <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-[var(--ink-muted)]">
                     <span>{c.court}</span>
                     {c.chapter !== "unknown" && <><span>·</span><span className="font-semibold text-rose-600">{c.chapter}</span></>}
                     {c.dateFiled && <><span>·</span><span>{c.dateFiled}</span></>}
@@ -896,14 +896,14 @@ function OfficerProfilesCard({ profiles }: { profiles: OfficerProfile[] }) {
   if (profiles.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
+    <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
       <SectionHeader
         icon={<UsersIcon />}
         title="Officer Profiles"
         count={profiles.length}
         color="text-indigo-500"
       />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">
         Public government records for each registered officer — FMCSA carrier history, corporate roles, sanctions screening, and court records.
       </p>
       <div className="space-y-4">
@@ -934,12 +934,12 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
   const isPrivacy = ["us_wy", "us_nv", "us_nm", "us_sd"].includes(company.jurisdiction);
 
   return (
-    <div className={`rounded-xl border p-4 ${isActive ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"}`}>
+    <div className={`rounded-xl border p-4 ${isActive ? "border-[var(--border)] bg-[var(--surface-1)]" : "border-[var(--border)] bg-[var(--surface-2)]"}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">{company.name}</p>
+          <p className="text-sm font-semibold text-[var(--ink)] truncate">{company.name}</p>
           {company.registeredAddress && (
-            <p className="mt-0.5 text-[11px] text-gray-400 truncate">{company.registeredAddress}</p>
+            <p className="mt-0.5 text-[11px] text-[var(--ink-muted)] truncate">{company.registeredAddress}</p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
@@ -957,14 +957,14 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ${
               isActive
                 ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                : "bg-gray-100 text-gray-600 ring-gray-300"
+                : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-300"
             }`}>
               {company.status}
             </span>
           )}
           {/* Company type */}
           {company.companyType && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-500 ring-1 ring-gray-200">
+            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--ink-soft)] ring-1 ring-gray-200">
               {company.companyType}
             </span>
           )}
@@ -972,7 +972,7 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
       </div>
 
       {/* Meta row */}
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-gray-400">
+      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-0.5 text-[11px] text-[var(--ink-muted)]">
         {company.companyNumber && <span>#{company.companyNumber}</span>}
         {company.incorporationDate && (
           <span>Formed {company.incorporationDate}</span>
@@ -984,21 +984,21 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
 
       {/* Officers */}
       {company.officers.length > 0 && (
-        <div className="mt-3 border-t border-gray-100 pt-3">
-          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+        <div className="mt-3 border-t border-[var(--border)] pt-3">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-muted)]">
             Registered Officers
           </p>
           <div className="space-y-1">
             {company.officers.map((o, i) => (
               <div key={i} className="flex items-center gap-2 text-[11px]">
-                <span className="font-medium text-gray-700">{o.name}</span>
+                <span className="font-medium text-[var(--ink-soft)]">{o.name}</span>
                 {o.position && (
                   <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-700 ring-1 ring-teal-200 capitalize">
                     {o.position}
                   </span>
                 )}
                 {o.endDate && (
-                  <span className="text-gray-400">(former)</span>
+                  <span className="text-[var(--ink-muted)]">(former)</span>
                 )}
               </div>
             ))}
@@ -1049,8 +1049,8 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
   const hasMediumSignal = network.riskSignals.some((s) => s.severity === "medium");
 
   return (
-    <div className={`bg-white border shadow-sm rounded-2xl p-5 ${
-      hasHighSignal ? "border-rose-200" : hasMediumSignal ? "border-amber-200" : "border-gray-200"
+    <div className={`bg-[var(--surface-1)] border shadow-sm rounded-2xl p-5 ${
+      hasHighSignal ? "border-rose-200" : hasMediumSignal ? "border-amber-200" : "border-[var(--border)]"
     }`}>
       <SectionHeader
         icon={<RegistryIcon />}
@@ -1058,7 +1058,7 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
         count={network.companyRegistrations.length}
         color={hasHighSignal ? "text-rose-500" : hasMediumSignal ? "text-amber-500" : "text-indigo-500"}
       />
-      <p className="mb-4 -mt-1 text-xs text-gray-400">
+      <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">
         Business registrations found across all 50 US state SOS databases via OpenCorporates.
       </p>
 
@@ -1073,7 +1073,7 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
                   ? "border-rose-200 bg-rose-50"
                   : sig.severity === "medium"
                   ? "border-amber-200 bg-amber-50"
-                  : "border-gray-200 bg-gray-50"
+                  : "border-[var(--border)] bg-[var(--surface-2)]"
               }`}
             >
               <div className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${
@@ -1081,11 +1081,11 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
               }`} />
               <div className="min-w-0">
                 <p className={`text-xs font-semibold ${
-                  sig.severity === "high" ? "text-rose-800" : sig.severity === "medium" ? "text-amber-800" : "text-gray-700"
+                  sig.severity === "high" ? "text-rose-800" : sig.severity === "medium" ? "text-amber-800" : "text-[var(--ink-soft)]"
                 }`}>
                   {sig.label}
                 </p>
-                <p className="text-[11px] text-gray-500">{sig.detail}</p>
+                <p className="text-[11px] text-[var(--ink-soft)]">{sig.detail}</p>
               </div>
             </div>
           ))}
@@ -1100,7 +1100,7 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-gray-400">No matching registrations found in state business databases.</p>
+        <p className="text-xs text-[var(--ink-muted)]">No matching registrations found in state business databases.</p>
       )}
     </div>
   );
@@ -1128,7 +1128,7 @@ export function BackgroundTab({
   }
 
   if (!data) {
-    return <p className="py-12 text-center text-base text-gray-400 tracking-wide">Background checks will load when this tab is selected.</p>;
+    return <p className="py-12 text-center text-base text-[var(--ink-muted)] tracking-wide">Background checks will load when this tab is selected.</p>;
   }
 
   const officerProfiles = data.officerProfiles ?? [];
@@ -1164,10 +1164,10 @@ export function BackgroundTab({
   if (isEmpty && data.errors.length === 0) {
     return (
       <div className="animate-fade-in">
-        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-10 text-center">
+        <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-10 text-center">
           <div className="mx-auto mb-4 text-emerald-600 flex justify-center"><ShieldCheckIcon /></div>
           <p className="text-sm font-medium text-emerald-600">No background findings</p>
-          <p className="mt-1.5 text-xs text-gray-400 max-w-xs mx-auto">
+          <p className="mt-1.5 text-xs text-[var(--ink-muted)] max-w-xs mx-auto">
             No officer cross-references, sanctions matches, exclusions, violations, court records, or corporate affiliations were found.
           </p>
         </div>
@@ -1181,12 +1181,12 @@ export function BackgroundTab({
 
       {/* AI Risk Narrative */}
       {data.riskNarrative ? (
-        <div className="bg-white border border-gray-200 shadow-sm rounded-2xl px-5 py-4">
+        <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl px-5 py-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 ring-1 ring-violet-600/20">AI Analysis</span>
-            <span className="text-[10px] text-gray-400">Generated by Claude</span>
+            <span className="text-[10px] text-[var(--ink-muted)]">Generated by Claude</span>
           </div>
-          <p className="text-sm leading-relaxed text-gray-700">{data.riskNarrative}</p>
+          <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{data.riskNarrative}</p>
         </div>
       ) : data.aiGated?.skipped ? (
         <AiUpgradePrompt reason={data.aiGated.reason} />

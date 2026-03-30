@@ -21,19 +21,6 @@ export function CommandPalette() {
 
   const commands: Command[] = [
     {
-      id: "carrier-lookup",
-      label: "Search Carriers",
-      description: "Look up carriers by USDOT or name",
-      action: () => router.push("/"),
-      icon: (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="7" cy="7" r="5" />
-          <path d="M14 14l-3.5-3.5" />
-        </svg>
-      ),
-      group: "Navigation",
-    },
-    {
       id: "dashboard",
       label: "Dashboard",
       description: "Return to dashboard overview",
@@ -47,6 +34,88 @@ export function CommandPalette() {
         </svg>
       ),
       group: "Navigation",
+    },
+    {
+      id: "carrier-lookup",
+      label: "Search Carriers",
+      description: "Look up carriers by USDOT or name",
+      action: () => router.push("/"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="7" cy="7" r="5" />
+          <path d="M14 14l-3.5-3.5" />
+        </svg>
+      ),
+      group: "Navigation",
+    },
+    {
+      id: "bulk",
+      label: "Bulk Screening",
+      description: "Screen up to 50 carriers at once",
+      action: () => router.push("/bulk"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="2" width="12" height="12" rx="2" />
+          <path d="M5 8h6M5 5h6M5 11h4" />
+        </svg>
+      ),
+      group: "Navigation",
+    },
+    {
+      id: "compare",
+      label: "Compare Carriers",
+      description: "Side-by-side carrier analysis",
+      action: () => router.push("/compare"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="3" width="5" height="10" rx="1" />
+          <rect x="10" y="3" width="5" height="10" rx="1" />
+          <path d="M8 5v6" />
+        </svg>
+      ),
+      group: "Navigation",
+    },
+    {
+      id: "map",
+      label: "Fleet Map",
+      description: "View carriers and crashes on map",
+      action: () => router.push("/map"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="1,3 6,1 10,3 15,1 15,13 10,15 6,13 1,15" />
+          <line x1="6" y1="1" x2="6" y2="13" />
+          <line x1="10" y1="3" x2="10" y2="15" />
+        </svg>
+      ),
+      group: "Navigation",
+    },
+    {
+      id: "teams",
+      label: "Teams",
+      description: "Manage your team workspace",
+      action: () => router.push("/teams"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="6" cy="5" r="2.5" />
+          <path d="M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" />
+          <circle cx="11.5" cy="5.5" r="2" />
+          <path d="M14.5 14c0-2-1.5-3.5-3-3.5" />
+        </svg>
+      ),
+      group: "Navigation",
+    },
+    {
+      id: "credits",
+      label: "Credits",
+      description: "Buy AI credits",
+      action: () => router.push("/credits"),
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="8" r="6" />
+          <path d="M8 5v6M5.5 8h5" />
+        </svg>
+      ),
+      group: "Account",
     },
     {
       id: "sign-out",
@@ -133,10 +202,10 @@ export function CommandPalette() {
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-lg animate-fade-in-scale rounded-xl border border-gray-200 bg-white shadow-2xl">
+      <div className="relative w-full max-w-lg animate-fade-in-scale rounded-xl shadow-2xl" style={{ background: "var(--surface-1)", border: "1px solid var(--border)" }}>
         {/* Search input */}
-        <div className="flex items-center gap-3 border-b border-gray-200 px-4 py-3">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border)" }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink-muted)" }}>
             <circle cx="7" cy="7" r="5" />
             <path d="M14 14l-3.5-3.5" />
           </svg>
@@ -150,23 +219,24 @@ export function CommandPalette() {
             }}
             onKeyDown={handleInputKeyDown}
             placeholder="Search commands..."
-            className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+            className="flex-1 bg-transparent text-sm outline-none"
+            style={{ color: "var(--ink)", }}
           />
-          <kbd className="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">
+          <kbd className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: "var(--surface-2)", color: "var(--ink-muted)", border: "1px solid var(--border)" }}>
             ESC
           </kbd>
         </div>
 
         {/* Results */}
-        <div className="max-h-64 overflow-y-auto p-2">
+        <div className="max-h-72 overflow-y-auto p-2">
           {flatFiltered.length === 0 && (
-            <p className="px-3 py-6 text-center text-sm text-gray-400">
+            <p className="px-3 py-6 text-center text-sm" style={{ color: "var(--ink-muted)" }}>
               No results found.
             </p>
           )}
           {Object.entries(grouped).map(([group, cmds]) => (
             <div key={group}>
-              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--ink-muted)" }}>
                 {group}
               </p>
               {cmds.map((cmd) => {
@@ -179,17 +249,17 @@ export function CommandPalette() {
                       setOpen(false);
                     }}
                     onMouseEnter={() => setActiveIndex(idx)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                      idx === activeIndex
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors`}
+                    style={{
+                      background: idx === activeIndex ? "var(--accent-soft)" : undefined,
+                      color: idx === activeIndex ? "var(--accent)" : "var(--ink-soft)",
+                    }}
                   >
-                    <span className="shrink-0 text-gray-400">{cmd.icon}</span>
+                    <span className="shrink-0" style={{ color: "var(--ink-muted)" }}>{cmd.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">{cmd.label}</p>
+                      <p className="font-medium" style={{ color: idx === activeIndex ? "var(--ink)" : undefined }}>{cmd.label}</p>
                       {cmd.description && (
-                        <p className="truncate text-xs text-gray-400">{cmd.description}</p>
+                        <p className="truncate text-xs" style={{ color: "var(--ink-muted)" }}>{cmd.description}</p>
                       )}
                     </div>
                   </button>
@@ -200,14 +270,14 @@ export function CommandPalette() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-4 border-t border-gray-200 px-4 py-2 text-[10px] text-gray-400">
+        <div className="flex items-center gap-4 px-4 py-2 text-[10px]" style={{ borderTop: "1px solid var(--border)", color: "var(--ink-muted)" }}>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-0.5 font-medium">&uarr;</kbd>
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-0.5 font-medium">&darr;</kbd>
+            <kbd className="rounded px-1 py-0.5 font-medium" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>&uarr;</kbd>
+            <kbd className="rounded px-1 py-0.5 font-medium" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>&darr;</kbd>
             Navigate
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="rounded border border-gray-200 bg-gray-50 px-1 py-0.5 font-medium">&crarr;</kbd>
+            <kbd className="rounded px-1 py-0.5 font-medium" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>&crarr;</kbd>
             Select
           </span>
         </div>

@@ -14,9 +14,19 @@
   --surface-2: #f3f4f6;
   --surface-3: #e5e7eb;
 
+  /* Ink (text) */
+  --ink: #111827;
+  --ink-soft: #6b7280;
+  --ink-muted: #9ca3af;
+
+  /* Borders */
+  --border: #e5e7eb;
+  --border-hover: #d1d5db;
+
   /* Accent */
   --accent: #6366f1;
   --accent-soft: rgba(99, 102, 241, 0.08);
+  --ring-accent: rgba(99, 102, 241, 0.2);
 }
 
 .dark {
@@ -24,7 +34,16 @@
   --surface-1: #0f0f13;
   --surface-2: #16161d;
   --surface-3: #1e1e28;
+
+  --ink: #e4e4e7;
+  --ink-soft: #a1a1aa;
+  --ink-muted: #71717a;
+
+  --border: #27272a;
+  --border-hover: #3f3f46;
+
   --accent-soft: rgba(99, 102, 241, 0.12);
+  --ring-accent: rgba(99, 102, 241, 0.3);
 }
 
 /* ── Base Resets ─────────────────────────────────────────────────── */
@@ -177,7 +196,19 @@ button {
 
 @layer utilities {
   .card {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    @apply rounded-xl shadow-sm;
+  }
+
+  .card-interactive {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    @apply rounded-xl shadow-sm transition-all;
+  }
+  .card-interactive:hover {
+    border-color: var(--border-hover);
+    @apply shadow-md;
   }
 
   .shimmer {
