@@ -8,7 +8,12 @@ export type AlertType =
   | "oos_order"
   | "insurance_lapse"
   | "basic_spike"
-  | "status_change";
+  | "status_change"
+  | "inspection_oos"
+  | "inspection_multi_violation"
+  | "violation_rate_spike"
+  | "enabler_high_risk_link"
+  | "enabler_critical_upgrade";
 
 export function deriveHealthStatus(
   usdotStatus: string | null,
