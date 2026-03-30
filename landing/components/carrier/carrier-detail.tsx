@@ -21,6 +21,7 @@ import { CostImpactTab } from "./tabs/cost-impact-tab";
 import { DriverScorecardTab } from "./tabs/driver-scorecard-tab";
 import { EnforcementTab } from "./tabs/enforcement-tab";
 import { EnablerWarningPanel } from "../enablers/enabler-risk-badge";
+import { ViolationSparkline, type MonthlyViolationData } from "./violation-sparkline";
 import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData, FleetVulnerabilityReport, CostImpactReport, DriverScorecardData, HeatmapData, CarrierEnablersData } from "./types";
 
 const SAFETY_RATING_COLORS: Record<string, string> = {
@@ -152,6 +153,9 @@ export function CarrierDetailView({
   // Lazy enabler data state
   const [enablerData, setEnablerData] = useState<CarrierEnablersData | null>(null);
   const [enablerLoading, setEnablerLoading] = useState(false);
+
+  // Violation trend sparkline data (eagerly loaded)
+  const [violationTrend, setViolationTrend] = useState<MonthlyViolationData[] | null>(null);
 
   // Tabs that need inspections data: overview, safety, inspections
   const needsInspections =
@@ -346,6 +350,15 @@ export function CarrierDetailView({
       .catch(() => {})
       .finally(() => setEnablerLoading(false));
   }, [activeTab, c.dot_number, enablerData, enablerLoading]);
+
+  // Eagerly load violation trend for sparkline on overview
+  useEffect(() => {
+    fetch(`/api/carriers/${c.dot_number}/violation-trend`)
+      .then((res) => { if (!res.ok) throw new Error(`${res.status}`); return res.json(); })
+      .then((data: { months: MonthlyViolationData[] }) => setViolationTrend(data.months))
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [c.dot_number]);
 
   // Also eagerly load enabler data for overview warning panel
   useEffect(() => {
@@ -580,6 +593,20 @@ export function CarrierDetailView({
               enablers={enablerData.enablers}
               warnings={enablerData.warnings}
             />
+          )}
+          {activeTab === "overview" && violationTrend && violationTrend.some((m) => m.violations > 0) && (
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Violation Trend (12mo)</p>
+                  <p className="mt-0.5 text-[10px] text-gray-400">
+                    <span className="text-gray-500">&#x2014;</span> total &nbsp;
+                    <span className="text-rose-500">&#x2014;</span> OOS
+                  </p>
+                </div>
+                <ViolationSparkline monthlyData={violationTrend} />
+              </div>
+            </div>
           )}
           {activeTab === "overview" && (
             <OverviewTab

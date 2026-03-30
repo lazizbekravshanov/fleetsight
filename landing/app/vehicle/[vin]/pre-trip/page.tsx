@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { generatePreTripFocus } from "@/lib/inspections/pre-trip";
+import { PrintButton } from "./print-button";
 
 export const metadata: Metadata = {
   title: "Pre-Trip Focus Sheet | FleetSight",
@@ -83,21 +84,7 @@ export default async function PreTripFocusPage({
           display: "flex",
           gap: 8,
         }}>
-          <button
-            onClick={() => window.print()}
-            style={{
-              background: "#1e3a5f",
-              color: "#fff",
-              border: "none",
-              padding: "10px 20px",
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: "pointer",
-              letterSpacing: "0.03em",
-            }}
-          >
-            PRINT / SAVE AS PDF
-          </button>
+          <PrintButton />
         </div>
 
         <div style={{ maxWidth: 780, margin: "0 auto", padding: "24px 28px" }}>

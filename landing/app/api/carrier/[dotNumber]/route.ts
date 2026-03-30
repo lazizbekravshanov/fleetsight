@@ -13,6 +13,7 @@ import { getCarrierBasics, getCarrierAuthority, getCarrierOos, getCarrierProfile
 import { isSmartWayPartner } from "@/lib/smartway";
 import { checkVoipIndicators } from "@/lib/voip-check";
 import { checkSecretaryOfState } from "@/lib/opencorporates";
+import { ingestViolationsForCarrier } from "@/lib/inspections/ingestion";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -165,6 +166,10 @@ export async function GET(
       ? searchCarriersByAddress(carrier.phy_street, carrier.phy_city, carrier.phy_state).catch(() => [])
       : Promise.resolve([]),
   ]);
+
+  // Fire-and-forget: ingest violation-level data from Socrata on first view.
+  // This populates InspectionViolation + feeds VINs into chameleon detection.
+  ingestViolationsForCarrier(dotNumber).catch(() => {});
 
   // VIN-based affiliation count (lightweight query)
   const vinAffiliationCount = await prisma.carrierVehicle.count({

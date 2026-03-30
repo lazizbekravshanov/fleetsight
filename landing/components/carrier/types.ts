@@ -422,6 +422,17 @@ export type DriverRisk = {
   recommendation: string;
 };
 
+export type PeerComparison = {
+  peerGroup: string;
+  peerOOSRate: number;
+  yourOOSRate: number;
+  peerCleanRate: number;
+  yourCleanRate: number;
+  peerAvgViolationsPerInspection: number;
+  yourAvgViolationsPerInspection: number;
+  percentile: string;
+};
+
 export type FleetVulnerabilityReport = {
   dotNumber: number;
   period: { start: string; end: string };
@@ -438,6 +449,7 @@ export type FleetVulnerabilityReport = {
     ifTop3Fixed: number;
     methodology: string;
   };
+  peerComparison: PeerComparison | null;
 };
 
 export type CostImpactReport = {
