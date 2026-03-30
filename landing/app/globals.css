@@ -8,14 +8,22 @@
   --font-sans: "Inter", "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", "SFMono-Regular", Menlo, monospace;
 
-  /* Dark surface hierarchy */
+  /* Light surface hierarchy */
+  --surface-0: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+  --surface-3: #e5e7eb;
+
+  /* Accent */
+  --accent: #6366f1;
+  --accent-soft: rgba(99, 102, 241, 0.08);
+}
+
+.dark {
   --surface-0: #09090b;
   --surface-1: #0f0f13;
   --surface-2: #16161d;
   --surface-3: #1e1e28;
-
-  /* Accent */
-  --accent: #6366f1;
   --accent-soft: rgba(99, 102, 241, 0.12);
 }
 

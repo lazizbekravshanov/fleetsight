@@ -4,6 +4,7 @@ import { getServerAuthSession } from "@/auth";
 import { CarrierSnapshot } from "@/components/carrier-snapshot";
 import { OpenClawConnectCard } from "@/components/openclaw-connect-card";
 import { SignOutButton } from "@/components/signout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { WatchlistSection } from "@/components/dashboard/watchlist-section";
 import { RecentSearchesSection } from "@/components/dashboard/recent-searches-section";
@@ -46,7 +47,7 @@ export default async function DashboardPage() {
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900">
+    <main className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#09090b] dark:text-zinc-100">
       <CommandPalette />
 
       <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
@@ -56,23 +57,24 @@ export default async function DashboardPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
               FleetSight
             </p>
-            <h1 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-semibold text-gray-900 dark:text-zinc-100 sm:text-3xl">
               {greeting}, {user.profile.companyName}
             </h1>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-zinc-400">
               <span>{user.email}</span>
-              <span className="hidden sm:inline text-gray-300">|</span>
+              <span className="hidden sm:inline text-gray-300 dark:text-zinc-600">|</span>
               <span>USDOT {user.profile.usdotNumber}</span>
-              <span className="hidden sm:inline text-gray-300">|</span>
+              <span className="hidden sm:inline text-gray-300 dark:text-zinc-600">|</span>
               <Link href="/credits" className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-700">
                 {creditBalance} AI credits
               </Link>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <kbd className="hidden rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-medium text-gray-400 shadow-sm sm:inline-block">
+            <kbd className="hidden rounded-lg border border-gray-200 bg-white px-2 py-1 text-[10px] font-medium text-gray-400 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-500 sm:inline-block">
               Cmd+K
             </kbd>
+            <ThemeToggle />
             <SignOutButton />
           </div>
         </header>
@@ -100,10 +102,10 @@ export default async function DashboardPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="grid gap-5 sm:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/"
-              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-indigo-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500/40"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-100">
@@ -113,15 +115,15 @@ export default async function DashboardPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Carrier Lookup</h3>
-                  <p className="text-xs text-gray-500">Search by USDOT or name</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Carrier Lookup</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">Search by USDOT or name</p>
                 </div>
               </div>
             </Link>
 
             <Link
               href="/bulk"
-              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-emerald-200"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-emerald-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-500/40"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition group-hover:bg-emerald-100">
@@ -131,15 +133,15 @@ export default async function DashboardPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Bulk Screening</h3>
-                  <p className="text-xs text-gray-500">Screen up to 50 carriers</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Bulk Screening</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">Screen up to 50 carriers</p>
                 </div>
               </div>
             </Link>
 
             <Link
               href="/credits"
-              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-violet-200"
+              className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-violet-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-violet-500/40"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-600 transition group-hover:bg-violet-100">
@@ -149,8 +151,57 @@ export default async function DashboardPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Buy AI Credits</h3>
-                  <p className="text-xs text-gray-500">{creditBalance} credits remaining</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Buy AI Credits</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">{creditBalance} credits remaining</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/compare" className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-amber-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-amber-500/40">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600 transition group-hover:bg-amber-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="3" width="5" height="10" rx="1" />
+                    <rect x="10" y="3" width="5" height="10" rx="1" />
+                    <path d="M8 5v6" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Compare Carriers</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">Side-by-side analysis</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/map" className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-sky-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-sky-500/40">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition group-hover:bg-sky-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="1,3 6,1 10,3 15,1 15,13 10,15 6,13 1,15" />
+                    <line x1="6" y1="1" x2="6" y2="13" />
+                    <line x1="10" y1="3" x2="10" y2="15" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Fleet Map</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">Carriers &amp; crashes on map</p>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/teams" className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-teal-200 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-teal-500/40">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-600 transition group-hover:bg-teal-100">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="6" cy="5" r="2.5" />
+                    <path d="M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" />
+                    <circle cx="11.5" cy="5.5" r="2" />
+                    <path d="M14.5 14c0-2 -1.5-3.5-3-3.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">Teams</h3>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">Collaborate with your team</p>
                 </div>
               </div>
             </Link>

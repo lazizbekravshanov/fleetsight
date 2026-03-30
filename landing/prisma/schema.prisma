@@ -27,8 +27,68 @@ model User {
   monitoredRosters    MonitoredRoster[]
   monitoringAlerts    MonitoringAlert[]
   communityReports    CommunityReport[]
+  teamMemberships     TeamMember[]
 
   @@index([createdAt])
+}
+
+// ── Team / Multi-user Workspaces ────────────────────────────────
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  members     TeamMember[]
+  sharedWatchlist TeamWatchedCarrier[]
+  sharedNotes    TeamNote[]
+
+  @@index([slug])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+model TeamWatchedCarrier {
+  id              String    @id @default(cuid())
+  teamId          String
+  dotNumber       String
+  legalName       String
+  addedByUserId   String
+  lastCheckedAt   DateTime?
+  statusChanged   Boolean   @default(false)
+  addedAt         DateTime  @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, dotNumber])
+  @@index([teamId])
+}
+
+model TeamNote {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  dotNumber String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId, dotNumber])
 }
 
 model CarrierNote {

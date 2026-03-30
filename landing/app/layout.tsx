@@ -1,15 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  themeColor: "#6366f1",
+};
+
 export const metadata: Metadata = {
   title: "FleetSight | AI Verification Platform for U.S. Transportation",
   description:
     "AI-powered carrier verification and risk intelligence across USDOT, FMCSA, authority status, crash trends, and affiliation risk.",
   metadataBase: new URL("https://fleetsight.local"),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "FleetSight",
+  },
   openGraph: {
     title: "FleetSight",
     description:
@@ -30,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth dark">
-      <body className={`${inter.className} bg-[#09090b] text-zinc-100 antialiased`}>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <body className={`${inter.className} bg-white text-gray-900 dark:bg-[#09090b] dark:text-zinc-100 antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
