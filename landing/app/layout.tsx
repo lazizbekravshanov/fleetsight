@@ -1,12 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"] });
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
-  themeColor: "#fafaf8",
+  themeColor: "#f5f3ee",
 };
 
 export const metadata: Metadata = {
@@ -41,7 +46,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${inter.className} bg-[#fafaf8] text-[#1a1a1a] antialiased`}>
+      <body className={`${inter.className} ${sourceSerif.variable} bg-[#f5f3ee] text-[#1a1917] antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

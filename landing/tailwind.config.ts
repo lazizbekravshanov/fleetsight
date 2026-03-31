@@ -26,6 +26,7 @@ const config: Config = {
         },
         accent: {
           DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
           soft: "var(--accent-soft)",
         },
       },
@@ -35,12 +36,13 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", ...defaultTheme.fontFamily.sans],
+        serif: ["var(--font-serif)", "Georgia", "Times New Roman", "serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        panel: "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)",
-        "card-sm": "0 1px 2px rgb(0 0 0 / 0.04)",
-        "card-md": "0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04)",
+        panel: "0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)",
+        "card-sm": "0 1px 2px rgb(0 0 0 / 0.03)",
+        "card-md": "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.03)",
       },
       animation: {
         "fade-in": "fade-in 0.3s ease-out",

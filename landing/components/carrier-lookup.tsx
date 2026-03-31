@@ -38,17 +38,17 @@ type CarrierDetail = {
 type Tab = "overview" | "inspections" | "crashes";
 
 const BADGE_COLORS = {
-  blue: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
-  purple: "bg-purple-50 text-purple-700 ring-1 ring-purple-600/20",
-  amber: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
-  slate: "bg-gray-100 text-gray-600 ring-1 ring-gray-400/20",
+  blue: "bg-blue-50 text-blue-800 ring-1 ring-blue-200",
+  purple: "bg-purple-50 text-purple-800 ring-1 ring-purple-200",
+  amber: "bg-amber-50 text-amber-800 ring-1 ring-amber-200",
+  slate: "bg-stone-100 text-stone-600 ring-1 ring-stone-200",
 } as const;
 
 const BORDER_COLORS = {
-  blue: "border-l-indigo-400",
-  purple: "border-l-purple-400",
-  amber: "border-l-amber-400",
-  slate: "border-l-gray-300",
+  blue: "border-l-blue-300",
+  purple: "border-l-purple-300",
+  amber: "border-l-amber-300",
+  slate: "border-l-stone-300",
 } as const;
 
 /* ── Stats Data ─────────────────────────────────────────────────── */
@@ -90,7 +90,7 @@ function SkeletonRows({ count = 3 }: { count?: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
-          className="flex items-center gap-4 rounded-xl border border-border bg-white p-5"
+          className="flex items-center gap-4 rounded-xl border border-border bg-surface-1 p-5"
         >
           <div className="h-3 w-2/5 rounded-full bg-surface-3" />
           <div className="h-3 w-1/5 rounded-full bg-surface-3" />
@@ -161,36 +161,34 @@ export function CarrierLookup() {
   return (
     <main className="min-h-screen bg-surface-0 text-ink">
       {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="border-b border-border bg-white">
+      <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
-          <p className="text-sm font-semibold tracking-wide text-ink">
+          <p className="font-serif text-base font-semibold text-ink">
             FleetSight
           </p>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-ink-muted">
-              FMCSA &middot; USDOT
-            </span>
-          </div>
+          <span className="text-xs text-ink-muted tracking-wide">
+            FMCSA &middot; USDOT
+          </span>
         </div>
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────── */}
       <div className="mx-auto max-w-3xl px-6">
-        <div className={`text-center transition-all duration-500 ${showLanding ? "pt-20 pb-6" : "pt-10 pb-4"}`}>
+        <div className={`text-center transition-all duration-500 ${showLanding ? "pt-24 pb-6" : "pt-10 pb-4"}`}>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className={`font-semibold tracking-tight text-ink transition-all duration-500 ${
-              showLanding ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"
+            <h1 className={`font-serif font-semibold tracking-tight text-ink transition-all duration-500 ${
+              showLanding ? "text-4xl sm:text-5xl" : "text-xl sm:text-2xl"
             }`}>
-              {showLanding ? "FMCSA Carrier Intelligence" : "FMCSA Carrier Lookup"}
+              {showLanding ? "Carrier intelligence,\u2003simplified." : "FMCSA Carrier Lookup"}
             </h1>
 
             {showLanding && (
-              <p className="mx-auto mt-3 max-w-lg text-base text-ink-soft leading-relaxed">
-                Search 4.4 million registered carriers, brokers, and freight forwarders.
+              <p className="mx-auto mt-4 max-w-md text-[15px] text-ink-soft leading-relaxed">
+                Search 4.4 million FMCSA-registered carriers, brokers, and freight forwarders.
                 Inspect safety records, crash history, and compliance data.
               </p>
             )}
@@ -203,7 +201,7 @@ export function CarrierLookup() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className={`mx-auto flex max-w-xl gap-2 transition-all duration-500 ${
-              showLanding ? "mt-6" : "mt-3"
+              showLanding ? "mt-8" : "mt-3"
             }`}
           >
             <div className="relative flex-1">
@@ -225,13 +223,13 @@ export function CarrierLookup() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="DOT number or company name..."
-                className="w-full rounded-lg border border-border bg-white py-2.5 pl-10 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted transition-colors focus:border-accent focus:ring-2 focus:ring-accent/10"
+                className="w-full rounded-lg border border-border bg-surface-1 py-2.5 pl-10 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted transition-colors focus:border-accent focus:ring-2 focus:ring-accent/12"
               />
             </div>
             <button
               type="submit"
               disabled={searching}
-              className="rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-ink/85 disabled:opacity-50"
+              className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
             >
               {searching ? "Searching..." : "Search"}
             </button>
@@ -243,14 +241,14 @@ export function CarrierLookup() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.25 }}
-              className="mx-auto mt-8 flex max-w-md justify-between"
+              className="mx-auto mt-10 flex max-w-md justify-between"
             >
               {HERO_STATS.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <p className="text-lg font-semibold text-ink">
+                  <p className="font-serif text-lg font-semibold text-ink">
                     {stat.value}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-ink-muted uppercase tracking-wider">
+                  <p className="mt-0.5 text-[10px] text-ink-muted uppercase tracking-[0.12em]">
                     {stat.label}
                   </p>
                 </div>
@@ -305,10 +303,10 @@ export function CarrierLookup() {
                   >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2.5 text-left transition-colors hover:bg-surface-2 ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2.5 text-left transition-colors hover:bg-surface-2/60 ${
                         selectedDot === r.dotNumber
-                          ? "bg-surface-2 ring-1 ring-accent/20"
-                          : "bg-white"
+                          ? "bg-surface-2/60 ring-1 ring-accent/20"
+                          : "bg-surface-1"
                       }`}
                     >
                       <div className="min-w-0 flex-1">
@@ -322,33 +320,26 @@ export function CarrierLookup() {
                         </p>
                         <p className="text-xs text-ink-muted">
                           DOT {r.dotNumber}
-                          {r.phyState && (
-                            <span className="ml-2">{r.phyState}</span>
-                          )}
+                          {r.phyState && <span className="ml-2">{r.phyState}</span>}
                           {r.powerUnits != null && (
                             <span className="ml-2">
-                              {r.powerUnits} power unit
-                              {r.powerUnits !== 1 ? "s" : ""}
+                              {r.powerUnits} power unit{r.powerUnits !== 1 ? "s" : ""}
                             </span>
                           )}
                         </p>
                       </div>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
                         {r.classdef && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
-                          >
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_COLORS[badge.color]}`}>
                             {badge.label}
                           </span>
                         )}
                         {r.statusCode && (
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                              r.statusCode === "A"
-                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                                : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                            }`}
-                          >
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            r.statusCode === "A"
+                              ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
+                              : "bg-rose-50 text-rose-800 ring-1 ring-rose-200"
+                          }`}>
                             {decodeStatus(r.statusCode)}
                           </span>
                         )}
@@ -371,7 +362,7 @@ export function CarrierLookup() {
           >
             {detailLoading && <SkeletonRows />}
             {detailError && (
-              <p className="text-center text-sm text-rose-600">{detailError}</p>
+              <p className="text-center text-sm text-rose-700">{detailError}</p>
             )}
             {detail && <CarrierDetailView detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
           </motion.div>
@@ -384,17 +375,46 @@ export function CarrierLookup() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.35 }}
           >
-            <div className="mt-16 border-t border-border pt-12">
-              <p className="mb-6 text-center text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">
+            {/* Info Section */}
+            <div className="mt-20 border-t border-border pt-14">
+              <div className="mx-auto max-w-xl text-center">
+                <p className="font-serif text-xl font-semibold text-ink">
+                  The problem
+                </p>
+                <p className="mt-4 text-sm text-ink-soft leading-relaxed">
+                  Every year, commercial vehicle crashes kill approximately 5,000 people
+                  and injure over 160,000 in the United States. Unsafe carriers with
+                  documented crash histories and safety violations can dissolve their
+                  companies and re-register under new names — effectively resetting their
+                  records. FMCSA has no automated system to detect this.
+                </p>
+              </div>
+              <div className="mx-auto mt-10 max-w-xl text-center">
+                <p className="font-serif text-xl font-semibold text-ink">
+                  How FleetSight helps
+                </p>
+                <p className="mt-4 text-sm text-ink-soft leading-relaxed">
+                  FleetSight indexes the full 4.4 million record FMCSA national carrier
+                  registry and applies graph-based entity resolution to detect chameleon
+                  carriers — operators who share phone numbers, addresses, EINs, and
+                  principals with previously flagged entities. It gives freight brokers,
+                  insurers, and compliance teams the intelligence to identify high-risk
+                  carriers before contracting — not after a preventable incident.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-20 border-t border-border pt-14">
+              <p className="mb-8 text-center font-serif text-xl font-semibold text-ink">
                 What FleetSight does
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {FEATURES.map((f) => (
                   <div
                     key={f.title}
-                    className="rounded-xl border border-border bg-white p-5"
+                    className="rounded-xl border border-border bg-surface-1 p-5 transition-colors hover:border-border-hover"
                   >
-                    <h3 className="mb-1.5 text-sm font-medium text-ink">
+                    <h3 className="mb-1.5 text-sm font-semibold text-ink">
                       {f.title}
                     </h3>
                     <p className="text-sm text-ink-soft leading-relaxed">
@@ -405,27 +425,27 @@ export function CarrierLookup() {
               </div>
             </div>
 
-            <div className="mt-16 border-t border-border pt-10 text-center">
-              <p className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">
+            <div className="mt-20 border-t border-border pt-12 text-center">
+              <p className="mb-5 font-serif text-lg font-semibold text-ink">
                 Built on public federal data
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-8">
                 {["FMCSA", "USDOT", "SAFER", "NHTSA"].map((source) => (
                   <span
                     key={source}
-                    className="text-sm font-medium text-ink-soft"
+                    className="text-sm font-medium tracking-wide text-ink-muted"
                   >
                     {source}
                   </span>
                 ))}
               </div>
-              <p className="mx-auto mt-4 max-w-md text-xs text-ink-muted leading-relaxed">
+              <p className="mx-auto mt-5 max-w-md text-sm text-ink-soft leading-relaxed">
                 FleetSight indexes the complete FMCSA national carrier registry — 4.4 million records.
                 All data sourced from publicly available federal safety datasets.
               </p>
             </div>
 
-            <div className="mt-14 border-t border-border pt-6 text-center">
+            <div className="mt-16 border-t border-border pt-6 text-center">
               <p className="text-xs text-ink-muted">
                 FleetSight &middot; FMCSA &amp; USDOT Compliance Intelligence
               </p>
@@ -458,34 +478,26 @@ function CarrierDetailView({
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface-1 shadow-sm">
         <div className="h-0.5 bg-accent" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-lg font-semibold text-ink">
+              <h2 className="font-serif text-lg font-semibold text-ink">
                 {c.legal_name}
               </h2>
-              {c.dba_name && (
-                <p className="text-sm text-ink-soft">DBA {c.dba_name}</p>
-              )}
-              <p className="mt-1 text-xs text-ink-muted">
-                USDOT {c.dot_number}
-              </p>
+              {c.dba_name && <p className="text-sm text-ink-soft">DBA {c.dba_name}</p>}
+              <p className="mt-1 text-xs text-ink-muted">USDOT {c.dot_number}</p>
             </div>
             <div className="flex items-center gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}
-              >
+              <span className={`rounded-full px-3 py-1 text-xs font-medium ${BADGE_COLORS[badge.color]}`}>
                 {badge.label}
               </span>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  c.status_code === "A"
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                }`}
-              >
+              <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+                c.status_code === "A"
+                  ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
+                  : "bg-rose-50 text-rose-800 ring-1 ring-rose-200"
+              }`}>
                 {decodeStatus(c.status_code)}
               </span>
             </div>
@@ -505,9 +517,7 @@ function CarrierDetailView({
             }`}
           >
             {t.label}
-            {t.count != null && (
-              <span className="ml-1.5 text-xs text-ink-muted">({t.count})</span>
-            )}
+            {t.count != null && <span className="ml-1.5 text-xs text-ink-muted">({t.count})</span>}
           </button>
         ))}
       </div>
@@ -539,7 +549,7 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className="rounded-xl border border-border bg-white p-5">
+      <div className="rounded-xl border border-border bg-surface-1 p-5">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
           Company Info
@@ -563,7 +573,7 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
         </dl>
       </div>
 
-      <div className="rounded-xl border border-border bg-white p-5">
+      <div className="rounded-xl border border-border bg-surface-1 p-5">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
           SAFER Stats
@@ -587,7 +597,7 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
         </dl>
       </div>
 
-      <div className="rounded-xl border border-border bg-white p-5 md:col-span-2">
+      <div className="rounded-xl border border-border bg-surface-1 p-5 md:col-span-2">
         <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
           Authority &amp; Operating Status
@@ -605,11 +615,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
   const oosRecords = extractArray(oos, "oos");
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
-    return (
-      <p className="text-sm text-ink-muted">
-        Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.
-      </p>
-    );
+    return <p className="text-sm text-ink-muted">Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.</p>;
   }
 
   return (
@@ -627,23 +633,19 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
             </thead>
             <tbody>
               {authorityRecords.map((a, i) => (
-                <tr key={i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
+                <tr key={i} className="border-b border-border transition hover:bg-surface-2/60 even:bg-surface-2/30">
                   <td className="px-3 py-2">{str(a.authorityType) || str(a.authTypDesc) || "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
-                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                        : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                        ? "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200"
+                        : "bg-rose-50 text-rose-800 ring-1 ring-rose-200"
                     }`}>
                       {str(a.authStatusDesc) || str(a.authStatus) || "—"}
                     </span>
                   </td>
-                  <td className="px-3 py-2">
-                    {str(a.authGrantDate) ? new Date(str(a.authGrantDate)!).toLocaleDateString() : "—"}
-                  </td>
-                  <td className="hidden px-3 py-2 sm:table-cell">
-                    {str(a.docketNbr) || str(a.docketPrefix) ? `${str(a.docketPrefix) ?? ""}${str(a.docketNbr) ?? ""}` : "—"}
-                  </td>
+                  <td className="px-3 py-2">{str(a.authGrantDate) ? new Date(str(a.authGrantDate)!).toLocaleDateString() : "—"}</td>
+                  <td className="hidden px-3 py-2 sm:table-cell">{str(a.docketNbr) || str(a.docketPrefix) ? `${str(a.docketPrefix) ?? ""}${str(a.docketNbr) ?? ""}` : "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -653,9 +655,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
       {oosRecords.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
-            Out-of-Service Orders
-          </h4>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">Out-of-Service Orders</h4>
           <div className="max-h-[32rem] overflow-auto">
             <table className="w-full text-left text-xs text-ink-soft">
               <thead className="sticky top-0 bg-surface-2">
@@ -667,14 +667,10 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
               </thead>
               <tbody>
                 {oosRecords.map((o, i) => (
-                  <tr key={i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
+                  <tr key={i} className="border-b border-border transition hover:bg-surface-2/60 even:bg-surface-2/30">
                     <td className="px-3 py-2">{str(o.oosType) || str(o.oosTypeDesc) || "—"}</td>
-                    <td className="px-3 py-2">
-                      {str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}
-                    </td>
-                    <td className="px-3 py-2 text-ink-muted">
-                      {str(o.oosReason) || str(o.oosReasonDesc) || "—"}
-                    </td>
+                    <td className="px-3 py-2">{str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}</td>
+                    <td className="px-3 py-2 text-ink-muted">{str(o.oosReason) || str(o.oosReasonDesc) || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -683,9 +679,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
         </div>
       )}
 
-      <p className="text-xs text-ink-muted">
-        Insurance details (BIPD, cargo, bond) are not available via public API.
-      </p>
+      <p className="text-xs text-ink-muted">Insurance details (BIPD, cargo, bond) are not available via public API.</p>
     </div>
   );
 }
@@ -724,9 +718,7 @@ function Row({ label, value }: { label: string; value: string }) {
 /* ── Inspections Tab ────────────────────────────────────────────── */
 
 function InspectionsTab({ inspections }: { inspections: SocrataInspection[] }) {
-  if (inspections.length === 0) {
-    return <p className="py-12 text-center text-sm text-ink-muted">No inspection records found.</p>;
-  }
+  if (inspections.length === 0) return <p className="py-12 text-center text-sm text-ink-muted">No inspection records found.</p>;
 
   const totalViols = inspections.reduce((s, i) => s + (parseInt(i.viol_total ?? "0", 10) || 0), 0);
   const totalOos = inspections.reduce((s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0), 0);
@@ -739,7 +731,6 @@ function InspectionsTab({ inspections }: { inspections: SocrataInspection[] }) {
         <Stat label="Out of Service" value={totalOos} />
         <Stat label="OOS Rate" value={inspections.length > 0 ? `${((totalOos / inspections.length) * 100).toFixed(1)}%` : "N/A"} />
       </div>
-
       <div className="max-h-[32rem] overflow-auto rounded-xl border border-border">
         <table className="w-full text-left text-xs text-ink-soft">
           <thead className="sticky top-0 bg-surface-2">
@@ -757,26 +748,18 @@ function InspectionsTab({ inspections }: { inspections: SocrataInspection[] }) {
           </thead>
           <tbody>
             {inspections.map((insp, i) => (
-              <tr key={insp.inspection_id ?? i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
+              <tr key={insp.inspection_id ?? i} className="border-b border-border transition hover:bg-surface-2/60 even:bg-surface-2/30">
                 <td className="px-3 py-2 whitespace-nowrap">{insp.insp_date ? new Date(insp.insp_date).toLocaleDateString() : "—"}</td>
                 <td className="hidden px-3 py-2 sm:table-cell text-ink-muted">{insp.report_number ?? "—"}</td>
                 <td className="px-3 py-2">{insp.report_state ?? "—"}</td>
                 <td className="px-3 py-2">{decodeInspectionLevel(insp.insp_level_id)}</td>
                 <td className="px-3 py-2 text-right">{insp.viol_total ?? "0"}</td>
-                <td className="px-3 py-2 text-right">
-                  {parseInt(insp.oos_total ?? "0", 10) > 0 ? <span className="text-rose-600">{insp.oos_total}</span> : "0"}
-                </td>
+                <td className="px-3 py-2 text-right">{parseInt(insp.oos_total ?? "0", 10) > 0 ? <span className="text-rose-700">{insp.oos_total}</span> : "0"}</td>
                 <td className="hidden px-3 py-2 text-center md:table-cell">
-                  {insp.post_acc_ind === "Y" ? (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-600/20">Yes</span>
-                  ) : <span className="text-ink-muted">—</span>}
+                  {insp.post_acc_ind === "Y" ? <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200">Yes</span> : <span className="text-ink-muted">—</span>}
                 </td>
-                <td className="hidden px-3 py-2 text-right lg:table-cell text-ink-muted">
-                  {insp.gross_comb_veh_wt ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString() : "—"}
-                </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-ink-muted" title={insp.insp_facility ?? undefined}>
-                  {insp.location_desc ?? "—"}
-                </td>
+                <td className="hidden px-3 py-2 text-right lg:table-cell text-ink-muted">{insp.gross_comb_veh_wt ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString() : "—"}</td>
+                <td className="hidden px-3 py-2 sm:table-cell text-ink-muted" title={insp.insp_facility ?? undefined}>{insp.location_desc ?? "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -789,9 +772,7 @@ function InspectionsTab({ inspections }: { inspections: SocrataInspection[] }) {
 /* ── Crashes Tab ────────────────────────────────────────────────── */
 
 function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
-  if (crashes.length === 0) {
-    return <p className="py-12 text-center text-sm text-ink-muted">No crash records found.</p>;
-  }
+  if (crashes.length === 0) return <p className="py-12 text-center text-sm text-ink-muted">No crash records found.</p>;
 
   const totalFatalities = crashes.reduce((s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0), 0);
   const totalInjuries = crashes.reduce((s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0), 0);
@@ -805,7 +786,6 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
         <Stat label="Injuries" value={totalInjuries} warn={totalInjuries > 0} />
         <Stat label="Tow-Aways" value={totalTowAway} />
       </div>
-
       <div className="max-h-[32rem] overflow-auto rounded-xl border border-border">
         <table className="w-full text-left text-xs text-ink-soft">
           <thead className="sticky top-0 bg-surface-2">
@@ -823,7 +803,7 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
           </thead>
           <tbody>
             {crashes.map((cr, i) => (
-              <tr key={cr.crash_id ?? i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
+              <tr key={cr.crash_id ?? i} className="border-b border-border transition hover:bg-surface-2/60 even:bg-surface-2/30">
                 <td className="px-3 py-2 whitespace-nowrap">
                   {cr.report_date ? new Date(cr.report_date).toLocaleDateString() : "—"}
                   {cr.report_time && <span className="ml-1 text-ink-muted">{cr.report_time}</span>}
@@ -835,19 +815,13 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
                   {cr.truck_bus_ind === "TRUCK" ? "Truck" : cr.truck_bus_ind === "BUS" ? "Bus" : cr.truck_bus_ind ?? "—"}
                   {cr.vehicle_configuration_id && <span className="ml-1 text-ink-muted">({decodeVehicleConfig(cr.vehicle_configuration_id)})</span>}
                 </td>
-                <td className="px-3 py-2 text-right">
-                  {parseInt(cr.fatalities ?? "0", 10) > 0 ? <span className="text-rose-600">{cr.fatalities}</span> : "0"}
-                </td>
-                <td className="px-3 py-2 text-right">
-                  {parseInt(cr.injuries ?? "0", 10) > 0 ? <span className="text-amber-600">{cr.injuries}</span> : "0"}
-                </td>
+                <td className="px-3 py-2 text-right">{parseInt(cr.fatalities ?? "0", 10) > 0 ? <span className="text-rose-700">{cr.fatalities}</span> : "0"}</td>
+                <td className="px-3 py-2 text-right">{parseInt(cr.injuries ?? "0", 10) > 0 ? <span className="text-amber-700">{cr.injuries}</span> : "0"}</td>
                 <td className="px-3 py-2 text-right">{cr.tow_away ?? "0"}</td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.federal_recordable === "Y" ? (
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">Yes</span>
-                  ) : cr.federal_recordable === "N" ? (
-                    <span className="text-ink-muted">No</span>
-                  ) : <span className="text-ink-muted">—</span>}
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-800 ring-1 ring-blue-200">Yes</span>
+                  ) : cr.federal_recordable === "N" ? <span className="text-ink-muted">No</span> : <span className="text-ink-muted">—</span>}
                 </td>
               </tr>
             ))}
@@ -862,13 +836,11 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
 
 function Stat({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
       <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-accent"}`} />
       <div className="px-4 py-2">
         <p className="text-xs text-ink-muted">{label}</p>
-        <p className={`text-xl font-semibold ${warn ? "text-rose-600" : "text-ink"}`}>
-          {value}
-        </p>
+        <p className={`text-xl font-semibold ${warn ? "text-rose-700" : "text-ink"}`}>{value}</p>
       </div>
     </div>
   );
