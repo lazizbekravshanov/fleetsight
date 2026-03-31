@@ -8,42 +8,20 @@
   --font-sans: "Inter", "SF Pro Display", "Avenir Next", "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", "SFMono-Regular", Menlo, monospace;
 
-  /* Light surface hierarchy */
-  --surface-0: #ffffff;
-  --surface-1: #f9fafb;
-  --surface-2: #f3f4f6;
-  --surface-3: #e5e7eb;
+  --surface-0: #fafaf8;
+  --surface-1: #ffffff;
+  --surface-2: #f5f5f0;
+  --surface-3: #eceae4;
 
-  /* Ink (text) */
-  --ink: #111827;
-  --ink-soft: #6b7280;
-  --ink-muted: #9ca3af;
+  --ink: #1a1a1a;
+  --ink-soft: #6b6b6b;
+  --ink-muted: #9a9a9a;
 
-  /* Borders */
-  --border: #e5e7eb;
-  --border-hover: #d1d5db;
+  --border: #e8e6e1;
+  --border-hover: #d5d3cd;
 
-  /* Accent */
-  --accent: #6366f1;
-  --accent-soft: rgba(99, 102, 241, 0.08);
-  --ring-accent: rgba(99, 102, 241, 0.2);
-}
-
-.dark {
-  --surface-0: #09090b;
-  --surface-1: #0f0f13;
-  --surface-2: #16161d;
-  --surface-3: #1e1e28;
-
-  --ink: #e4e4e7;
-  --ink-soft: #a1a1aa;
-  --ink-muted: #71717a;
-
-  --border: #27272a;
-  --border-hover: #3f3f46;
-
-  --accent-soft: rgba(99, 102, 241, 0.12);
-  --ring-accent: rgba(99, 102, 241, 0.3);
+  --accent: #4f46e5;
+  --accent-soft: rgba(79, 70, 229, 0.06);
 }
 
 /* ── Base Resets ─────────────────────────────────────────────────── */
@@ -78,118 +56,17 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.25);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.4);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.25) transparent;
-}
-
-/* ── Background Effects ────────────────────────────────────────── */
-
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 64px 64px;
-}
-
-.glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-}
-
-.glow-orb-1 {
-  width: 600px;
-  height: 600px;
-  background: rgba(99, 102, 241, 0.15);
-  top: -200px;
-  left: -100px;
-}
-
-.glow-orb-2 {
-  width: 500px;
-  height: 500px;
-  background: rgba(168, 85, 247, 0.1);
-  top: -100px;
-  right: -150px;
-}
-
-.glow-orb-3 {
-  width: 400px;
-  height: 400px;
-  background: rgba(59, 130, 246, 0.08);
-  bottom: -200px;
-  left: 30%;
-}
-
-/* ── Text Effects ──────────────────────────────────────────────── */
-
-.text-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-accent {
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #818cf8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Glow Effects ──────────────────────────────────────────────── */
-
-.glow-input {
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3),
-              0 0 20px rgba(99, 102, 241, 0.1),
-              0 0 40px rgba(99, 102, 241, 0.05);
-}
-
-.glow-input:focus-within {
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.6),
-              0 0 30px rgba(99, 102, 241, 0.2),
-              0 0 60px rgba(99, 102, 241, 0.1);
-}
-
-.glow-button {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4),
-              0 0 40px rgba(99, 102, 241, 0.2);
-}
-
-.glow-button:hover {
-  box-shadow: 0 0 30px rgba(99, 102, 241, 0.5),
-              0 0 60px rgba(99, 102, 241, 0.3);
-}
-
-.glow-card {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.glow-card:hover {
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3),
-              0 0 20px rgba(99, 102, 241, 0.08),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* ── Glass Effect ──────────────────────────────────────────────── */
-
-.glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
 }
 
 /* ── Utility Layers ─────────────────────────────────────────────── */
@@ -214,9 +91,9 @@ button {
   .shimmer {
     background: linear-gradient(
       90deg,
-      rgba(99, 102, 241, 0.05) 0%,
-      rgba(99, 102, 241, 0.15) 50%,
-      rgba(99, 102, 241, 0.05) 100%
+      rgba(0, 0, 0, 0.03) 0%,
+      rgba(0, 0, 0, 0.06) 50%,
+      rgba(0, 0, 0, 0.03) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.8s ease-in-out infinite;
@@ -239,28 +116,18 @@ button {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fade-in-scale {
-  from { opacity: 0; transform: scale(0.97); }
+  from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
 }
 
 @keyframes pulse-soft {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* ── Print Styles ───────────────────────────────────────────────── */

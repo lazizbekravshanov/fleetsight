@@ -38,17 +38,17 @@ type CarrierDetail = {
 type Tab = "overview" | "inspections" | "crashes";
 
 const BADGE_COLORS = {
-  blue: "bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/30",
-  purple: "bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/30",
-  amber: "bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30",
-  slate: "bg-zinc-500/15 text-zinc-400 ring-1 ring-zinc-500/30",
+  blue: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
+  purple: "bg-purple-50 text-purple-700 ring-1 ring-purple-600/20",
+  amber: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
+  slate: "bg-gray-100 text-gray-600 ring-1 ring-gray-400/20",
 } as const;
 
 const BORDER_COLORS = {
-  blue: "border-l-indigo-500",
-  purple: "border-l-purple-500",
-  amber: "border-l-amber-500",
-  slate: "border-l-zinc-600",
+  blue: "border-l-indigo-400",
+  purple: "border-l-purple-400",
+  amber: "border-l-amber-400",
+  slate: "border-l-gray-300",
 } as const;
 
 /* ── Stats Data ─────────────────────────────────────────────────── */
@@ -62,38 +62,18 @@ const HERO_STATS = [
 
 const FEATURES = [
   {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-      </svg>
-    ),
     title: "Chameleon Carrier Detection",
     description: "Graph-based algorithm identifies carriers that dissolve and re-register under new identities to evade safety records.",
   },
   {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-      </svg>
-    ),
     title: "BASIC Safety Scores",
     description: "Full Behavior Analysis and Safety Improvement Categories — crash history, inspections, and violations at a glance.",
   },
   {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-      </svg>
-    ),
     title: "FMCSA & USDOT Compliance",
     description: "Authority status, out-of-service orders, operating credentials, and federal registration data — all in one view.",
   },
   {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-      </svg>
-    ),
     title: "Instant Carrier Search",
     description: "Sub-200ms fuzzy search across the entire national registry. Search by DOT number, company name, or DBA.",
   },
@@ -110,11 +90,11 @@ function SkeletonRows({ count = 3 }: { count?: number }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
-          className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-surface-1 p-5"
+          className="flex items-center gap-4 rounded-xl border border-border bg-white p-5"
         >
-          <div className="h-3 w-2/5 rounded-full bg-zinc-800" />
-          <div className="h-3 w-1/5 rounded-full bg-zinc-800" />
-          <div className="ml-auto h-3 w-1/6 rounded-full bg-zinc-800" />
+          <div className="h-3 w-2/5 rounded-full bg-surface-3" />
+          <div className="h-3 w-1/5 rounded-full bg-surface-3" />
+          <div className="ml-auto h-3 w-1/6 rounded-full bg-surface-3" />
         </motion.div>
       ))}
     </div>
@@ -179,163 +159,128 @@ export function CarrierLookup() {
   const showLanding = !searched && !searching;
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-zinc-100">
-      {/* ── Hero Section ────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-grid" />
-        <div className="glow-orb glow-orb-1" />
-        <div className="glow-orb glow-orb-2" />
-
-        {/* Header */}
-        <header className="relative z-10 border-b border-white/5">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse-glow" />
-              <p className="text-sm font-bold tracking-wider text-zinc-100 uppercase">
-                FleetSight
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="hidden sm:inline text-xs text-zinc-500">
-                FMCSA &middot; USDOT &middot; Federal Data
-              </span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-soft" />
-              <span className="text-xs text-emerald-400">Live</span>
-            </div>
-          </div>
-        </header>
-
-        {/* Hero Content */}
-        <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6">
-          <div className={`text-center transition-all duration-500 ${showLanding ? "pt-24 pb-8" : "pt-12 pb-6"}`}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              {showLanding && (
-                <p className="mb-4 inline-block rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300 tracking-wide">
-                  Protecting U.S. highways with data intelligence
-                </p>
-              )}
-
-              <h1 className={`font-bold tracking-tight transition-all duration-500 ${
-                showLanding
-                  ? "text-4xl sm:text-5xl md:text-6xl"
-                  : "text-2xl sm:text-3xl"
-              }`}>
-                <span className="text-gradient">
-                  {showLanding ? "Know every carrier." : "FMCSA Carrier Lookup"}
-                </span>
-                {showLanding && (
-                  <>
-                    <br />
-                    <span className="text-gradient-accent">
-                      Trust no one blindly.
-                    </span>
-                  </>
-                )}
-              </h1>
-
-              {showLanding && (
-                <p className="mx-auto mt-4 max-w-xl text-base text-zinc-400 leading-relaxed">
-                  Search 4.4 million FMCSA-registered carriers instantly. Inspect safety records,
-                  crash history, and compliance data — built to catch the bad actors
-                  before they cause harm.
-                </p>
-              )}
-            </motion.div>
-
-            {/* Search Bar */}
-            <motion.form
-              onSubmit={handleSearch}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15 }}
-              className={`mx-auto flex max-w-2xl gap-3 transition-all duration-500 ${
-                showLanding ? "mt-8" : "mt-4"
-              }`}
-            >
-              <div className="relative flex-1 glow-input rounded-xl transition-all duration-300">
-                <svg
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="DOT number or company name..."
-                  className="w-full rounded-xl border-0 bg-surface-1 py-3.5 pl-12 pr-4 text-base text-zinc-100 outline-none placeholder:text-zinc-600 focus:outline-none"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={searching}
-                className="glow-button rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-indigo-500 disabled:opacity-60"
-              >
-                {searching ? "Searching..." : "Search"}
-              </button>
-            </motion.form>
-
-            {/* Stats Row */}
-            {showLanding && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="mx-auto mt-10 grid max-w-2xl grid-cols-4 gap-3"
-              >
-                {HERO_STATS.map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <p className="text-xl font-bold text-gradient-accent sm:text-2xl">
-                      {stat.value}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-zinc-500 uppercase tracking-wider">
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </motion.div>
-            )}
+    <main className="min-h-screen bg-surface-0 text-ink">
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <header className="border-b border-border bg-white">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+          <p className="text-sm font-semibold tracking-wide text-ink">
+            FleetSight
+          </p>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-ink-muted">
+              FMCSA &middot; USDOT
+            </span>
           </div>
         </div>
-      </section>
+      </header>
+
+      {/* ── Hero ────────────────────────────────────────────────── */}
+      <div className="mx-auto max-w-3xl px-6">
+        <div className={`text-center transition-all duration-500 ${showLanding ? "pt-20 pb-6" : "pt-10 pb-4"}`}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className={`font-semibold tracking-tight text-ink transition-all duration-500 ${
+              showLanding ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"
+            }`}>
+              {showLanding ? "FMCSA Carrier Intelligence" : "FMCSA Carrier Lookup"}
+            </h1>
+
+            {showLanding && (
+              <p className="mx-auto mt-3 max-w-lg text-base text-ink-soft leading-relaxed">
+                Search 4.4 million registered carriers, brokers, and freight forwarders.
+                Inspect safety records, crash history, and compliance data.
+              </p>
+            )}
+          </motion.div>
+
+          {/* Search Bar */}
+          <motion.form
+            onSubmit={handleSearch}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className={`mx-auto flex max-w-xl gap-2 transition-all duration-500 ${
+              showLanding ? "mt-6" : "mt-3"
+            }`}
+          >
+            <div className="relative flex-1">
+              <svg
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="DOT number or company name..."
+                className="w-full rounded-lg border border-border bg-white py-2.5 pl-10 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted transition-colors focus:border-accent focus:ring-2 focus:ring-accent/10"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={searching}
+              className="rounded-lg bg-ink px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-ink/85 disabled:opacity-50"
+            >
+              {searching ? "Searching..." : "Search"}
+            </button>
+          </motion.form>
+
+          {/* Stats Row */}
+          {showLanding && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="mx-auto mt-8 flex max-w-md justify-between"
+            >
+              {HERO_STATS.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p className="text-lg font-semibold text-ink">
+                    {stat.value}
+                  </p>
+                  <p className="mt-0.5 text-[11px] text-ink-muted uppercase tracking-wider">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </div>
+      </div>
 
       {/* ── Results Area ────────────────────────────────────────── */}
-      <div className="relative z-10 mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-        {/* Loading */}
+      <div className="mx-auto max-w-3xl px-6 pb-16">
         {searching && (
-          <div className="mt-8">
+          <div className="mt-6">
             <SkeletonRows />
           </div>
         )}
 
-        {/* No results */}
         {searched && results.length === 0 && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-10 text-center text-base text-zinc-500 tracking-wide"
+            className="mt-10 text-center text-sm text-ink-muted"
           >
             No carriers found. Try a different search term.
           </motion.p>
         )}
 
-        {/* Results List */}
         {hasResults && (
-          <div className="mx-auto mt-6 max-w-2xl">
-            <p className="mb-2 text-xs text-zinc-500">
+          <div className="mx-auto mt-4 max-w-xl">
+            <p className="mb-2 text-xs text-ink-muted">
               {results.length} result{results.length !== 1 ? "s" : ""}
             </p>
             <motion.ul
@@ -344,7 +289,7 @@ export function CarrierLookup() {
               animate="visible"
               variants={{
                 hidden: {},
-                visible: { transition: { staggerChildren: 0.05 } },
+                visible: { transition: { staggerChildren: 0.04 } },
               }}
               className="space-y-1"
             >
@@ -354,28 +299,28 @@ export function CarrierLookup() {
                   <motion.li
                     key={r.dotNumber}
                     variants={{
-                      hidden: { opacity: 0, y: 12 },
+                      hidden: { opacity: 0, y: 8 },
                       visible: { opacity: 1, y: 0 },
                     }}
                   >
                     <button
                       onClick={() => handleSelect(r.dotNumber)}
-                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2.5 text-left transition-all duration-200 hover:bg-surface-2 ${
+                      className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2.5 text-left transition-colors hover:bg-surface-2 ${
                         selectedDot === r.dotNumber
-                          ? "bg-surface-2 ring-1 ring-indigo-500/40"
-                          : "bg-surface-1"
+                          ? "bg-surface-2 ring-1 ring-accent/20"
+                          : "bg-white"
                       }`}
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-zinc-100">
+                        <p className="truncate text-sm font-medium text-ink">
                           {r.legalName}
                           {r.dbaName && (
-                            <span className="ml-2 text-zinc-500">
+                            <span className="ml-2 text-ink-muted">
                               DBA {r.dbaName}
                             </span>
                           )}
                         </p>
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-ink-muted">
                           DOT {r.dotNumber}
                           {r.phyState && (
                             <span className="ml-2">{r.phyState}</span>
@@ -400,8 +345,8 @@ export function CarrierLookup() {
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                               r.statusCode === "A"
-                                ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30"
-                                : "bg-rose-500/15 text-rose-400 ring-1 ring-rose-500/30"
+                                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                                : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                             }`}
                           >
                             {decodeStatus(r.statusCode)}
@@ -416,48 +361,43 @@ export function CarrierLookup() {
           </div>
         )}
 
-        {/* Detail */}
         {selectedDot && (
           <motion.div
             key={selectedDot}
-            className="mt-8"
-            initial={{ opacity: 0, y: 20 }}
+            className="mt-6"
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
+            transition={{ duration: 0.3 }}
           >
             {detailLoading && <SkeletonRows />}
             {detailError && (
-              <p className="text-center text-sm text-rose-400">{detailError}</p>
+              <p className="text-center text-sm text-rose-600">{detailError}</p>
             )}
             {detail && <CarrierDetailView detail={detail} activeTab={activeTab} setActiveTab={setActiveTab} />}
           </motion.div>
         )}
 
-        {/* ── Landing Content (shown when no search) ─────────── */}
+        {/* ── Landing Content ──────────────────────────────────── */}
         {showLanding && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
+            transition={{ duration: 0.5, delay: 0.35 }}
           >
-            {/* Features Grid */}
-            <div className="mt-20">
-              <p className="mb-8 text-center text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                What FleetSight Does
+            <div className="mt-16 border-t border-border pt-12">
+              <p className="mb-6 text-center text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">
+                What FleetSight does
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {FEATURES.map((f) => (
                   <div
                     key={f.title}
-                    className="glass glow-card rounded-xl p-5 transition-all duration-300"
+                    className="rounded-xl border border-border bg-white p-5"
                   >
-                    <div className="mb-3 inline-flex rounded-lg bg-indigo-500/10 p-2 text-indigo-400">
-                      {f.icon}
-                    </div>
-                    <h3 className="mb-1 text-sm font-semibold text-zinc-200">
+                    <h3 className="mb-1.5 text-sm font-medium text-ink">
                       {f.title}
                     </h3>
-                    <p className="text-sm text-zinc-500 leading-relaxed">
+                    <p className="text-sm text-ink-soft leading-relaxed">
                       {f.description}
                     </p>
                   </div>
@@ -465,31 +405,28 @@ export function CarrierLookup() {
               </div>
             </div>
 
-            {/* Trust Section */}
-            <div className="mt-20 text-center">
-              <p className="mb-6 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                Built on Public Federal Data
+            <div className="mt-16 border-t border-border pt-10 text-center">
+              <p className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-ink-muted">
+                Built on public federal data
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-8">
+              <div className="flex flex-wrap items-center justify-center gap-6">
                 {["FMCSA", "USDOT", "SAFER", "NHTSA"].map((source) => (
                   <span
                     key={source}
-                    className="text-sm font-semibold tracking-wider text-zinc-600"
+                    className="text-sm font-medium text-ink-soft"
                   >
                     {source}
                   </span>
                 ))}
               </div>
-              <p className="mx-auto mt-6 max-w-lg text-xs text-zinc-600 leading-relaxed">
-                FleetSight indexes the complete FMCSA national carrier registry — 4.4 million records
-                of motor carriers, freight brokers, and freight forwarders.
+              <p className="mx-auto mt-4 max-w-md text-xs text-ink-muted leading-relaxed">
+                FleetSight indexes the complete FMCSA national carrier registry — 4.4 million records.
                 All data sourced from publicly available federal safety datasets.
               </p>
             </div>
 
-            {/* Footer */}
-            <div className="mt-20 border-t border-white/5 pt-8 text-center">
-              <p className="text-xs text-zinc-600">
+            <div className="mt-14 border-t border-border pt-6 text-center">
+              <p className="text-xs text-ink-muted">
                 FleetSight &middot; FMCSA &amp; USDOT Compliance Intelligence
               </p>
             </div>
@@ -521,19 +458,18 @@ function CarrierDetailView({
 
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Carrier Header */}
-      <div className="overflow-hidden rounded-xl border border-zinc-800 bg-surface-1 shadow-sm">
-        <div className="h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+      <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+        <div className="h-0.5 bg-accent" />
         <div className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-100">
+              <h2 className="text-lg font-semibold text-ink">
                 {c.legal_name}
               </h2>
               {c.dba_name && (
-                <p className="text-sm text-zinc-500">DBA {c.dba_name}</p>
+                <p className="text-sm text-ink-soft">DBA {c.dba_name}</p>
               )}
-              <p className="mt-1 text-xs text-zinc-600">
+              <p className="mt-1 text-xs text-ink-muted">
                 USDOT {c.dot_number}
               </p>
             </div>
@@ -546,8 +482,8 @@ function CarrierDetailView({
               <span
                 className={`rounded-full px-3 py-1 text-xs font-medium ${
                   c.status_code === "A"
-                    ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-rose-500/15 text-rose-400 ring-1 ring-rose-500/30"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                 }`}
               >
                 {decodeStatus(c.status_code)}
@@ -557,40 +493,36 @@ function CarrierDetailView({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="mt-4 flex gap-1 border-b border-zinc-800">
+      <div className="mt-4 flex gap-1 border-b border-border">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`rounded-t-lg px-4 py-2 text-sm font-medium transition ${
+            className={`px-4 py-2 text-sm font-medium transition ${
               activeTab === t.key
-                ? "border-b-2 border-indigo-500 text-indigo-400"
-                : "text-zinc-500 hover:text-zinc-300"
+                ? "border-b-2 border-accent text-accent"
+                : "text-ink-soft hover:text-ink"
             }`}
           >
             {t.label}
             {t.count != null && (
-              <span className="ml-1.5 text-xs text-zinc-600">({t.count})</span>
+              <span className="ml-1.5 text-xs text-ink-muted">({t.count})</span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
+          exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.2 }}
           className="mt-4"
         >
           {activeTab === "overview" && <OverviewTab carrier={c} authority={detail.authority} oos={detail.oos} />}
-          {activeTab === "inspections" && (
-            <InspectionsTab inspections={detail.inspections} />
-          )}
+          {activeTab === "inspections" && <InspectionsTab inspections={detail.inspections} />}
           {activeTab === "crashes" && <CrashesTab crashes={detail.crashes} />}
         </motion.div>
       </AnimatePresence>
@@ -601,81 +533,45 @@ function CarrierDetailView({
 /* ── Overview Tab ───────────────────────────────────────────────── */
 
 function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; authority: unknown; oos: unknown }) {
-  const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip]
-    .filter(Boolean)
-    .join(", ");
-  const mailingAddress = [c.carrier_mailing_street, c.carrier_mailing_city, c.carrier_mailing_state, c.carrier_mailing_zip]
-    .filter(Boolean)
-    .join(", ");
+  const address = [c.phy_street, c.phy_city, c.phy_state, c.phy_zip].filter(Boolean).join(", ");
+  const mailingAddress = [c.carrier_mailing_street, c.carrier_mailing_city, c.carrier_mailing_state, c.carrier_mailing_zip].filter(Boolean).join(", ");
   const classifications = decodeClassdef(c.classdef);
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* Company Info */}
-      <div className="rounded-xl border border-zinc-800 bg-surface-1 p-5">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
+      <div className="rounded-xl border border-border bg-white p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
           Company Info
         </h3>
         <dl className="space-y-2 text-sm">
           <Row label="Legal Name" value={c.legal_name} />
           {c.dba_name && <Row label="DBA Name" value={c.dba_name} />}
           {address && <Row label="Physical Address" value={address} />}
-          {mailingAddress && mailingAddress !== address && (
-            <Row label="Mailing Address" value={mailingAddress} />
-          )}
+          {mailingAddress && mailingAddress !== address && <Row label="Mailing Address" value={mailingAddress} />}
           {c.phone && <Row label="Phone" value={c.phone} />}
           {c.cell_phone && <Row label="Cell Phone" value={c.cell_phone} />}
           {c.fax && <Row label="Fax" value={c.fax} />}
           {c.email_address && <Row label="Email" value={c.email_address} />}
-          {c.company_officer_1 && (
-            <Row label="Officer 1" value={c.company_officer_1} />
-          )}
-          {c.company_officer_2 && (
-            <Row label="Officer 2" value={c.company_officer_2} />
-          )}
-          {c.business_org_desc && (
-            <Row label="Entity Type" value={c.business_org_desc} />
-          )}
-          {c.dun_bradstreet_no && (
-            <Row label="D&B Number" value={c.dun_bradstreet_no} />
-          )}
-          {c.add_date && (
-            <Row
-              label="Operating Since"
-              value={new Date(c.add_date).toLocaleDateString()}
-            />
-          )}
-          {c.mcs150_date && (
-            <Row
-              label="MCS-150 Date"
-              value={new Date(c.mcs150_date).toLocaleDateString()}
-            />
-          )}
-          {c.mcs150_mileage && (
-            <Row
-              label="MCS-150 Mileage"
-              value={`${parseInt(c.mcs150_mileage, 10).toLocaleString()} mi${c.mcs150_mileage_year ? ` (${c.mcs150_mileage_year})` : ""}`}
-            />
-          )}
+          {c.company_officer_1 && <Row label="Officer 1" value={c.company_officer_1} />}
+          {c.company_officer_2 && <Row label="Officer 2" value={c.company_officer_2} />}
+          {c.business_org_desc && <Row label="Entity Type" value={c.business_org_desc} />}
+          {c.dun_bradstreet_no && <Row label="D&B Number" value={c.dun_bradstreet_no} />}
+          {c.add_date && <Row label="Operating Since" value={new Date(c.add_date).toLocaleDateString()} />}
+          {c.mcs150_date && <Row label="MCS-150 Date" value={new Date(c.mcs150_date).toLocaleDateString()} />}
+          {c.mcs150_mileage && <Row label="MCS-150 Mileage" value={`${parseInt(c.mcs150_mileage, 10).toLocaleString()} mi${c.mcs150_mileage_year ? ` (${c.mcs150_mileage_year})` : ""}`} />}
         </dl>
       </div>
 
-      {/* SAFER Stats */}
-      <div className="rounded-xl border border-zinc-800 bg-surface-1 p-5">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+      <div className="rounded-xl border border-border bg-white p-5">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
           SAFER Stats
         </h3>
         <dl className="space-y-2 text-sm">
           <Row label="Status" value={decodeStatus(c.status_code)} />
-          <Row
-            label="Operation Type"
-            value={decodeOperation(c.carrier_operation)}
-          />
-          {classifications.length > 0 && (
-            <Row label="Classification" value={classifications.join(", ")} />
-          )}
+          <Row label="Operation Type" value={decodeOperation(c.carrier_operation)} />
+          {classifications.length > 0 && <Row label="Classification" value={classifications.join(", ")} />}
           <Row label="Fleet Size" value={decodeFleetSize(c.fleetsize)} />
           {c.power_units && <Row label="Power Units" value={c.power_units} />}
           {c.truck_units && <Row label="Trucks" value={c.truck_units} />}
@@ -683,32 +579,16 @@ function OverviewTab({ carrier: c, authority, oos }: { carrier: SocrataCarrier; 
           {c.owntract && <Row label="Owned Tractors" value={c.owntract} />}
           {c.owntrail && <Row label="Owned Trailers" value={c.owntrail} />}
           {c.owntruck && <Row label="Owned Trucks" value={c.owntruck} />}
-          {c.total_drivers && (
-            <Row label="Total Drivers" value={c.total_drivers} />
-          )}
+          {c.total_drivers && <Row label="Total Drivers" value={c.total_drivers} />}
           {c.total_cdl && <Row label="CDL Holders" value={c.total_cdl} />}
-          <Row
-            label="Hazmat"
-            value={c.hm_ind === "Y" ? "Yes" : "No"}
-          />
-          {c.carship && (
-            <Row
-              label="Cargo Carried"
-              value={decodeCarship(c.carship).join(", ")}
-            />
-          )}
-          {c.docket1 && (
-            <Row
-              label="Docket"
-              value={`${c.docket1prefix ?? ""}${c.docket1}`}
-            />
-          )}
+          <Row label="Hazmat" value={c.hm_ind === "Y" ? "Yes" : "No"} />
+          {c.carship && <Row label="Cargo Carried" value={decodeCarship(c.carship).join(", ")} />}
+          {c.docket1 && <Row label="Docket" value={`${c.docket1prefix ?? ""}${c.docket1}`} />}
         </dl>
       </div>
 
-      {/* Authority Info */}
-      <div className="rounded-xl border border-zinc-800 bg-surface-1 p-5 md:col-span-2">
-        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+      <div className="rounded-xl border border-border bg-white p-5 md:col-span-2">
+        <h3 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-soft">
           <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
           Authority &amp; Operating Status
         </h3>
@@ -726,7 +606,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
   if (authorityRecords.length === 0 && oosRecords.length === 0) {
     return (
-      <p className="text-sm text-zinc-600 tracking-wide">
+      <p className="text-sm text-ink-muted">
         Authority data not available. Ensure FMCSA_WEBKEY is configured to retrieve operating authority details.
       </p>
     );
@@ -736,9 +616,9 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
     <div className="space-y-4">
       {authorityRecords.length > 0 && (
         <div className="max-h-[32rem] overflow-auto">
-          <table className="w-full text-left text-xs text-zinc-300">
+          <table className="w-full text-left text-xs text-ink-soft">
             <thead className="sticky top-0 bg-surface-2">
-              <tr className="border-b border-zinc-700 text-zinc-500">
+              <tr className="border-b border-border text-ink-muted">
                 <th className="px-3 py-2">Authority Type</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Granted Date</th>
@@ -747,13 +627,13 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
             </thead>
             <tbody>
               {authorityRecords.map((a, i) => (
-                <tr key={i} className="border-b border-zinc-800 transition hover:bg-surface-2 even:bg-surface-2/50">
+                <tr key={i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
                   <td className="px-3 py-2">{str(a.authorityType) || str(a.authTypDesc) || "—"}</td>
                   <td className="px-3 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       str(a.authStatusDesc)?.toUpperCase() === "ACTIVE"
-                        ? "bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30"
-                        : "bg-rose-500/15 text-rose-400 ring-1 ring-rose-500/30"
+                        ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                        : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
                     }`}>
                       {str(a.authStatusDesc) || str(a.authStatus) || "—"}
                     </span>
@@ -773,13 +653,13 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
 
       {oosRecords.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-ink-muted">
             Out-of-Service Orders
           </h4>
           <div className="max-h-[32rem] overflow-auto">
-            <table className="w-full text-left text-xs text-zinc-300">
+            <table className="w-full text-left text-xs text-ink-soft">
               <thead className="sticky top-0 bg-surface-2">
-                <tr className="border-b border-zinc-700 text-zinc-500">
+                <tr className="border-b border-border text-ink-muted">
                   <th className="px-3 py-2">Type</th>
                   <th className="px-3 py-2">Effective Date</th>
                   <th className="px-3 py-2">Reason</th>
@@ -787,12 +667,12 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
               </thead>
               <tbody>
                 {oosRecords.map((o, i) => (
-                  <tr key={i} className="border-b border-zinc-800 transition hover:bg-surface-2 even:bg-surface-2/50">
+                  <tr key={i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
                     <td className="px-3 py-2">{str(o.oosType) || str(o.oosTypeDesc) || "—"}</td>
                     <td className="px-3 py-2">
                       {str(o.oosDate) || str(o.effectiveDate) ? new Date((str(o.oosDate) || str(o.effectiveDate))!).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-3 py-2 text-zinc-500">
+                    <td className="px-3 py-2 text-ink-muted">
                       {str(o.oosReason) || str(o.oosReasonDesc) || "—"}
                     </td>
                   </tr>
@@ -803,7 +683,7 @@ function AuthoritySection({ authority, oos }: { authority: unknown; oos: unknown
         </div>
       )}
 
-      <p className="text-xs text-zinc-600">
+      <p className="text-xs text-ink-muted">
         Insurance details (BIPD, cargo, bond) are not available via public API.
       </p>
     </div>
@@ -835,58 +715,35 @@ function str(v: unknown): string | null {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="shrink-0 text-zinc-500">{label}</dt>
-      <dd className="text-right text-zinc-200">{value}</dd>
+      <dt className="shrink-0 text-ink-soft">{label}</dt>
+      <dd className="text-right text-ink">{value}</dd>
     </div>
   );
 }
 
 /* ── Inspections Tab ────────────────────────────────────────────── */
 
-function InspectionsTab({
-  inspections,
-}: {
-  inspections: SocrataInspection[];
-}) {
+function InspectionsTab({ inspections }: { inspections: SocrataInspection[] }) {
   if (inspections.length === 0) {
-    return (
-      <p className="py-12 text-center text-base text-zinc-500 tracking-wide">
-        No inspection records found.
-      </p>
-    );
+    return <p className="py-12 text-center text-sm text-ink-muted">No inspection records found.</p>;
   }
 
-  const totalViols = inspections.reduce(
-    (s, i) => s + (parseInt(i.viol_total ?? "0", 10) || 0),
-    0
-  );
-  const totalOos = inspections.reduce(
-    (s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0),
-    0
-  );
+  const totalViols = inspections.reduce((s, i) => s + (parseInt(i.viol_total ?? "0", 10) || 0), 0);
+  const totalOos = inspections.reduce((s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0), 0);
 
   return (
     <div>
-      {/* Summary stats */}
-      <div className="mb-4 flex flex-wrap gap-4">
+      <div className="mb-4 flex flex-wrap gap-3">
         <Stat label="Total Inspections" value={inspections.length} />
         <Stat label="Total Violations" value={totalViols} />
         <Stat label="Out of Service" value={totalOos} />
-        <Stat
-          label="OOS Rate"
-          value={
-            inspections.length > 0
-              ? `${((totalOos / inspections.length) * 100).toFixed(1)}%`
-              : "N/A"
-          }
-        />
+        <Stat label="OOS Rate" value={inspections.length > 0 ? `${((totalOos / inspections.length) * 100).toFixed(1)}%` : "N/A"} />
       </div>
 
-      {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-zinc-800">
-        <table className="w-full text-left text-xs text-zinc-300">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-border">
+        <table className="w-full text-left text-xs text-ink-soft">
           <thead className="sticky top-0 bg-surface-2">
-            <tr className="border-b border-zinc-700 text-zinc-500">
+            <tr className="border-b border-border text-ink-muted">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
@@ -900,47 +757,24 @@ function InspectionsTab({
           </thead>
           <tbody>
             {inspections.map((insp, i) => (
-              <tr
-                key={insp.inspection_id ?? i}
-                className="border-b border-zinc-800 transition hover:bg-surface-2 even:bg-surface-2/50"
-              >
-                <td className="px-3 py-2 whitespace-nowrap">
-                  {insp.insp_date
-                    ? new Date(insp.insp_date).toLocaleDateString()
-                    : "—"}
-                </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-zinc-500">
-                  {insp.report_number ?? "—"}
-                </td>
+              <tr key={insp.inspection_id ?? i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
+                <td className="px-3 py-2 whitespace-nowrap">{insp.insp_date ? new Date(insp.insp_date).toLocaleDateString() : "—"}</td>
+                <td className="hidden px-3 py-2 sm:table-cell text-ink-muted">{insp.report_number ?? "—"}</td>
                 <td className="px-3 py-2">{insp.report_state ?? "—"}</td>
-                <td className="px-3 py-2">
-                  {decodeInspectionLevel(insp.insp_level_id)}
-                </td>
+                <td className="px-3 py-2">{decodeInspectionLevel(insp.insp_level_id)}</td>
+                <td className="px-3 py-2 text-right">{insp.viol_total ?? "0"}</td>
                 <td className="px-3 py-2 text-right">
-                  {insp.viol_total ?? "0"}
-                </td>
-                <td className="px-3 py-2 text-right">
-                  {parseInt(insp.oos_total ?? "0", 10) > 0 ? (
-                    <span className="text-rose-400">{insp.oos_total}</span>
-                  ) : (
-                    "0"
-                  )}
+                  {parseInt(insp.oos_total ?? "0", 10) > 0 ? <span className="text-rose-600">{insp.oos_total}</span> : "0"}
                 </td>
                 <td className="hidden px-3 py-2 text-center md:table-cell">
                   {insp.post_acc_ind === "Y" ? (
-                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-400 ring-1 ring-amber-500/30">
-                      Yes
-                    </span>
-                  ) : (
-                    <span className="text-zinc-600">—</span>
-                  )}
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-600/20">Yes</span>
+                  ) : <span className="text-ink-muted">—</span>}
                 </td>
-                <td className="hidden px-3 py-2 text-right lg:table-cell text-zinc-500">
-                  {insp.gross_comb_veh_wt
-                    ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString()
-                    : "—"}
+                <td className="hidden px-3 py-2 text-right lg:table-cell text-ink-muted">
+                  {insp.gross_comb_veh_wt ? parseInt(insp.gross_comb_veh_wt, 10).toLocaleString() : "—"}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-zinc-500" title={insp.insp_facility ?? undefined}>
+                <td className="hidden px-3 py-2 sm:table-cell text-ink-muted" title={insp.insp_facility ?? undefined}>
                   {insp.location_desc ?? "—"}
                 </td>
               </tr>
@@ -956,41 +790,26 @@ function InspectionsTab({
 
 function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
   if (crashes.length === 0) {
-    return (
-      <p className="py-12 text-center text-base text-zinc-500 tracking-wide">
-        No crash records found.
-      </p>
-    );
+    return <p className="py-12 text-center text-sm text-ink-muted">No crash records found.</p>;
   }
 
-  const totalFatalities = crashes.reduce(
-    (s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0),
-    0
-  );
-  const totalInjuries = crashes.reduce(
-    (s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0),
-    0
-  );
-  const totalTowAway = crashes.reduce(
-    (s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0),
-    0
-  );
+  const totalFatalities = crashes.reduce((s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0), 0);
+  const totalInjuries = crashes.reduce((s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0), 0);
+  const totalTowAway = crashes.reduce((s, c) => s + (parseInt(c.tow_away ?? "0", 10) || 0), 0);
 
   return (
     <div>
-      {/* Summary stats */}
-      <div className="mb-4 flex flex-wrap gap-4">
+      <div className="mb-4 flex flex-wrap gap-3">
         <Stat label="Total Crashes" value={crashes.length} />
         <Stat label="Fatalities" value={totalFatalities} warn />
         <Stat label="Injuries" value={totalInjuries} warn={totalInjuries > 0} />
         <Stat label="Tow-Aways" value={totalTowAway} />
       </div>
 
-      {/* Table */}
-      <div className="max-h-[32rem] overflow-auto rounded-xl border border-zinc-800">
-        <table className="w-full text-left text-xs text-zinc-300">
+      <div className="max-h-[32rem] overflow-auto rounded-xl border border-border">
+        <table className="w-full text-left text-xs text-ink-soft">
           <thead className="sticky top-0 bg-surface-2">
-            <tr className="border-b border-zinc-700 text-zinc-500">
+            <tr className="border-b border-border text-ink-muted">
               <th className="px-3 py-2">Date</th>
               <th className="hidden px-3 py-2 sm:table-cell">Report #</th>
               <th className="px-3 py-2">State</th>
@@ -1004,64 +823,31 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
           </thead>
           <tbody>
             {crashes.map((cr, i) => (
-              <tr
-                key={cr.crash_id ?? i}
-                className="border-b border-zinc-800 transition hover:bg-surface-2 even:bg-surface-2/50"
-              >
+              <tr key={cr.crash_id ?? i} className="border-b border-border transition hover:bg-surface-2 even:bg-surface-2/50">
                 <td className="px-3 py-2 whitespace-nowrap">
-                  {cr.report_date
-                    ? new Date(cr.report_date).toLocaleDateString()
-                    : "—"}
-                  {cr.report_time && (
-                    <span className="ml-1 text-zinc-500">{cr.report_time}</span>
-                  )}
+                  {cr.report_date ? new Date(cr.report_date).toLocaleDateString() : "—"}
+                  {cr.report_time && <span className="ml-1 text-ink-muted">{cr.report_time}</span>}
                 </td>
-                <td className="hidden px-3 py-2 sm:table-cell text-zinc-500">
-                  {cr.report_number ?? "—"}
-                </td>
+                <td className="hidden px-3 py-2 sm:table-cell text-ink-muted">{cr.report_number ?? "—"}</td>
                 <td className="px-3 py-2">{cr.report_state ?? "—"}</td>
-                <td className="hidden px-3 py-2 sm:table-cell">
-                  {cr.city ?? "—"}
-                </td>
-                <td className="hidden px-3 py-2 md:table-cell text-zinc-500" title={cr.vehicle_configuration_id ? decodeVehicleConfig(cr.vehicle_configuration_id) : undefined}>
-                  {cr.truck_bus_ind === "TRUCK"
-                    ? "Truck"
-                    : cr.truck_bus_ind === "BUS"
-                      ? "Bus"
-                      : cr.truck_bus_ind ?? "—"}
-                  {cr.vehicle_configuration_id && (
-                    <span className="ml-1 text-zinc-600">
-                      ({decodeVehicleConfig(cr.vehicle_configuration_id)})
-                    </span>
-                  )}
+                <td className="hidden px-3 py-2 sm:table-cell">{cr.city ?? "—"}</td>
+                <td className="hidden px-3 py-2 md:table-cell text-ink-muted" title={cr.vehicle_configuration_id ? decodeVehicleConfig(cr.vehicle_configuration_id) : undefined}>
+                  {cr.truck_bus_ind === "TRUCK" ? "Truck" : cr.truck_bus_ind === "BUS" ? "Bus" : cr.truck_bus_ind ?? "—"}
+                  {cr.vehicle_configuration_id && <span className="ml-1 text-ink-muted">({decodeVehicleConfig(cr.vehicle_configuration_id)})</span>}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {parseInt(cr.fatalities ?? "0", 10) > 0 ? (
-                    <span className="text-rose-400">{cr.fatalities}</span>
-                  ) : (
-                    "0"
-                  )}
+                  {parseInt(cr.fatalities ?? "0", 10) > 0 ? <span className="text-rose-600">{cr.fatalities}</span> : "0"}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {parseInt(cr.injuries ?? "0", 10) > 0 ? (
-                    <span className="text-amber-400">{cr.injuries}</span>
-                  ) : (
-                    "0"
-                  )}
+                  {parseInt(cr.injuries ?? "0", 10) > 0 ? <span className="text-amber-600">{cr.injuries}</span> : "0"}
                 </td>
-                <td className="px-3 py-2 text-right">
-                  {cr.tow_away ?? "0"}
-                </td>
+                <td className="px-3 py-2 text-right">{cr.tow_away ?? "0"}</td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.federal_recordable === "Y" ? (
-                    <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-xs font-medium text-indigo-400 ring-1 ring-indigo-500/30">
-                      Yes
-                    </span>
+                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">Yes</span>
                   ) : cr.federal_recordable === "N" ? (
-                    <span className="text-zinc-600">No</span>
-                  ) : (
-                    <span className="text-zinc-600">—</span>
-                  )}
+                    <span className="text-ink-muted">No</span>
+                  ) : <span className="text-ink-muted">—</span>}
                 </td>
               </tr>
             ))}
@@ -1074,25 +860,13 @@ function CrashesTab({ crashes }: { crashes: SocrataCrash[] }) {
 
 /* ── Shared ──────────────────────────────────────────────────────── */
 
-function Stat({
-  label,
-  value,
-  warn,
-}: {
-  label: string;
-  value: number | string;
-  warn?: boolean;
-}) {
+function Stat({ label, value, warn }: { label: string; value: number | string; warn?: boolean }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-800 bg-surface-1">
-      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-indigo-500"}`} />
+    <div className="overflow-hidden rounded-lg border border-border bg-white">
+      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-accent"}`} />
       <div className="px-4 py-2">
-        <p className="text-xs text-zinc-500">{label}</p>
-        <p
-          className={`text-xl font-semibold ${
-            warn ? "text-rose-400" : "text-zinc-100"
-          }`}
-        >
+        <p className="text-xs text-ink-muted">{label}</p>
+        <p className={`text-xl font-semibold ${warn ? "text-rose-600" : "text-ink"}`}>
           {value}
         </p>
       </div>

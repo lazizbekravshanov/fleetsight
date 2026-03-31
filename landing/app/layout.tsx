@@ -6,7 +6,7 @@ import { Providers } from "@/components/providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#6366f1",
+  themeColor: "#fafaf8",
 };
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "FleetSight",
   },
   openGraph: {
@@ -41,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-      <body className={`${inter.className} bg-white text-gray-900 dark:bg-[#09090b] dark:text-zinc-100 antialiased`}>
+      <body className={`${inter.className} bg-[#fafaf8] text-[#1a1a1a] antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
