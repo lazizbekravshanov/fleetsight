@@ -101,7 +101,7 @@ export function PreTripTab({
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
                   {item.rank}
                 </span>
                 <div>
@@ -139,7 +139,7 @@ export function PreTripTab({
             {/* Action items */}
             <div className="mt-3 space-y-2 border-t border-[var(--border)] pt-3">
               <div className="flex items-start gap-2">
-                <span className="mt-0.5 text-indigo-500">
+                <span className="mt-0.5 text-accent">
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M8 3v10M3 8h10" />
                   </svg>

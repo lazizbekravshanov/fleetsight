@@ -66,11 +66,11 @@ export function SubscriptionBanner() {
         : 0;
 
     return (
-      <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 shadow-sm">
+      <div className="rounded-xl border border-accent/30 bg-accent-soft/50 p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+              <span className="text-xs font-bold uppercase tracking-wider text-accent">
                 {TIER_NAMES[status.tier] ?? status.tier} Plan
               </span>
               {status.cancelAtPeriodEnd && (
@@ -79,14 +79,14 @@ export function SubscriptionBanner() {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-ink-soft">
               {status.carrierCount}/{limit === "unlimited" ? "unlimited" : limit} carriers monitored
             </p>
             {typeof limit === "number" && (
-              <div className="mt-1.5 h-1.5 w-48 overflow-hidden rounded-full bg-indigo-200">
+              <div className="mt-1.5 h-1.5 w-48 overflow-hidden rounded-full bg-accent-soft">
                 <div
                   className={`h-full rounded-full transition-all ${
-                    usagePercent > 90 ? "bg-rose-500" : usagePercent > 70 ? "bg-amber-500" : "bg-indigo-500"
+                    usagePercent > 90 ? "bg-rose-500" : usagePercent > 70 ? "bg-amber-500" : "bg-accent-soft0"
                   }`}
                   style={{ width: `${Math.min(100, usagePercent)}%` }}
                 />
@@ -96,7 +96,7 @@ export function SubscriptionBanner() {
           <button
             onClick={openPortal}
             disabled={portalLoading}
-            className="rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50 disabled:opacity-40"
+            className="rounded-lg border border-accent/30 bg-surface-1 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent-soft disabled:opacity-40"
           >
             {portalLoading ? "Loading..." : "Manage Subscription"}
           </button>
@@ -107,18 +107,18 @@ export function SubscriptionBanner() {
 
   // No subscription — show upgrade CTA
   return (
-    <div className="rounded-xl border border-gray-200 bg-gradient-to-r from-indigo-50 to-violet-50 p-4 shadow-sm">
+    <div className="rounded-xl border border-border bg-gradient-to-r from-indigo-50 to-violet-50 p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-gray-900">Upgrade to Continuous Monitoring</p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="text-sm font-semibold text-ink">Upgrade to Continuous Monitoring</p>
+          <p className="mt-0.5 text-xs text-ink-soft">
             Get automated fleet health checks every 6 hours with instant alerts.
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => startCheckout("starter")}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover"
           >
             Start at $49/mo
           </button>

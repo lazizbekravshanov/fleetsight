@@ -183,7 +183,7 @@ export function AICopilot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-lg transition-colors hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
           aria-label="Open AI Chat"
           title="AI Copilot (Cmd+J)"
         >
@@ -214,14 +214,14 @@ export function AICopilot() {
 
       {/* Sliding panel */}
       <div
-        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col border-l bg-white transition-transform duration-300 ease-in-out dark:bg-zinc-900 sm:w-96 ${
+        className={`fixed right-0 top-0 z-50 flex h-full w-full flex-col border-l bg-surface-1 transition-transform duration-300 ease-in-out dark:bg-surface-0 sm:w-96 ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } border-gray-200 dark:border-zinc-800`}
+        } border-border dark:border-border`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 dark:border-border">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4"
@@ -238,10 +238,10 @@ export function AICopilot() {
               </svg>
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+              <h2 className="text-sm font-semibold text-ink dark:text-ink">
                 FleetSight AI
               </h2>
-              <p className="text-xs text-gray-500 dark:text-zinc-400">
+              <p className="text-xs text-ink-soft dark:text-ink-muted">
                 Carrier intelligence assistant
               </p>
             </div>
@@ -250,7 +250,7 @@ export function AICopilot() {
             {messages.length > 0 && (
               <button
                 onClick={clearConversation}
-                className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-soft dark:hover:bg-surface-1 dark:hover:text-ink-soft"
                 title="Clear conversation"
               >
                 <svg
@@ -271,7 +271,7 @@ export function AICopilot() {
             )}
             <button
               onClick={() => setIsOpen(false)}
-              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+              className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink-soft dark:hover:bg-surface-1 dark:hover:text-ink-soft"
               title="Close (Cmd+J)"
             >
               <svg
@@ -296,10 +296,10 @@ export function AICopilot() {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft dark:bg-accent-soft">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                  className="h-6 w-6 text-accent dark:text-accent"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -312,10 +312,10 @@ export function AICopilot() {
                   />
                 </svg>
               </div>
-              <h3 className="mb-1 text-sm font-medium text-gray-900 dark:text-zinc-100">
+              <h3 className="mb-1 text-sm font-medium text-ink dark:text-ink">
                 Ask FleetSight AI
               </h3>
-              <p className="mb-6 text-center text-xs text-gray-500 dark:text-zinc-400">
+              <p className="mb-6 text-center text-xs text-ink-soft dark:text-ink-muted">
                 Get help with carrier safety, FMCSA compliance, and freight
                 intelligence.
               </p>
@@ -324,7 +324,7 @@ export function AICopilot() {
                   <button
                     key={prompt}
                     onClick={() => sendMessage(prompt)}
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-left text-sm text-gray-700 transition-colors hover:border-indigo-300 hover:bg-indigo-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-900/20"
+                    className="rounded-lg border border-border px-3 py-2 text-left text-sm text-ink-soft transition-colors hover:border-accent/30 hover:bg-accent-soft dark:border-border dark:text-ink-soft dark:hover:border-accent dark:hover:bg-accent-soft"
                   >
                     {prompt}
                   </button>
@@ -343,8 +343,8 @@ export function AICopilot() {
                   <div
                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-100 text-gray-900 dark:bg-zinc-800 dark:text-zinc-100"
+                        ? "bg-accent text-white"
+                        : "bg-surface-2 text-ink dark:bg-surface-1 dark:text-ink"
                     }`}
                   >
                     {msg.role === "assistant" && msg.content === "" ? (
@@ -361,7 +361,7 @@ export function AICopilot() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-gray-200 px-4 py-3 dark:border-zinc-800">
+        <div className="border-t border-border px-4 py-3 dark:border-border">
           <form onSubmit={handleSubmit} className="flex items-end gap-2">
             <textarea
               ref={inputRef}
@@ -370,7 +370,7 @@ export function AICopilot() {
               onKeyDown={handleKeyDown}
               placeholder="Ask about carrier safety..."
               rows={1}
-              className="flex-1 resize-none rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-indigo-500"
+              className="flex-1 resize-none rounded-xl border border-border bg-surface-1 px-4 py-2.5 text-sm text-ink placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent dark:border-border dark:bg-surface-1 dark:text-ink dark:placeholder-zinc-500 dark:focus:border-accent"
               style={{ maxHeight: "120px" }}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -381,7 +381,7 @@ export function AICopilot() {
             <button
               type="submit"
               disabled={!input.trim() || isStreaming}
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-accent text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -399,7 +399,7 @@ export function AICopilot() {
               </svg>
             </button>
           </form>
-          <p className="mt-1.5 text-center text-[10px] text-gray-400 dark:text-zinc-500">
+          <p className="mt-1.5 text-center text-[10px] text-ink-muted dark:text-ink-muted">
             1 credit per message. Cmd+J to toggle.
           </p>
         </div>
@@ -411,9 +411,9 @@ export function AICopilot() {
 function TypingIndicator() {
   return (
     <div className="flex items-center gap-1.5 py-1">
-      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400 dark:bg-zinc-500 [animation-delay:-0.3s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400 dark:bg-zinc-500 [animation-delay:-0.15s]" />
-      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400 dark:bg-zinc-500" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-surface-3 dark:bg-surface-3 [animation-delay:-0.3s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-surface-3 dark:bg-surface-3 [animation-delay:-0.15s]" />
+      <span className="h-2 w-2 animate-bounce rounded-full bg-surface-3 dark:bg-surface-3" />
     </div>
   );
 }
@@ -437,7 +437,7 @@ function FormattedContent({ content }: { content: string }) {
         if (formatted.startsWith("- ") || formatted.startsWith("* ")) {
           return (
             <div key={i} className="flex gap-2">
-              <span className="mt-0.5 flex-shrink-0 text-gray-400 dark:text-zinc-500">
+              <span className="mt-0.5 flex-shrink-0 text-ink-muted dark:text-ink-muted">
                 &bull;
               </span>
               <span dangerouslySetInnerHTML={{ __html: formatted.slice(2) }} />
@@ -450,7 +450,7 @@ function FormattedContent({ content }: { content: string }) {
         if (numberedMatch) {
           return (
             <div key={i} className="flex gap-2">
-              <span className="flex-shrink-0 text-gray-400 dark:text-zinc-500">
+              <span className="flex-shrink-0 text-ink-muted dark:text-ink-muted">
                 {numberedMatch[1]}.
               </span>
               <span

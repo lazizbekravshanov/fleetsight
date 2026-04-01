@@ -56,12 +56,12 @@ export default function CreditsPage() {
           <div
             key={pack.id}
             className={`relative rounded-xl p-6 shadow-sm transition-shadow hover:shadow-md ${
-              pack.popular ? "ring-2 ring-indigo-500/30" : ""
+              pack.popular ? "ring-2 ring-accent/30" : ""
             }`}
             style={{ background: "var(--surface-1)", border: "1px solid " + (pack.popular ? "var(--accent)" : "var(--border)") }}
           >
             {pack.popular && (
-              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-3 py-0.5 text-[10px] font-semibold text-white">
+              <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-0.5 text-[10px] font-semibold text-white">
                 Best Value
               </span>
             )}
@@ -76,7 +76,7 @@ export default function CreditsPage() {
               disabled={buyingPack !== null}
               className={`mt-5 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-60 ${
                 pack.popular
-                  ? "bg-indigo-600 text-white hover:bg-indigo-500"
+                  ? "bg-accent text-white hover:bg-accent-soft0"
                   : "hover:opacity-80"
               }`}
               style={pack.popular ? undefined : { background: "var(--surface-2)", color: "var(--ink)" }}

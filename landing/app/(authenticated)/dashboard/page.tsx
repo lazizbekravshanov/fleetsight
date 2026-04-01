@@ -56,7 +56,7 @@ export default async function DashboardPage() {
             <span style={{ color: "var(--border-hover)" }}>|</span>
             <span>USDOT {user.profile.usdotNumber}</span>
             <span style={{ color: "var(--border-hover)" }}>|</span>
-            <Link href="/credits" className="text-indigo-500 hover:text-indigo-400 transition-colors">
+            <Link href="/credits" className="text-accent hover:text-accent transition-colors">
               {creditBalance} AI credits
             </Link>
           </div>

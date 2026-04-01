@@ -104,7 +104,7 @@ export function CrashesTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -114,7 +114,7 @@ export function CrashesTab({
         <select
           value={filterSeverity}
           onChange={(e) => setFilterSeverity(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">All Severities</option>
           <option value="fatal">Fatal only</option>
@@ -126,14 +126,14 @@ export function CrashesTab({
             type="checkbox"
             checked={fedRecordable}
             onChange={(e) => setFedRecordable(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-border text-accent focus:ring-accent"
           />
           Federal recordable
         </label>
         {isFiltered && (
           <button
             onClick={clearFilters}
-            className="ml-auto text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+            className="ml-auto text-xs text-accent hover:text-accent transition-colors"
           >
             Clear filters
           </button>
@@ -247,7 +247,7 @@ export function CrashesTab({
                 </td>
                 <td className="hidden px-3 py-2 text-center lg:table-cell">
                   {cr.federal_recordable === "Y" ? (
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">
+                    <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent ring-1 ring-accent/20">
                       Yes
                     </span>
                   ) : cr.federal_recordable === "N" ? (

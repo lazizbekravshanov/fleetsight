@@ -12,19 +12,19 @@ export function AiUpgradePrompt({ reason }: { reason: "not_authenticated" | "no_
           </svg>
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-900">
+          <p className="text-sm font-medium text-ink">
             {reason === "not_authenticated"
               ? "Sign in to unlock AI-powered insights"
               : "Add credits to unlock AI analysis"}
           </p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-ink-soft">
             {reason === "not_authenticated"
               ? "Get 10 free AI credits when you create an account."
               : "Each AI analysis costs 1 credit. Packs start at $5 for 50 credits."}
           </p>
           <Link
             href={reason === "not_authenticated" ? "/login" : "/credits"}
-            className="mt-2 inline-block rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700"
+            className="mt-2 inline-block rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
           >
             {reason === "not_authenticated" ? "Sign in" : "Get credits"}
           </Link>

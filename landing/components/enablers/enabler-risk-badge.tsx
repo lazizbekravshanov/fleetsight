@@ -34,8 +34,8 @@ const TIER_STYLES: Record<string, { badge: string; text: string }> = {
 };
 
 const DEFAULT_STYLE = {
-  badge: "bg-gray-100 text-gray-500 ring-1 ring-gray-400/20",
-  text: "text-gray-500",
+  badge: "bg-surface-2 text-ink-soft ring-1 ring-border/20",
+  text: "text-ink-soft",
 };
 
 function tierStyle(tier: string | null) {

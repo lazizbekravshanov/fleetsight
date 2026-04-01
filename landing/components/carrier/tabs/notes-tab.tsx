@@ -82,14 +82,14 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
           }}
           placeholder="Internal notes, red flags, broker decisions…"
           rows={3}
-          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
         />
         <div className="mt-2 flex items-center justify-between">
           <span className="text-xs text-[var(--ink-muted)]">{draft.length}/5000 · ⌘Enter to save</span>
           <button
             onClick={addNote}
             disabled={!draft.trim() || saving}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
           >
             {saving ? "Saving…" : "Save note"}
           </button>
@@ -117,13 +117,13 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     rows={4}
-                    className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
                     autoFocus
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => saveEdit(note.id)}
-                      className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+                      className="rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-white hover:bg-accent-hover"
                     >
                       Save
                     </button>
@@ -149,7 +149,7 @@ export function NotesTab({ dotNumber }: { dotNumber: string }) {
                           setEditingId(note.id);
                           setEditContent(note.content);
                         }}
-                        className="text-xs text-[var(--ink-muted)] hover:text-indigo-600"
+                        className="text-xs text-[var(--ink-muted)] hover:text-accent"
                       >
                         Edit
                       </button>

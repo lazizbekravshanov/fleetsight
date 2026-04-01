@@ -13,7 +13,7 @@ export function CreditBadge() {
   return (
     <Link
       href="/credits"
-      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-1 px-3 py-1 text-xs font-medium text-ink-soft shadow-sm transition-colors hover:border-accent/30 hover:bg-accent-soft hover:text-accent"
     >
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="8" cy="8" r="6" />

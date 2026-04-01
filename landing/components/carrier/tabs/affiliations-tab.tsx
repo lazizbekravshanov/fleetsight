@@ -29,7 +29,7 @@ const DIRECTION_LABELS: Record<string, string> = {
 
 function SignalBar({ label, value }: { label: string; value: number }) {
   const color =
-    value >= 70 ? "bg-rose-500" : value >= 40 ? "bg-amber-500" : value >= 10 ? "bg-blue-500" : "bg-gray-300";
+    value >= 70 ? "bg-rose-500" : value >= 40 ? "bg-amber-500" : value >= 10 ? "bg-blue-500" : "bg-surface-3";
   return (
     <div className="flex items-center gap-2 text-[10px]">
       <span className="w-24 shrink-0 text-[var(--ink-soft)]">{label}</span>
@@ -77,7 +77,7 @@ function VinTimeline({ vin, myDot, entry }: { vin: SharedVinInfo; myDot: string;
       </div>
       <div className="mt-1.5 space-y-0.5 text-[10px]">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-indigo-400 flex-shrink-0" />
+          <span className="w-3 h-3 rounded-full bg-accent flex-shrink-0" />
           <span className="text-[var(--ink-soft)]">DOT {myDot}</span>
           <span className="text-[var(--ink-muted)]">
             {aStart?.toLocaleDateString() ?? "?"} — {aEnd?.toLocaleDateString() ?? "?"}
@@ -233,7 +233,7 @@ export function AffiliationsTab({
       {/* Summary */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-indigo-600">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
             <circle cx="5" cy="5" r="3" /><circle cx="9" cy="9" r="3" />
           </svg>
           <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--ink)]">VIN Affiliations</h3>
@@ -254,15 +254,15 @@ export function AffiliationsTab({
             <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">Shared VINs</p>
           </div>
           <div>
-            <p className={`text-2xl font-bold ${chameleonCount > 0 ? "text-rose-600" : "text-gray-300"}`}>{chameleonCount}</p>
+            <p className={`text-2xl font-bold ${chameleonCount > 0 ? "text-rose-600" : "text-ink-muted"}`}>{chameleonCount}</p>
             <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">Chameleon</p>
           </div>
           <div>
-            <p className={`text-2xl font-bold ${shellCount > 0 ? "text-orange-600" : "text-gray-300"}`}>{shellCount}</p>
+            <p className={`text-2xl font-bold ${shellCount > 0 ? "text-orange-600" : "text-ink-muted"}`}>{shellCount}</p>
             <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">Shell</p>
           </div>
           <div>
-            <p className={`text-2xl font-bold ${fleetCount > 0 ? "text-amber-600" : "text-gray-300"}`}>{fleetCount}</p>
+            <p className={`text-2xl font-bold ${fleetCount > 0 ? "text-amber-600" : "text-ink-muted"}`}>{fleetCount}</p>
             <p className="text-[10px] uppercase tracking-wide text-[var(--ink-muted)]">Common Fleet</p>
           </div>
         </div>
@@ -278,7 +278,7 @@ export function AffiliationsTab({
                 key={s}
                 onClick={() => setSortBy(s)}
                 className={`rounded-md px-2 py-1 text-[10px] font-medium ${
-                  sortBy === s ? "bg-indigo-100 text-indigo-700" : "text-[var(--ink-muted)] hover:text-[var(--ink-soft)]"
+                  sortBy === s ? "bg-accent-soft text-accent" : "text-[var(--ink-muted)] hover:text-[var(--ink-soft)]"
                 }`}
               >
                 By {s === "score" ? "Score" : "VINs"}
@@ -306,7 +306,7 @@ export function AffiliationsTab({
               return (
                 <tr key={entry.dotNumber} className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]">
                   <td className="px-4 py-2.5">
-                    <a href={`/?dot=${entry.dotNumber}`} className="font-medium text-[var(--ink)] hover:text-indigo-600">
+                    <a href={`/?dot=${entry.dotNumber}`} className="font-medium text-[var(--ink)] hover:text-accent">
                       {entry.legalName ?? `DOT ${entry.dotNumber}`}
                     </a>
                     <p className="text-[10px] text-[var(--ink-muted)]">DOT {entry.dotNumber}</p>
@@ -328,7 +328,7 @@ export function AffiliationsTab({
                   <td className="px-4 py-2.5 text-right">
                     <button
                       onClick={() => setSelectedEntry(entry)}
-                      className="text-[10px] font-medium text-indigo-600 hover:text-indigo-700"
+                      className="text-[10px] font-medium text-accent hover:text-accent"
                     >
                       Details
                     </button>

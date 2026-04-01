@@ -88,9 +88,9 @@ export function DriverScorecardTab({
                 <tr
                   key={d.cdlKey}
                   onClick={() => handleSelect(d.cdlKey)}
-                  className={`cursor-pointer border-b border-[var(--border)] transition hover:bg-indigo-50 ${
+                  className={`cursor-pointer border-b border-[var(--border)] transition hover:bg-accent-soft ${
                     selectedCdl === d.cdlKey
-                      ? "bg-indigo-50"
+                      ? "bg-accent-soft"
                       : i < 3 && d.oosEvents > 0
                         ? "bg-rose-50/30"
                         : "even:bg-[var(--surface-2)]/50"
@@ -204,20 +204,20 @@ export function DriverScorecardTab({
 
           {/* Training Recommendations */}
           {selected.trainingRecommendations.length > 0 && (
-            <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            <div className="rounded-xl border border-accent/30 bg-accent-soft p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-accent">
                 Training Recommendations
               </p>
               <ul className="space-y-1.5">
                 {selected.trainingRecommendations.map((rec, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-indigo-800">
-                    <span className="mt-0.5 shrink-0 text-indigo-400">&bull;</span>
+                  <li key={i} className="flex items-start gap-2 text-xs text-accent">
+                    <span className="mt-0.5 shrink-0 text-accent">&bull;</span>
                     {rec}
                   </li>
                 ))}
               </ul>
               {selected.estimatedRiskReduction && (
-                <p className="mt-2 text-xs font-medium text-indigo-700">
+                <p className="mt-2 text-xs font-medium text-accent">
                   {selected.estimatedRiskReduction}
                 </p>
               )}
@@ -238,7 +238,7 @@ export function DriverScorecardTab({
 function TrendBadge({ trend }: { trend: "IMPROVING" | "STABLE" | "DECLINING" }) {
   const config = {
     IMPROVING: { label: "Improving", className: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" },
-    STABLE: { label: "Stable", className: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-400/20" },
+    STABLE: { label: "Stable", className: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-border/20" },
     DECLINING: { label: "Declining", className: "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20" },
   };
   const c = config[trend];

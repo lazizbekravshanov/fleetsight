@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 const MapInner = dynamic(() => import("./map-inner"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+    <div className="h-full w-full flex items-center justify-center bg-surface-0 dark:bg-surface-0">
       <div className="flex flex-col items-center gap-3">
         <svg
           className="animate-spin h-8 w-8 text-blue-600"
@@ -27,7 +27,7 @@ const MapInner = dynamic(() => import("./map-inner"), {
             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
           />
         </svg>
-        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+        <span className="text-sm text-ink-muted dark:text-ink-muted">
           Loading map...
         </span>
       </div>

@@ -39,7 +39,7 @@ function SectionHeader({ icon, title, count, color }: { icon: React.ReactNode; t
       <span className={color}>{icon}</span>
       <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--ink)]">{title}</h3>
       {count !== undefined && (
-        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-[var(--surface-2)] ring-1 ring-gray-200`}>{count}</span>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-[var(--surface-2)] ring-1 ring-border`}>{count}</span>
       )}
     </div>
   );
@@ -90,7 +90,7 @@ const LINK_COLORS: Record<string, string> = {
   social: "bg-blue-50 text-blue-700 ring-blue-200 hover:bg-blue-100",
   business: "bg-amber-50 text-amber-700 ring-amber-200 hover:bg-amber-100",
   registry: "bg-purple-50 text-purple-700 ring-purple-200 hover:bg-purple-100",
-  search: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)]",
+  search: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-border hover:bg-[var(--surface-2)]",
 };
 
 function LinkPill({ link }: { link: SearchLink }) {
@@ -114,7 +114,7 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
   const totalCarrierRefs = profiles.reduce((s, p) => s + p.carrierRefs.length, 0);
   const totalCorpRoles = profiles.reduce((s, p) => s + p.corporateRoles.length, 0);
   const categories = [
-    { label: "Carrier Cross-Refs", count: totalCarrierRefs, color: "text-indigo-600" },
+    { label: "Carrier Cross-Refs", count: totalCarrierRefs, color: "text-accent" },
     { label: "Corp. Roles", count: totalCorpRoles, color: "text-teal-600" },
     { label: "OFAC Matches", count: data.ofacMatches.length, color: "text-rose-600" },
     { label: "SAM Exclusions", count: data.samExclusions.length, color: "text-orange-600" },
@@ -124,7 +124,7 @@ function BackgroundSummaryBanner({ data }: { data: BackgroundData }) {
     { label: "OSHA", count: data.oshaViolations.length, color: "text-yellow-600" },
     { label: "EPA", count: data.epaEnforcements.length, color: "text-green-600" },
     { label: "Address Matches", count: data.mailingAddressMatches.length, color: "text-amber-600" },
-    { label: "State Registrations", count: data.corporateNetwork?.companyRegistrations.length ?? 0, color: "text-indigo-600" },
+    { label: "State Registrations", count: data.corporateNetwork?.companyRegistrations.length ?? 0, color: "text-accent" },
   ];
   const totalFindings = categories.reduce((s, c) => s + c.count, 0);
   const addressFlags = data.addressIntelligence?.flags.length ?? 0;
@@ -196,7 +196,7 @@ function DigitalFootprintCard({ footprint }: { footprint: DigitalFootprint }) {
         {footprint.dnbNumber && (
           <div className="flex items-center gap-2 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] px-4 py-2.5">
             <span className="text-xs text-[var(--ink-soft)]">D&B Number:</span>
-            <a href={footprint.dnbUrl!} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-indigo-700 hover:underline tabular-nums">
+            <a href={footprint.dnbUrl!} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-accent hover:underline tabular-nums">
               {footprint.dnbNumber}
             </a>
           </div>
@@ -277,11 +277,11 @@ function AddressIntelligenceCard({ intel }: { intel: AddressIntelligence }) {
       )}
 
       <div className="flex flex-wrap gap-1.5">
-        <a href={intel.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] transition-colors">
+        <a href={intel.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-border hover:bg-[var(--surface-2)] transition-colors">
           Google Maps
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50"><path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </a>
-        <a href={intel.streetViewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] transition-colors">
+        <a href={intel.streetViewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 bg-[var(--surface-2)] text-[var(--ink-soft)] ring-border hover:bg-[var(--surface-2)] transition-colors">
           Street View
           <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50"><path d="M1 7L7 1M7 1H2M7 1V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </a>
@@ -424,7 +424,7 @@ function OfficerNetworkCard({ crossRefs }: { crossRefs: OfficerCrossRef[] }) {
 
   return (
     <div className="bg-[var(--surface-1)] border border-[var(--border)] shadow-sm rounded-2xl p-5">
-      <SectionHeader icon={<UsersIcon />} title="Officer Network" count={nonEmpty.reduce((s, r) => s + r.carriers.length, 0)} color="text-indigo-500" />
+      <SectionHeader icon={<UsersIcon />} title="Officer Network" count={nonEmpty.reduce((s, r) => s + r.carriers.length, 0)} color="text-accent" />
       <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">Other FMCSA-registered carriers listing the same officers.</p>
       <div className="space-y-4">
         {nonEmpty.map((ref) => (
@@ -611,7 +611,7 @@ function CorporateAffiliationsCard({ affiliations }: { affiliations: OcOfficerCo
                     <p className="text-xs font-medium text-[var(--ink)] truncate">{co.companyName}</p>
                     <p className="text-[11px] text-[var(--ink-muted)]">{co.jurisdiction.toUpperCase()} &middot; #{co.companyNumber}</p>
                   </div>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${co.status.toLowerCase().includes("active") ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-300"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${co.status.toLowerCase().includes("active") ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20" : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-border"}`}>
                     {co.status}
                   </span>
                 </a>
@@ -684,7 +684,7 @@ function OfficerRoleRow({ role }: { role: OcOfficerRole }) {
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
           role.status.toLowerCase().includes("active")
             ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-            : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-300"
+            : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-border"
         }`}>
           {role.status}
         </span>
@@ -710,7 +710,7 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
               <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
@@ -786,7 +786,7 @@ function OfficerCard({ profile }: { profile: OfficerProfile }) {
         {/* Other carrier registrations */}
         {profile.carrierRefs.length > 0 && (
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 mb-1.5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-accent mb-1.5">
               Other Carrier Registrations ({profile.carrierRefs.length})
             </p>
             <div className="space-y-1.5">
@@ -901,7 +901,7 @@ function OfficerProfilesCard({ profiles }: { profiles: OfficerProfile[] }) {
         icon={<UsersIcon />}
         title="Officer Profiles"
         count={profiles.length}
-        color="text-indigo-500"
+        color="text-accent"
       />
       <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">
         Public government records for each registered officer — FMCSA carrier history, corporate roles, sanctions screening, and court records.
@@ -947,7 +947,7 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
           <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ring-1 ${
             isPrivacy
               ? "bg-amber-50 text-amber-800 ring-amber-300"
-              : "bg-indigo-50 text-indigo-700 ring-indigo-200"
+              : "bg-accent-soft text-accent ring-accent/20"
           }`}>
             {company.jurisdictionLabel}
             {isPrivacy && " ⚠"}
@@ -957,14 +957,14 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ${
               isActive
                 ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-gray-300"
+                : "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-border"
             }`}>
               {company.status}
             </span>
           )}
           {/* Company type */}
           {company.companyType && (
-            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--ink-soft)] ring-1 ring-gray-200">
+            <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] text-[var(--ink-soft)] ring-1 ring-border">
               {company.companyType}
             </span>
           )}
@@ -1013,7 +1013,7 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
             href={company.opencorporatesUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[11px] text-indigo-600 hover:underline"
+            className="inline-flex items-center gap-1 text-[11px] text-accent hover:underline"
           >
             View on OpenCorporates
             <svg width="8" height="8" viewBox="0 0 8 8" fill="none" className="opacity-50">
@@ -1022,7 +1022,7 @@ function StateRegistrationRow({ company }: { company: OcCompanyDetail }) {
           </a>
           {company.registryUrl && (
             <>
-              <span className="mx-2 text-gray-300">·</span>
+              <span className="mx-2 text-ink-muted">·</span>
               <a
                 href={company.registryUrl}
                 target="_blank"
@@ -1056,7 +1056,7 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
         icon={<RegistryIcon />}
         title="State Business Registry"
         count={network.companyRegistrations.length}
-        color={hasHighSignal ? "text-rose-500" : hasMediumSignal ? "text-amber-500" : "text-indigo-500"}
+        color={hasHighSignal ? "text-rose-500" : hasMediumSignal ? "text-amber-500" : "text-accent"}
       />
       <p className="mb-4 -mt-1 text-xs text-[var(--ink-muted)]">
         Business registrations found across all 50 US state SOS databases via OpenCorporates.
@@ -1077,7 +1077,7 @@ function CorporateRegistryCard({ network }: { network: CorporateNetwork }) {
               }`}
             >
               <div className={`mt-1 h-2 w-2 flex-shrink-0 rounded-full ${
-                sig.severity === "high" ? "bg-rose-500" : sig.severity === "medium" ? "bg-amber-500" : "bg-gray-400"
+                sig.severity === "high" ? "bg-rose-500" : sig.severity === "medium" ? "bg-amber-500" : "bg-surface-3"
               }`} />
               <div className="min-w-0">
                 <p className={`text-xs font-semibold ${

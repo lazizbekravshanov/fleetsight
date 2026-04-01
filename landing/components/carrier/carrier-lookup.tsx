@@ -155,7 +155,7 @@ export function CarrierLookup() {
       {/* Header */}
       <header className="border-b border-[var(--border)] bg-[var(--surface-1)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <p className="text-sm font-semibold tracking-wide text-indigo-600">
+          <p className="text-sm font-semibold tracking-wide text-accent">
             FleetSight
           </p>
           <CreditBadge />
@@ -200,20 +200,20 @@ export function CarrierLookup() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="DOT, MC, company name, or try &quot;large carriers in Texas&quot;..."
               aria-label="Search carriers by name, DOT number, MC number, or natural language"
-              className="w-full rounded-xl border border-gray-300 bg-[var(--surface-1)] py-3 pl-11 pr-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] transition-shadow focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-xl border border-border bg-[var(--surface-1)] py-3 pl-11 pr-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] transition-shadow focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
           </div>
           <button
             type="submit"
             disabled={searching}
-            className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-60"
+            className="rounded-xl bg-accent px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
           >
             {searching ? "Searching..." : "Search"}
           </button>
         </form>
         <div className="mx-auto mt-1.5 max-w-2xl flex items-center justify-between">
           <p className="text-xs text-[var(--ink-muted)]">
-            Press <kbd className="rounded border border-gray-300 bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-soft)]">/</kbd> to search
+            Press <kbd className="rounded border border-border bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-soft)]">/</kbd> to search
           </p>
         </div>
 
@@ -226,7 +226,7 @@ export function CarrierLookup() {
                 <button
                   key={eq}
                   onClick={() => handleExampleClick(eq)}
-                  className="rounded-full border border-[var(--border)] bg-[var(--surface-1)] px-3 py-1 text-xs text-[var(--ink-soft)] transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+                  className="rounded-full border border-[var(--border)] bg-[var(--surface-1)] px-3 py-1 text-xs text-[var(--ink-soft)] transition-colors hover:border-accent/30 hover:bg-accent-soft hover:text-accent"
                 >
                   {eq}
                 </button>
@@ -241,7 +241,7 @@ export function CarrierLookup() {
             <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ring-1 ${
               searchMode === "ai"
                 ? "bg-violet-50 text-violet-700 ring-violet-600/20"
-                : "bg-indigo-50 text-indigo-700 ring-indigo-600/20"
+                : "bg-accent-soft text-accent ring-accent/20"
             }`}>
               {searchMode === "ai" ? "AI Search" : "Smart Search"}
             </span>
@@ -277,7 +277,7 @@ export function CarrierLookup() {
             className="mx-auto mt-10 max-w-md text-center"
           >
             <svg
-              className="mx-auto h-12 w-12 text-gray-300"
+              className="mx-auto h-12 w-12 text-ink-muted"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -337,7 +337,7 @@ export function CarrierLookup() {
                       onClick={() => handleSelect(r.dotNumber)}
                       className={`flex w-full items-center justify-between rounded-lg border-l-2 ${BORDER_COLORS[badge.color]} px-3 py-2 text-left transition-colors hover:bg-[var(--surface-2)] ${
                         selectedDot === r.dotNumber
-                          ? "bg-[var(--surface-2)] ring-1 ring-indigo-500/40"
+                          ? "bg-[var(--surface-2)] ring-1 ring-accent/40"
                           : ""
                       }`}
                     >

@@ -94,7 +94,7 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
   /* ── Skeleton ────────────────────────────────────── */
   if (state.loading) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-border bg-surface-1 p-5 shadow-sm">
         <div className="space-y-3">
           <div className="h-5 w-36 rounded shimmer" />
           <div className="h-4 w-52 rounded shimmer" />
@@ -143,16 +143,16 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
   const alertCount = basics.filter((b) => b.percentile >= 75).length;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-border bg-surface-1 shadow-sm">
       <div className="h-0.5 bg-gradient-to-r from-indigo-500 to-indigo-400" />
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="truncate text-lg font-semibold text-gray-900">
+            <h3 className="truncate text-lg font-semibold text-ink">
               {legalName}
             </h3>
             {dba && (
-              <p className="truncate text-sm text-gray-500">
+              <p className="truncate text-sm text-ink-soft">
                 DBA {dba}
               </p>
             )}
@@ -168,13 +168,13 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
           </span>
         </div>
 
-        <p className="mt-1 text-xs text-gray-400">USDOT {usdotNumber}</p>
+        <p className="mt-1 text-xs text-ink-muted">USDOT {usdotNumber}</p>
 
         {/* BASIC Scores */}
         {basics.length > 0 ? (
           <div className="mt-4">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
                 BASIC Scores
               </p>
               {alertCount > 0 && (
@@ -187,16 +187,16 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
               {basics.map((b) => (
                 <div key={b.basicsTypeDesc}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">{b.basicsTypeDesc}</span>
+                    <span className="text-ink-soft">{b.basicsTypeDesc}</span>
                     <span
                       className={`font-medium ${
-                        b.percentile >= 75 ? "text-rose-600" : "text-gray-500"
+                        b.percentile >= 75 ? "text-rose-600" : "text-ink-soft"
                       }`}
                     >
                       {b.percentile}%
                     </span>
                   </div>
-                  <div className="relative mt-0.5 h-1.5 overflow-visible rounded-full bg-gray-200">
+                  <div className="relative mt-0.5 h-1.5 overflow-visible rounded-full bg-surface-3">
                     <div
                       className={`h-full rounded-full transition-all ${barColor(b.percentile)}`}
                       style={{
@@ -204,7 +204,7 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
                       }}
                     />
                     <div
-                      className="absolute top-0 h-full w-px border-l border-dashed border-gray-400"
+                      className="absolute top-0 h-full w-px border-l border-dashed border-border"
                       style={{ left: "75%" }}
                     />
                   </div>
@@ -213,7 +213,7 @@ export function CarrierSnapshot({ usdotNumber }: { usdotNumber: string }) {
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-xs text-gray-400">No BASIC data available</p>
+          <p className="mt-4 text-xs text-ink-muted">No BASIC data available</p>
         )}
       </div>
     </div>

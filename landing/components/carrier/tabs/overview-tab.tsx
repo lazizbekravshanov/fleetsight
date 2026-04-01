@@ -104,7 +104,7 @@ export function OverviewTab({
       {/* Company Info */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
         <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
           Company Info
         </h3>
         <dl className="space-y-2 text-sm">
@@ -197,7 +197,7 @@ export function OverviewTab({
         {/* Interstate/Intrastate/HazMat badges */}
         <div className="mb-3 flex flex-wrap gap-1.5">
           {c.interstate === "Y" && (
-            <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-[10px] font-medium text-indigo-700 ring-1 ring-indigo-600/20">Interstate</span>
+            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[10px] font-medium text-accent ring-1 ring-accent/20">Interstate</span>
           )}
           {c.intrastate === "Y" && (
             <span className="rounded-full bg-purple-50 px-2.5 py-0.5 text-[10px] font-medium text-purple-700 ring-1 ring-purple-600/20">Intrastate</span>
@@ -677,7 +677,7 @@ function SosCard({ sosResult }: { sosResult: SosResult }) {
               href={sosResult.opencorporatesUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+              className="text-xs text-accent hover:text-accent transition-colors"
             >
               View on OpenCorporates &rarr;
             </a>
@@ -739,7 +739,7 @@ function RelatedCarriersCard({
       {onSwitchTab && (
         <button
           onClick={() => onSwitchTab("detection")}
-          className="mt-3 text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+          className="mt-3 text-xs text-accent hover:text-accent transition-colors"
         >
           View detection analysis &rarr;
         </button>
@@ -787,7 +787,7 @@ function BasicScoresSummary({
                   {s.percentile}%
                 </span>
               </div>
-              <div className="mt-1 h-2 overflow-hidden rounded-full bg-gray-200">
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-surface-3">
                 <div
                   className={`h-full rounded-full ${color} transition-all`}
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
@@ -799,7 +799,7 @@ function BasicScoresSummary({
       </div>
       <button
         onClick={onViewAll}
-        className="mt-3 text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+        className="mt-3 text-xs text-accent hover:text-accent transition-colors"
       >
         View all safety scores &rarr;
       </button>
@@ -931,7 +931,7 @@ function CarrierTimeline({
   }
 
   const typeConfig: Record<string, { color: string; dot: string }> = {
-    inspection: { color: "text-indigo-600", dot: "bg-indigo-600" },
+    inspection: { color: "text-accent", dot: "bg-accent" },
     crash: { color: "text-rose-600", dot: "bg-rose-600" },
     authority: { color: "text-emerald-600", dot: "bg-emerald-600" },
     insurance: { color: "text-amber-600", dot: "bg-amber-600" },
@@ -940,13 +940,13 @@ function CarrierTimeline({
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm md:col-span-2">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
         Carrier Timeline
         <span className="ml-auto text-[10px] font-normal normal-case text-[var(--ink-muted)]">
           Latest {latest.length} events
         </span>
       </h3>
-      <div className="relative ml-3 border-l border-gray-300 pl-6 space-y-3 max-h-[24rem] overflow-y-auto">
+      <div className="relative ml-3 border-l border-border pl-6 space-y-3 max-h-[24rem] overflow-y-auto">
         {latest.map((ev, i) => {
           const cfg = typeConfig[ev.type];
           const severityText =
@@ -1029,10 +1029,10 @@ function StateDistribution({
               <span className="text-[var(--ink-soft)] font-medium">{state}</span>
               <span className="text-[var(--ink-muted)]">{total}</span>
             </div>
-            <div className="flex h-1.5 overflow-hidden rounded-full bg-gray-200">
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-surface-3">
               {insp > 0 && (
                 <div
-                  className="h-full bg-indigo-500"
+                  className="h-full bg-accent-soft0"
                   style={{ width: `${(insp / maxTotal) * 100}%` }}
                 />
               )}
@@ -1048,7 +1048,7 @@ function StateDistribution({
       </div>
       <div className="mt-3 flex items-center gap-4 text-[10px] text-[var(--ink-muted)]">
         <div className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-indigo-500" />
+          <span className="h-2 w-2 rounded-full bg-accent-soft0" />
           Inspections
         </div>
         <div className="flex items-center gap-1.5">

@@ -449,7 +449,7 @@ export function CarrierDetailView({
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Open print-ready vetting report"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-[var(--surface-1)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)] transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 bg-[var(--surface-1)] text-[var(--ink-soft)] ring-border hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)] transition-colors"
               >
                 <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 13h8M8 2v8M5 7l3 3 3-3" /><rect x="2" y="11" width="12" height="4" rx="1" />
@@ -464,8 +464,8 @@ export function CarrierDetailView({
                   title={watched ? "Remove from watchlist" : "Add to watchlist"}
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 transition-colors ${
                     watched
-                      ? "bg-indigo-50 text-indigo-700 ring-indigo-300 hover:bg-indigo-100"
-                      : "bg-[var(--surface-1)] text-[var(--ink-soft)] ring-gray-200 hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)]"
+                      ? "bg-accent-soft text-accent ring-accent/40 hover:bg-accent-soft"
+                      : "bg-[var(--surface-1)] text-[var(--ink-soft)] ring-border hover:bg-[var(--surface-2)] hover:text-[var(--ink-soft)]"
                   } disabled:opacity-50`}
                 >
                   <svg
@@ -511,7 +511,7 @@ export function CarrierDetailView({
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-medium ${
                     SAFETY_RATING_COLORS[detail.safetyRating] ??
-                    "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-600/20"
+                    "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-border/20"
                   }`}
                   title={
                     detail.safetyRatingDate
@@ -560,7 +560,7 @@ export function CarrierDetailView({
               onClick={() => setActiveTab(t.key)}
               className={`whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-medium transition ${
                 activeTab === t.key
-                  ? "border-b-2 border-indigo-500 text-indigo-500"
+                  ? "border-b-2 border-accent text-accent"
                   : ""
               }`}
               style={{

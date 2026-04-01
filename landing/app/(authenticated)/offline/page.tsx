@@ -2,10 +2,10 @@
 
 export default function OfflinePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#09090b]">
+    <main className="flex min-h-screen items-center justify-center bg-surface-0 dark:bg-[#09090b]">
       <div className="text-center px-6">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-600 dark:text-indigo-400">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft dark:bg-accent-soft">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent dark:text-accent">
             <line x1="1" y1="1" x2="23" y2="23" />
             <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
             <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
@@ -15,15 +15,15 @@ export default function OfflinePage() {
             <line x1="12" y1="20" x2="12.01" y2="20" />
           </svg>
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-zinc-100">
+        <h1 className="text-xl font-semibold text-ink dark:text-ink">
           You&apos;re offline
         </h1>
-        <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-ink-soft dark:text-ink-muted">
           FleetSight needs an internet connection. Check your connection and try again.
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-6 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 transition"
+          className="mt-6 rounded-lg bg-accent px-6 py-2.5 text-sm font-medium text-white hover:bg-accent-hover transition"
         >
           Retry
         </button>

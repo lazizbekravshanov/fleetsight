@@ -86,7 +86,7 @@ function FleetSummary({
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
         Fleet Summary
       </h3>
       <div className="flex flex-wrap gap-4 mb-4">
@@ -155,7 +155,7 @@ function FleetComposition({
                   <span className="text-[var(--ink-soft)] truncate max-w-[70%]">{cls}</span>
                   <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
                   <div
                     className="h-full rounded-full bg-emerald-500"
                     style={{ width: `${(count / gvwrMax) * 100}%` }}
@@ -176,9 +176,9 @@ function FleetComposition({
                   <span className="text-[var(--ink-soft)]">{make}</span>
                   <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
                   <div
-                    className="h-full rounded-full bg-indigo-500"
+                    className="h-full rounded-full bg-accent-soft0"
                     style={{ width: `${(count / makeMax) * 100}%` }}
                   />
                 </div>

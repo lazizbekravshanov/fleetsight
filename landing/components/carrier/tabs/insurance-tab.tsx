@@ -200,7 +200,7 @@ function AuthorityTimeline({ history }: { history: SocrataAuthorityHistory[] }) 
           No authority history records found.
         </p>
       ) : (
-        <div className="relative ml-3 border-l border-gray-300 pl-6 space-y-4">
+        <div className="relative ml-3 border-l border-border pl-6 space-y-4">
           {history.map((h, i) => {
             const origAction = (h.original_action_desc ?? "").toUpperCase();
             const dispAction = (h.disp_action_desc ?? "").toUpperCase();

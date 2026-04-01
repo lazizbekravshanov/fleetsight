@@ -53,25 +53,25 @@ export function SignupForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <label className="block">
-        <span className="text-sm font-medium text-gray-700">Work Email</span>
+        <span className="text-sm font-medium text-ink-soft">Work Email</span>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          className="mt-1.5 w-full rounded-lg border border-border bg-surface-1 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
           placeholder="you@company.com"
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-gray-700">Password</span>
+        <span className="text-sm font-medium text-ink-soft">Password</span>
         <input
           type="password"
           required
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="mt-1.5 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          className="mt-1.5 w-full rounded-lg border border-border bg-surface-1 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
           placeholder="Min. 8 characters"
         />
       </label>
@@ -83,7 +83,7 @@ export function SignupForm() {
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-70"
       >
         {loading && (
           <svg
@@ -108,11 +108,11 @@ export function SignupForm() {
         )}
         {loading ? "Creating account..." : "Create account"}
       </button>
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-ink-soft">
         Already registered?{" "}
         <Link
           href="/login"
-          className="font-medium text-indigo-600 transition hover:text-indigo-700"
+          className="font-medium text-accent transition hover:text-accent"
         >
           Sign in
         </Link>

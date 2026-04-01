@@ -11,7 +11,7 @@ function StatusBadge({ status }: { status: string | null }) {
     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
       isGood ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
       : isBad ? "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-      : "bg-gray-100 text-gray-500 ring-1 ring-gray-200"
+      : "bg-surface-2 text-ink-soft ring-1 ring-border"
     }`}>
       {status}
     </span>
@@ -69,10 +69,10 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
   if (carriers.length === 0) {
     return (
       <section id="watchlist">
-        <h2 className="mb-3 text-sm font-semibold text-gray-700">Watchlist</h2>
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white px-5 py-8 text-center">
-          <p className="text-sm text-gray-400">No carriers watched yet.</p>
-          <p className="mt-1 text-xs text-gray-300">
+        <h2 className="mb-3 text-sm font-semibold text-ink-soft">Watchlist</h2>
+        <div className="rounded-xl border border-dashed border-border bg-surface-1 px-5 py-8 text-center">
+          <p className="text-sm text-ink-muted">No carriers watched yet.</p>
+          <p className="mt-1 text-xs text-ink-muted">
             Open any carrier and click <strong>Watch</strong> to track their status.
           </p>
         </div>
@@ -83,16 +83,16 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
   return (
     <section id="watchlist">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">
-          Watchlist <span className="ml-1 text-gray-400 font-normal">({carriers.length})</span>
+        <h2 className="text-sm font-semibold text-ink-soft">
+          Watchlist <span className="ml-1 text-ink-muted font-normal">({carriers.length})</span>
         </h2>
       </div>
       <div className="space-y-2">
         {/* Upgrade CTA */}
-        <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/30 px-4 py-3">
-          <p className="text-xs text-gray-500">
+        <div className="rounded-xl border border-dashed border-accent/30 bg-accent-soft/30 px-4 py-3">
+          <p className="text-xs text-ink-soft">
             Want automated monitoring every 6 hours?{" "}
-            <a href="/dashboard?upgrade=true" className="font-semibold text-indigo-600 hover:text-indigo-700">
+            <a href="/dashboard?upgrade=true" className="font-semibold text-accent hover:text-accent">
               Upgrade to Continuous Monitoring
             </a>
           </p>
@@ -101,8 +101,8 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
         {carriers.map((c) => (
           <div
             key={c.dotNumber}
-            className={`flex items-center gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm ${
-              c.statusChanged ? "border-amber-300 bg-amber-50/40" : "border-gray-200"
+            className={`flex items-center gap-3 rounded-xl border bg-surface-1 px-4 py-3 shadow-sm ${
+              c.statusChanged ? "border-amber-300 bg-amber-50/40" : "border-border"
             }`}
           >
             {/* Status change indicator */}
@@ -115,8 +115,8 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
               href={`/?dot=${c.dotNumber}`}
               className="min-w-0 flex-1 hover:underline"
             >
-              <p className="truncate text-sm font-medium text-gray-900">{c.legalName}</p>
-              <p className="text-[11px] text-gray-400 tabular-nums">USDOT {c.dotNumber}</p>
+              <p className="truncate text-sm font-medium text-ink">{c.legalName}</p>
+              <p className="text-[11px] text-ink-muted tabular-nums">USDOT {c.dotNumber}</p>
             </a>
 
             {/* Status badges */}
@@ -124,7 +124,7 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
               <StatusBadge status={c.lastUsdotStatus} />
               <StatusBadge status={c.lastAuthStatus} />
               {c.lastCheckedAt && (
-                <span className="text-[10px] text-gray-300 self-center">
+                <span className="text-[10px] text-ink-muted self-center">
                   {new Date(c.lastCheckedAt).toLocaleDateString()}
                 </span>
               )}
@@ -136,7 +136,7 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
                 onClick={() => refreshCarrier(c.dotNumber)}
                 disabled={refreshing === c.dotNumber}
                 title="Refresh FMCSA status"
-                className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 disabled:opacity-40 transition-colors"
+                className="rounded-lg p-1.5 text-ink-muted hover:bg-surface-2 hover:text-ink-soft disabled:opacity-40 transition-colors"
               >
                 <RefreshIcon spinning={refreshing === c.dotNumber} />
               </button>
@@ -144,7 +144,7 @@ export function WatchlistSection({ initial }: { initial: WatchedCarrier[] }) {
                 onClick={() => removeCarrier(c.dotNumber)}
                 disabled={removing === c.dotNumber}
                 title="Remove from watchlist"
-                className="rounded-lg p-1.5 text-gray-300 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-40 transition-colors"
+                className="rounded-lg p-1.5 text-ink-muted hover:bg-rose-50 hover:text-rose-500 disabled:opacity-40 transition-colors"
               >
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M2 2l8 8M10 2l-8 8" />

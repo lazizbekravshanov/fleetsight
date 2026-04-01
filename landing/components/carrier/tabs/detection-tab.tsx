@@ -8,7 +8,7 @@ const SEVERITY: Record<string, { bg: string; text: string; border: string; dot: 
   critical: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200", dot: "bg-rose-500" },
   high:     { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", dot: "bg-orange-500" },
   medium:   { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500" },
-  low:      { bg: "bg-[var(--surface-2)]", text: "text-[var(--ink-soft)]", border: "border-[var(--border)]", dot: "bg-gray-400" },
+  low:      { bg: "bg-[var(--surface-2)]", text: "text-[var(--ink-soft)]", border: "border-[var(--border)]", dot: "bg-surface-3" },
 };
 
 const SEVERITY_ORDER = ["critical", "high", "medium", "low"] as const;
@@ -33,7 +33,7 @@ function SectionHeader({
         {title}
       </h3>
       {count !== undefined && (
-        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-[var(--surface-2)] ring-1 ring-gray-200`}>
+        <span className={`ml-auto rounded-full px-2.5 py-0.5 text-[10px] font-semibold tabular-nums ${color} bg-[var(--surface-2)] ring-1 ring-border`}>
           {count}
         </span>
       )}
@@ -162,11 +162,11 @@ function SeverityBar({ flags }: { flags: AnomalyFlag[] }) {
     critical: "bg-rose-500",
     high: "bg-orange-500",
     medium: "bg-amber-500",
-    low: "bg-gray-400",
+    low: "bg-surface-3",
   };
 
   return (
-    <div className="mb-4 flex h-2 w-full overflow-hidden rounded-full bg-gray-200">
+    <div className="mb-4 flex h-2 w-full overflow-hidden rounded-full bg-surface-3">
       {SEVERITY_ORDER.map((sev) => {
         const pct = (counts[sev] / total) * 100;
         if (pct === 0) return null;
@@ -388,7 +388,7 @@ function BrokerReincarnationCard({
                 className={`h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold ${
                   m.matched
                     ? "bg-rose-50 text-rose-700 ring-2 ring-rose-200"
-                    : "bg-[var(--surface-2)] text-[var(--ink-muted)] ring-1 ring-gray-200"
+                    : "bg-[var(--surface-2)] text-[var(--ink-muted)] ring-1 ring-border"
                 }`}
               >
                 {m.matched ? "\u2713" : "\u2014"}
@@ -483,21 +483,21 @@ function SharedInsuranceCard({
                 ? si.matchingCarriers.map((carrier) => (
                     <div
                       key={carrier.dotNumber}
-                      className="flex items-center gap-1.5 rounded-md bg-indigo-50 px-2.5 py-0.5 text-[11px] ring-1 ring-indigo-200 transition-colors hover:bg-indigo-100"
+                      className="flex items-center gap-1.5 rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] ring-1 ring-accent/20 transition-colors hover:bg-accent-soft"
                     >
                       <span
                         className={`h-1.5 w-1.5 rounded-full ${
                           carrier.statusCode === "A" ? "bg-emerald-400" : "bg-rose-400"
                         }`}
                       />
-                      <span className="font-medium text-indigo-700 tabular-nums">DOT {carrier.dotNumber}</span>
+                      <span className="font-medium text-accent tabular-nums">DOT {carrier.dotNumber}</span>
                       <span className="text-[var(--ink-soft)] truncate max-w-[150px]">{carrier.legalName}</span>
                     </div>
                   ))
                 : si.matchingDots.map((dot) => (
                     <span
                       key={dot}
-                      className="rounded-md bg-indigo-50 px-2.5 py-0.5 text-[11px] font-medium tabular-nums text-indigo-700 ring-1 ring-indigo-200 transition-colors hover:bg-indigo-100"
+                      className="rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-medium tabular-nums text-accent ring-1 ring-accent/20 transition-colors hover:bg-accent-soft"
                     >
                       DOT {dot}
                     </span>

@@ -239,7 +239,7 @@ function TopCostlyViolationsTable({
                 key={v.code + "-" + i}
                 className="border-b border-[var(--border)] transition hover:bg-[var(--surface-2)] even:bg-[var(--surface-2)]/50"
               >
-                <td className="px-3 py-2 whitespace-nowrap font-mono text-indigo-700">
+                <td className="px-3 py-2 whitespace-nowrap font-mono text-accent">
                   {v.code}
                 </td>
                 <td className="px-3 py-2 max-w-xs truncate" title={v.description}>
@@ -285,7 +285,7 @@ function TopActionsPanel({
             className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4 transition hover:bg-[var(--surface-2)]"
           >
             {/* checkbox-style indicator */}
-            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-indigo-300 bg-indigo-50 text-indigo-600">
+            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-accent/30 bg-accent-soft text-accent">
               <svg
                 width="10"
                 height="10"

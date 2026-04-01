@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import type { BasicScore } from "./types";
 
 export const BADGE_COLORS = {
-  blue: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/20",
+  blue: "bg-accent-soft text-accent ring-1 ring-accent/20",
   purple: "bg-purple-50 text-purple-700 ring-1 ring-purple-600/20",
   amber: "bg-amber-50 text-amber-700 ring-1 ring-amber-600/20",
-  slate: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-gray-400/20",
+  slate: "bg-[var(--surface-2)] text-[var(--ink-soft)] ring-1 ring-border/20",
 } as const;
 
 export const BORDER_COLORS = {
@@ -29,9 +29,9 @@ export function SkeletonRows({ count = 3 }: { count?: number }) {
           transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.15 }}
           className="flex items-center gap-4 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5"
         >
-          <div className="h-3 w-2/5 rounded-full bg-gray-200" />
-          <div className="h-3 w-1/5 rounded-full bg-gray-200" />
-          <div className="ml-auto h-3 w-1/6 rounded-full bg-gray-200" />
+          <div className="h-3 w-2/5 rounded-full bg-surface-3" />
+          <div className="h-3 w-1/5 rounded-full bg-surface-3" />
+          <div className="ml-auto h-3 w-1/6 rounded-full bg-surface-3" />
         </motion.div>
       ))}
     </div>
@@ -58,7 +58,7 @@ export function Stat({
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-1)]">
-      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-indigo-500"}`} />
+      <div className={`h-0.5 ${warn ? "bg-rose-500" : "bg-accent-soft0"}`} />
       <div className="px-4 py-2">
         <p className="text-xs text-[var(--ink-soft)]">{label}</p>
         <p
@@ -179,7 +179,7 @@ export function SortHeader({
       aria-sort={active ? (currentDir === "asc" ? "ascending" : "descending") : "none"}
     >
       {label}
-      <span className={active ? "text-indigo-600" : "text-[var(--ink-muted)]"}>{arrow}</span>
+      <span className={active ? "text-accent" : "text-[var(--ink-muted)]"}>{arrow}</span>
     </th>
   );
 }
@@ -226,7 +226,7 @@ export function ExportButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="ml-auto flex items-center gap-1.5 rounded-lg border border-gray-300 bg-[var(--surface-1)] px-3 py-1.5 text-xs font-medium text-[var(--ink-soft)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--ink)]"
+      className="ml-auto flex items-center gap-1.5 rounded-lg border border-border bg-[var(--surface-1)] px-3 py-1.5 text-xs font-medium text-[var(--ink-soft)] transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--ink)]"
     >
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
         <path d="M6 1v7M3 5.5l3 3 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />

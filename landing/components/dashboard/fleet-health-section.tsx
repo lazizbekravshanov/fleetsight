@@ -21,14 +21,14 @@ const STATUS_COLORS: Record<string, string> = {
   green: "bg-emerald-400",
   yellow: "bg-amber-400",
   red: "bg-rose-500",
-  unknown: "bg-gray-300",
+  unknown: "bg-surface-3",
 };
 
 const STATUS_RING: Record<string, string> = {
   green: "ring-emerald-200",
   yellow: "ring-amber-200",
   red: "ring-rose-200",
-  unknown: "ring-gray-200",
+  unknown: "ring-border",
 };
 
 export function FleetHealthSection() {
@@ -71,10 +71,10 @@ export function FleetHealthSection() {
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">
-          Fleet Health <span className="ml-1 text-gray-400 font-normal">({roster.carriers.length} carriers)</span>
+        <h2 className="text-sm font-semibold text-ink-soft">
+          Fleet Health <span className="ml-1 text-ink-muted font-normal">({roster.carriers.length} carriers)</span>
         </h2>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
+        <div className="flex items-center gap-3 text-xs text-ink-soft">
           {statusCounts.red > 0 && (
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-rose-500" /> {statusCounts.red} red
@@ -91,7 +91,7 @@ export function FleetHealthSection() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-border bg-surface-1 p-4 shadow-sm">
         <div className="grid grid-cols-5 gap-2 sm:grid-cols-8 md:grid-cols-10">
           {roster.carriers.slice(0, 50).map((c) => (
             <a
@@ -109,7 +109,7 @@ export function FleetHealthSection() {
           ))}
         </div>
         {roster.carriers.length > 50 && (
-          <p className="mt-2 text-center text-xs text-gray-400">
+          <p className="mt-2 text-center text-xs text-ink-muted">
             +{roster.carriers.length - 50} more carriers
           </p>
         )}

@@ -74,7 +74,7 @@ export function EnforcementTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -84,7 +84,7 @@ export function EnforcementTab({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as "oosRate" | "totalInspections")}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="oosRate">Sort by OOS Rate</option>
           <option value="totalInspections">Sort by Volume</option>
@@ -111,9 +111,9 @@ export function EnforcementTab({
                         {s.oosRate.toFixed(1)}% ({s.totalInspections.toLocaleString()})
                       </span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
                       <div
-                        className={`h-full rounded-full ${aboveAvg ? "bg-rose-500" : "bg-indigo-500"}`}
+                        className={`h-full rounded-full ${aboveAvg ? "bg-rose-500" : "bg-accent-soft0"}`}
                         style={{ width: `${Math.min((s.oosRate / 40) * 100, 100)}%` }}
                       />
                     </div>
@@ -153,9 +153,9 @@ export function EnforcementTab({
                   <td className="px-3 py-2 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <div className="hidden w-16 sm:block">
-                        <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                        <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
                           <div
-                            className="h-full rounded-full bg-indigo-400"
+                            className="h-full rounded-full bg-accent"
                             style={{
                               width: `${(f.totalInspections / maxInspections) * 100}%`,
                             }}

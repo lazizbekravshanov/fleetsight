@@ -164,8 +164,8 @@ export function CarrierCompare() {
   return (
     <div className="space-y-6">
       {/* Search bar */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-zinc-100">
+      <div className="rounded-xl border border-border bg-surface-1 p-5 shadow-sm dark:border-border dark:bg-surface-0">
+        <label className="mb-2 block text-sm font-medium text-ink dark:text-ink">
           Add carrier by USDOT number
         </label>
         <div className="flex gap-3">
@@ -176,17 +176,17 @@ export function CarrierCompare() {
             onKeyDown={handleKeyDown}
             placeholder="Enter USDOT number"
             maxLength={10}
-            className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
+            className="flex-1 rounded-lg border border-border bg-surface-1 px-3 py-2 text-sm text-ink placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent dark:border-border dark:bg-surface-1 dark:text-ink dark:placeholder-zinc-500 dark:focus:border-accent dark:focus:ring-accent"
           />
           <button
             onClick={addCarrier}
             disabled={loading || dotNumbers.length >= 4 || !dotInput.trim()}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 dark:bg-accent-soft0 dark:hover:bg-accent"
           >
             {loading ? "Loading..." : "Add"}
           </button>
         </div>
-        <p className="mt-2 text-xs text-gray-500 dark:text-zinc-400">
+        <p className="mt-2 text-xs text-ink-soft dark:text-ink-muted">
           Compare up to 4 carriers side by side. {dotNumbers.length}/4 slots used.
         </p>
 
@@ -198,17 +198,17 @@ export function CarrierCompare() {
               return (
                 <span
                   key={dot}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-0 px-3 py-1 text-xs font-medium text-ink-soft dark:border-border dark:bg-surface-1 dark:text-ink-soft"
                 >
                   USDOT {dot}
                   {carrier && (
-                    <span className="text-gray-400 dark:text-zinc-500">
+                    <span className="text-ink-muted dark:text-ink-muted">
                       - {carrier.legalName}
                     </span>
                   )}
                   <button
                     onClick={() => removeCarrier(dot)}
-                    className="ml-0.5 text-gray-400 transition hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+                    className="ml-0.5 text-ink-muted transition hover:text-red-500 dark:text-ink-muted dark:hover:text-red-400"
                     aria-label={`Remove USDOT ${dot}`}
                   >
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -242,13 +242,13 @@ export function CarrierCompare() {
           {Array.from({ length: dotNumbers.length }).map((_, i) => (
             <div
               key={i}
-              className="animate-pulse rounded-xl border border-gray-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"
+              className="animate-pulse rounded-xl border border-border bg-surface-1 p-5 dark:border-border dark:bg-surface-0"
             >
-              <div className="mb-4 h-4 w-3/4 rounded bg-gray-200 dark:bg-zinc-700" />
-              <div className="mb-3 h-3 w-1/2 rounded bg-gray-200 dark:bg-zinc-700" />
+              <div className="mb-4 h-4 w-3/4 rounded bg-surface-3 dark:bg-surface-2" />
+              <div className="mb-3 h-3 w-1/2 rounded bg-surface-3 dark:bg-surface-2" />
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, j) => (
-                  <div key={j} className="h-3 w-full rounded bg-gray-100 dark:bg-zinc-800" />
+                  <div key={j} className="h-3 w-full rounded bg-surface-2 dark:bg-surface-1" />
                 ))}
               </div>
             </div>
@@ -264,12 +264,12 @@ export function CarrierCompare() {
             {carriers.map((carrier) => (
               <div
                 key={carrier.dotNumber}
-                className="relative rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+                className="relative rounded-xl border border-border bg-surface-1 p-5 shadow-sm dark:border-border dark:bg-surface-0"
               >
                 {/* Remove button */}
                 <button
                   onClick={() => removeCarrier(carrier.dotNumber)}
-                  className="absolute right-3 top-3 rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-red-500 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-red-400"
+                  className="absolute right-3 top-3 rounded-md p-1 text-ink-muted transition hover:bg-surface-2 hover:text-red-500 dark:text-ink-muted dark:hover:bg-surface-1 dark:hover:text-red-400"
                   aria-label={`Remove ${carrier.legalName}`}
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -279,22 +279,22 @@ export function CarrierCompare() {
 
                 {/* Header */}
                 <div className="mb-4 pr-6">
-                  <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100 leading-tight">
+                  <h3 className="text-sm font-semibold text-ink dark:text-ink leading-tight">
                     {carrier.legalName}
                   </h3>
                   {carrier.dbaName && (
-                    <p className="text-xs text-gray-500 dark:text-zinc-400">
+                    <p className="text-xs text-ink-soft dark:text-ink-muted">
                       DBA: {carrier.dbaName}
                     </p>
                   )}
                   <div className="mt-1 flex items-center gap-2">
-                    <span className="text-xs text-gray-500 dark:text-zinc-400">
+                    <span className="text-xs text-ink-soft dark:text-ink-muted">
                       USDOT {carrier.dotNumber}
                     </span>
                     {statusBadge(carrier.statusCode, carrier.allowedToOperate)}
                   </div>
                   {carrier.phyCity && carrier.phyState && (
-                    <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-500">
+                    <p className="mt-0.5 text-xs text-ink-muted dark:text-ink-muted">
                       {carrier.phyCity}, {carrier.phyState}
                     </p>
                   )}
@@ -308,39 +308,39 @@ export function CarrierCompare() {
                     {carrier.riskRating.grade}
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-zinc-400">Risk Score</p>
-                    <p className={`text-sm font-semibold ${getHighlightClass(carrier.riskRating.score, allScores, "higher-is-better") || "text-gray-900 dark:text-zinc-100"}`}>
+                    <p className="text-xs text-ink-soft dark:text-ink-muted">Risk Score</p>
+                    <p className={`text-sm font-semibold ${getHighlightClass(carrier.riskRating.score, allScores, "higher-is-better") || "text-ink dark:text-ink"}`}>
                       {carrier.riskRating.score}/100
                     </p>
                   </div>
                 </div>
 
                 {/* Key stats */}
-                <div className="space-y-2 border-t border-gray-100 pt-3 dark:border-zinc-800">
+                <div className="space-y-2 border-t border-border pt-3 dark:border-border">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-zinc-400">Power Units</span>
-                    <span className={`${getHighlightClass(carrier.powerUnits, allPowerUnits, "higher-is-better") || "text-gray-900 dark:text-zinc-100"}`}>
+                    <span className="text-ink-soft dark:text-ink-muted">Power Units</span>
+                    <span className={`${getHighlightClass(carrier.powerUnits, allPowerUnits, "higher-is-better") || "text-ink dark:text-ink"}`}>
                       {carrier.powerUnits.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-500 dark:text-zinc-400">Drivers</span>
-                    <span className={`${getHighlightClass(carrier.drivers, allDrivers, "higher-is-better") || "text-gray-900 dark:text-zinc-100"}`}>
+                    <span className="text-ink-soft dark:text-ink-muted">Drivers</span>
+                    <span className={`${getHighlightClass(carrier.drivers, allDrivers, "higher-is-better") || "text-ink dark:text-ink"}`}>
                       {carrier.drivers.toLocaleString()}
                     </span>
                   </div>
                   {carrier.safetyRating && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 dark:text-zinc-400">Safety Rating</span>
-                      <span className="text-gray-900 dark:text-zinc-100">
+                      <span className="text-ink-soft dark:text-ink-muted">Safety Rating</span>
+                      <span className="text-ink dark:text-ink">
                         {carrier.safetyRating}
                       </span>
                     </div>
                   )}
                   {carrier.carrierOperation && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500 dark:text-zinc-400">Operation</span>
-                      <span className="text-gray-900 dark:text-zinc-100">
+                      <span className="text-ink-soft dark:text-ink-muted">Operation</span>
+                      <span className="text-ink dark:text-ink">
                         {carrier.carrierOperation}
                       </span>
                     </div>
@@ -348,9 +348,9 @@ export function CarrierCompare() {
                 </div>
 
                 {/* Insurance */}
-                <div className="mt-3 border-t border-gray-100 pt-3 dark:border-zinc-800">
+                <div className="mt-3 border-t border-border pt-3 dark:border-border">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 dark:text-zinc-400">Insurance</span>
+                    <span className="text-ink-soft dark:text-ink-muted">Insurance</span>
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                         carrier.insurance.hasActiveInsurance
@@ -362,12 +362,12 @@ export function CarrierCompare() {
                     </span>
                   </div>
                   {carrier.insurance.insurerName && (
-                    <p className="mt-1 text-xs text-gray-400 dark:text-zinc-500 truncate" title={carrier.insurance.insurerName}>
+                    <p className="mt-1 text-xs text-ink-muted dark:text-ink-muted truncate" title={carrier.insurance.insurerName}>
                       {carrier.insurance.insurerName}
                     </p>
                   )}
                   {carrier.insurance.coverageAmount && (
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
+                    <p className="text-xs text-ink-muted dark:text-ink-muted">
                       Coverage: ${parseInt(carrier.insurance.coverageAmount, 10).toLocaleString()}
                     </p>
                   )}
@@ -378,8 +378,8 @@ export function CarrierCompare() {
 
           {/* BASIC Scores comparison */}
           {allBasicNames.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-              <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-border bg-surface-1 p-5 shadow-sm dark:border-border dark:bg-surface-0">
+              <h3 className="mb-4 text-sm font-semibold text-ink dark:text-ink">
                 BASIC Scores Comparison
               </h3>
               <div className="space-y-4">
@@ -387,7 +387,7 @@ export function CarrierCompare() {
                   const values = getAllBasicValues(name);
                   return (
                     <div key={name}>
-                      <p className="mb-1.5 text-xs font-medium text-gray-700 dark:text-zinc-300">
+                      <p className="mb-1.5 text-xs font-medium text-ink-soft dark:text-ink-soft">
                         {name}
                       </p>
                       <div className="space-y-1.5">
@@ -395,29 +395,29 @@ export function CarrierCompare() {
                           const percentile = getBasicPercentile(carrier, name);
                           return (
                             <div key={carrier.dotNumber} className="flex items-center gap-2">
-                              <span className="w-28 shrink-0 truncate text-xs text-gray-500 dark:text-zinc-400" title={carrier.legalName}>
+                              <span className="w-28 shrink-0 truncate text-xs text-ink-soft dark:text-ink-muted" title={carrier.legalName}>
                                 {carrier.legalName.length > 16
                                   ? carrier.legalName.slice(0, 16) + "..."
                                   : carrier.legalName}
                               </span>
                               {percentile !== null ? (
                                 <>
-                                  <div className="flex-1 h-4 rounded-full bg-gray-100 dark:bg-zinc-800 overflow-hidden">
+                                  <div className="flex-1 h-4 rounded-full bg-surface-2 dark:bg-surface-1 overflow-hidden">
                                     <div
                                       className={`h-full rounded-full transition-all ${basicBarColor(percentile)}`}
                                       style={{ width: `${Math.max(percentile, 2)}%` }}
                                     />
                                   </div>
                                   <span
-                                    className={`w-10 text-right text-xs font-medium ${getHighlightClass(percentile, values, "lower-is-better") || "text-gray-700 dark:text-zinc-300"}`}
+                                    className={`w-10 text-right text-xs font-medium ${getHighlightClass(percentile, values, "lower-is-better") || "text-ink-soft dark:text-ink-soft"}`}
                                   >
                                     {percentile}%
                                   </span>
                                 </>
                               ) : (
                                 <>
-                                  <div className="flex-1 h-4 rounded-full bg-gray-50 dark:bg-zinc-850" />
-                                  <span className="w-10 text-right text-xs text-gray-300 dark:text-zinc-600">
+                                  <div className="flex-1 h-4 rounded-full bg-surface-0 dark:bg-surface-1" />
+                                  <span className="w-10 text-right text-xs text-ink-muted dark:text-ink-soft">
                                     N/A
                                   </span>
                                 </>
@@ -434,27 +434,27 @@ export function CarrierCompare() {
           )}
 
           {/* OOS Rates comparison */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-            <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-zinc-100">
+          <div className="rounded-xl border border-border bg-surface-1 p-5 shadow-sm dark:border-border dark:bg-surface-0">
+            <h3 className="mb-4 text-sm font-semibold text-ink dark:text-ink">
               Out-of-Service Rates
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100 dark:border-zinc-800">
-                    <th className="pb-2 pr-4 text-left font-medium text-gray-500 dark:text-zinc-400">
+                  <tr className="border-b border-border dark:border-border">
+                    <th className="pb-2 pr-4 text-left font-medium text-ink-soft dark:text-ink-muted">
                       Carrier
                     </th>
-                    <th className="pb-2 px-3 text-right font-medium text-gray-500 dark:text-zinc-400">
+                    <th className="pb-2 px-3 text-right font-medium text-ink-soft dark:text-ink-muted">
                       Vehicle OOS
                     </th>
-                    <th className="pb-2 px-3 text-right font-medium text-gray-500 dark:text-zinc-400">
+                    <th className="pb-2 px-3 text-right font-medium text-ink-soft dark:text-ink-muted">
                       Driver OOS
                     </th>
-                    <th className="pb-2 px-3 text-right font-medium text-gray-500 dark:text-zinc-400">
+                    <th className="pb-2 px-3 text-right font-medium text-ink-soft dark:text-ink-muted">
                       Hazmat OOS
                     </th>
-                    <th className="pb-2 pl-3 text-right font-medium text-gray-500 dark:text-zinc-400">
+                    <th className="pb-2 pl-3 text-right font-medium text-ink-soft dark:text-ink-muted">
                       Inspections
                     </th>
                   </tr>
@@ -463,21 +463,21 @@ export function CarrierCompare() {
                   {carriers.map((carrier) => (
                     <tr
                       key={carrier.dotNumber}
-                      className="border-b border-gray-50 dark:border-zinc-800/50"
+                      className="border-b border-border dark:border-border"
                     >
-                      <td className="py-2 pr-4 font-medium text-gray-900 dark:text-zinc-100 truncate max-w-[10rem]">
+                      <td className="py-2 pr-4 font-medium text-ink dark:text-ink truncate max-w-[10rem]">
                         {carrier.legalName}
                       </td>
-                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.vehicleOosRate, allVehicleOos, "lower-is-better") || "text-gray-700 dark:text-zinc-300"}`}>
+                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.vehicleOosRate, allVehicleOos, "lower-is-better") || "text-ink-soft dark:text-ink-soft"}`}>
                         {carrier.oosRates.vehicleOosRate}%
                       </td>
-                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.driverOosRate, allDriverOos, "lower-is-better") || "text-gray-700 dark:text-zinc-300"}`}>
+                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.driverOosRate, allDriverOos, "lower-is-better") || "text-ink-soft dark:text-ink-soft"}`}>
                         {carrier.oosRates.driverOosRate}%
                       </td>
-                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.hazmatOosRate, allHazmatOos, "lower-is-better") || "text-gray-700 dark:text-zinc-300"}`}>
+                      <td className={`py-2 px-3 text-right ${getHighlightClass(carrier.oosRates.hazmatOosRate, allHazmatOos, "lower-is-better") || "text-ink-soft dark:text-ink-soft"}`}>
                         {carrier.oosRates.hazmatOosRate}%
                       </td>
-                      <td className="py-2 pl-3 text-right text-gray-500 dark:text-zinc-400">
+                      <td className="py-2 pl-3 text-right text-ink-soft dark:text-ink-muted">
                         {carrier.oosRates.totalInspections}
                       </td>
                     </tr>
@@ -491,23 +491,23 @@ export function CarrierCompare() {
 
       {/* Empty state */}
       {!loading && carriers.length === 0 && dotNumbers.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16 dark:border-zinc-700 dark:bg-zinc-900/50">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface-0 px-6 py-16 dark:border-border dark:bg-surface-0/50">
           <svg
             width="48"
             height="48"
             viewBox="0 0 48 48"
             fill="none"
-            className="mb-4 text-gray-300 dark:text-zinc-600"
+            className="mb-4 text-ink-muted dark:text-ink-soft"
           >
             <rect x="3" y="9" width="16" height="30" rx="3" stroke="currentColor" strokeWidth="2" />
             <rect x="29" y="9" width="16" height="30" rx="3" stroke="currentColor" strokeWidth="2" />
             <path d="M24 16v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             <path d="M20 24h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-zinc-100">
+          <h3 className="text-sm font-semibold text-ink dark:text-ink">
             Compare carriers side by side
           </h3>
-          <p className="mt-1 text-xs text-gray-500 dark:text-zinc-400">
+          <p className="mt-1 text-xs text-ink-soft dark:text-ink-muted">
             Enter up to 4 USDOT numbers to compare safety scores, OOS rates, and more.
           </p>
         </div>

@@ -135,7 +135,7 @@ export function InspectionsTab({
         <select
           value={filterState}
           onChange={(e) => setFilterState(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">All States</option>
           {uniqueStates.map((s) => (
@@ -145,7 +145,7 @@ export function InspectionsTab({
         <select
           value={filterLevel}
           onChange={(e) => setFilterLevel(e.target.value)}
-          className="rounded-lg border border-gray-300 bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="rounded-lg border border-border bg-[var(--surface-1)] px-2.5 py-1.5 text-xs text-[var(--ink-soft)] focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">All Levels</option>
           {uniqueLevels.map((l) => (
@@ -157,7 +157,7 @@ export function InspectionsTab({
             type="checkbox"
             checked={hasViolations}
             onChange={(e) => setHasViolations(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-border text-accent focus:ring-accent"
           />
           Has violations
         </label>
@@ -166,14 +166,14 @@ export function InspectionsTab({
             type="checkbox"
             checked={hasOos}
             onChange={(e) => setHasOos(e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            className="rounded border-border text-accent focus:ring-accent"
           />
           Has OOS
         </label>
         {isFiltered && (
           <button
             onClick={clearFilters}
-            className="ml-auto text-xs text-indigo-600 hover:text-indigo-500 transition-colors"
+            className="ml-auto text-xs text-accent hover:text-accent transition-colors"
           >
             Clear filters
           </button>
@@ -212,9 +212,9 @@ export function InspectionsTab({
                   <span className="text-[var(--ink-soft)]">{level}</span>
                   <span className="text-[var(--ink-soft)]">{count}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
                   <div
-                    className="h-full rounded-full bg-indigo-500"
+                    className="h-full rounded-full bg-accent-soft0"
                     style={{ width: `${(count / levelMax) * 100}%` }}
                   />
                 </div>

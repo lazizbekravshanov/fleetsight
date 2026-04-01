@@ -121,7 +121,7 @@ export default function BulkScreeningPage() {
           onChange={(e) => setInput(e.target.value)}
           placeholder={"123456\n789012\n345678"}
           rows={8}
-          className="w-full resize-y rounded-lg p-3 font-mono text-sm placeholder-[var(--ink-muted)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+          className="w-full resize-y rounded-lg p-3 font-mono text-sm placeholder-[var(--ink-muted)] focus:outline-none focus:ring-2 focus:ring-accent/40"
           style={{ background: "var(--surface-2)", color: "var(--ink)", border: "1px solid var(--border)" }}
         />
         <p className="mt-1.5 text-xs" style={{ color: "var(--ink-muted)" }}>
@@ -133,7 +133,7 @@ export default function BulkScreeningPage() {
         <button
           onClick={screen}
           disabled={loading || !input.trim()}
-          className="mt-3 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-40 transition-colors"
+          className="mt-3 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-soft0 disabled:opacity-40 transition-colors"
         >
           {loading ? "Screening\u2026" : `Screen ${parseDots(input).length > 0 ? parseDots(input).length : ""} Carriers`}
         </button>
@@ -142,7 +142,7 @@ export default function BulkScreeningPage() {
       {/* Results */}
       {loading && (
         <div className="mt-6 flex items-center gap-3 text-sm" style={{ color: "var(--ink-soft)" }}>
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-300 border-t-indigo-600" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-indigo-600" />
           Screening carriers \u2014 this may take 10-30 seconds\u2026
         </div>
       )}
@@ -213,7 +213,7 @@ export default function BulkScreeningPage() {
                       {r.legalName && (
                         <Link
                           href={`/?dot=${r.dotNumber}`}
-                          className="text-xs text-indigo-500 hover:text-indigo-400 transition-colors"
+                          className="text-xs text-accent hover:text-accent transition-colors"
                         >
                           View \u2192
                         </Link>

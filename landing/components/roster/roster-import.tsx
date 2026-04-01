@@ -53,11 +53,11 @@ export function RosterImport({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h3 className="mb-2 text-sm font-semibold text-gray-700">
+    <div className="rounded-xl border border-border bg-surface-1 p-4 shadow-sm">
+      <h3 className="mb-2 text-sm font-semibold text-ink-soft">
         Import DOT Numbers
       </h3>
-      <p className="mb-3 text-xs text-gray-400">
+      <p className="mb-3 text-xs text-ink-muted">
         Paste DOT numbers (one per line or comma-separated) or upload a CSV file.
       </p>
 
@@ -66,7 +66,7 @@ export function RosterImport({
         onChange={(e) => setText(e.target.value)}
         placeholder={"1234567\n2345678\n3456789\n\nor comma-separated: 1234567, 2345678, 3456789"}
         rows={6}
-        className="w-full resize-none rounded-lg border border-gray-200 p-3 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+        className="w-full resize-none rounded-lg border border-border p-3 font-mono text-sm text-ink placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
       />
 
       <div className="mt-2 flex items-center justify-between">
@@ -80,12 +80,12 @@ export function RosterImport({
           />
           <button
             onClick={() => fileRef.current?.click()}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-surface-0"
           >
             Upload File
           </button>
           {text && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-ink-muted">
               {text.split(/[\n,]+/).filter((s) => /^\s*\d{1,10}\s*$/.test(s)).length} DOT numbers detected
             </span>
           )}
@@ -93,7 +93,7 @@ export function RosterImport({
         <button
           onClick={handleImport}
           disabled={!text.trim() || loading}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
+          className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
         >
           {loading ? "Importing..." : "Import"}
         </button>

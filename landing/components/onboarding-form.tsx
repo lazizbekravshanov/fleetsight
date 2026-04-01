@@ -70,24 +70,24 @@ export function OnboardingForm({ initialEmail }: { initialEmail: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <p className="text-sm text-gray-500">Signed in as {initialEmail}</p>
-      <label className="block text-sm text-gray-700">
+    <form onSubmit={onSubmit} className="mt-6 space-y-4 rounded-2xl border border-border bg-surface-1 p-6 shadow-sm">
+      <p className="text-sm text-ink-soft">Signed in as {initialEmail}</p>
+      <label className="block text-sm text-ink-soft">
         Company Name
         <input
           required
           value={companyName}
           onChange={(e) => setCompanyName(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          className="mt-1 w-full rounded-lg border border-border bg-surface-1 px-3 py-2 text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </label>
-      <label className="block text-sm text-gray-700">
+      <label className="block text-sm text-ink-soft">
         USDOT Number
         <input
           required
           value={usdotNumber}
           onChange={(e) => setUsdotNumber(e.target.value.replace(/\D/g, ""))}
-          className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+          className="mt-1 w-full rounded-lg border border-border bg-surface-1 px-3 py-2 text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </label>
       <div className="flex gap-3">
@@ -95,14 +95,14 @@ export function OnboardingForm({ initialEmail }: { initialEmail: string }) {
           type="button"
           onClick={validateUsdDot}
           disabled={validating || !usdotNumber}
-          className="rounded-lg border border-indigo-200 px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+          className="rounded-lg border border-accent/30 px-4 py-2 text-sm text-accent hover:bg-accent-soft disabled:opacity-60"
         >
           {validating ? "Validating..." : "Validate USDOT"}
         </button>
         <button
           type="submit"
           disabled={loading || !companyName || !usdotNumber}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-60"
         >
           {loading ? "Saving..." : "Finish onboarding"}
         </button>

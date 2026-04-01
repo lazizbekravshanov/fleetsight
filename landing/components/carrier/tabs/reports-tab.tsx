@@ -106,10 +106,10 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
                 disabled={onCooldown}
                 className={`rounded-lg border px-3 py-2 text-xs font-medium transition ${
                   selectedType === rt.value
-                    ? "border-indigo-400 bg-indigo-50 text-indigo-700"
+                    ? "border-accent bg-accent-soft text-accent"
                     : onCooldown
-                      ? "border-[var(--border)] bg-[var(--surface-2)] text-gray-300 cursor-not-allowed"
-                      : "border-[var(--border)] bg-[var(--surface-1)] text-[var(--ink-soft)] hover:border-gray-300 hover:bg-[var(--surface-2)]"
+                      ? "border-[var(--border)] bg-[var(--surface-2)] text-ink-muted cursor-not-allowed"
+                      : "border-[var(--border)] bg-[var(--surface-1)] text-[var(--ink-soft)] hover:border-border hover:bg-[var(--surface-2)]"
                 }`}
               >
                 {rt.label}
@@ -124,7 +124,7 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the incident (minimum 10 characters)..."
           rows={3}
-          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          className="w-full resize-none rounded-lg border border-[var(--border)] p-3 text-sm text-[var(--ink)] placeholder-gray-400 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
         />
 
         <div className="mt-2 flex items-center justify-between">
@@ -132,7 +132,7 @@ export function ReportsTab({ dotNumber }: { dotNumber: string }) {
           <button
             onClick={submitReport}
             disabled={!selectedType || description.length < 10 || submitting}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
+            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover disabled:opacity-40"
           >
             {submitting ? "Submitting..." : "Submit Report"}
           </button>

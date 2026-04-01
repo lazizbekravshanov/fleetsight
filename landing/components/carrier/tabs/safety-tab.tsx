@@ -112,14 +112,14 @@ function BasicGauges({
                   </span>
                 </div>
               </div>
-              <div className="relative h-3 overflow-visible rounded-full bg-gray-200">
+              <div className="relative h-3 overflow-visible rounded-full bg-surface-3">
                 <div
                   className={`h-full rounded-full ${color} transition-all`}
                   style={{ width: `${Math.min(s.percentile, 100)}%` }}
                 />
                 {/* Intervention threshold marker */}
                 <div
-                  className="absolute top-0 h-full w-px border-l border-dashed border-gray-500"
+                  className="absolute top-0 h-full w-px border-l border-dashed border-border"
                   style={{ left: "75%" }}
                   title="Intervention threshold (75th percentile)"
                 />
@@ -134,7 +134,7 @@ function BasicGauges({
         })}
       </div>
       <div className="mt-3 flex items-center gap-2 text-[10px] text-[var(--ink-muted)]">
-        <span className="inline-block w-3 border-t border-dashed border-gray-500" />
+        <span className="inline-block w-3 border-t border-dashed border-border" />
         <span>FMCSA intervention threshold (75th percentile)</span>
       </div>
     </div>
@@ -206,10 +206,10 @@ function ViolationBreakdown({ inspections }: { inspections: SocrataInspection[] 
                   {oos > 0 && <span className="text-rose-600">{oos} OOS</span>}
                 </div>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+              <div className="h-2 overflow-hidden rounded-full bg-surface-3">
                 <div className="flex h-full">
                   <div
-                    className="h-full rounded-l-full bg-indigo-500 transition-all"
+                    className="h-full rounded-l-full bg-accent-soft0 transition-all"
                     style={{ width: `${((total - oos) / maxCount) * 100}%` }}
                   />
                   {oos > 0 && (
@@ -366,7 +366,7 @@ function ViolationTrendChart({ inspections }: { inspections: SocrataInspection[]
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm">
       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-indigo-600" />
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
         Violation Trend ({dateRangeLabel})
       </h3>
       <div className="w-full overflow-x-auto">

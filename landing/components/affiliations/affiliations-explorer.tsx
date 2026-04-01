@@ -17,7 +17,7 @@ const TYPE_STYLES: Record<string, string> = {
   POSSIBLE_CHAMELEON: "bg-rose-50 text-rose-700",
   COMMON_OWNER: "bg-amber-50 text-amber-700",
   COMMON_EQUIPMENT: "bg-blue-50 text-blue-700",
-  UNKNOWN: "bg-gray-50 text-gray-500",
+  UNKNOWN: "bg-surface-0 text-ink-soft",
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -59,12 +59,12 @@ export function AffiliationsExplorer() {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-        <label className="text-xs font-semibold text-gray-500">Filter:</label>
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface-1 px-4 py-3 shadow-sm">
+        <label className="text-xs font-semibold text-ink-soft">Filter:</label>
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-          className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-700"
+          className="rounded-lg border border-border px-2 py-1 text-xs text-ink-soft"
         >
           <option value="">All Types</option>
           <option value="POSSIBLE_CHAMELEON">Possible Chameleon</option>
@@ -74,31 +74,31 @@ export function AffiliationsExplorer() {
         <select
           value={minScore}
           onChange={(e) => { setMinScore(Number(e.target.value)); setPage(1); }}
-          className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-700"
+          className="rounded-lg border border-border px-2 py-1 text-xs text-ink-soft"
         >
           <option value={0}>Any Score</option>
           <option value={10}>10+</option>
           <option value={30}>30+</option>
           <option value={60}>60+ (High Risk)</option>
         </select>
-        <span className="ml-auto text-xs text-gray-400">{total} pairs found</span>
+        <span className="ml-auto text-xs text-ink-muted">{total} pairs found</span>
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border border-border bg-surface-1 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-sm text-gray-400">Loading affiliations...</div>
+          <div className="p-8 text-center text-sm text-ink-muted">Loading affiliations...</div>
         ) : rows.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm text-gray-500">No carrier affiliations found.</p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="text-sm text-ink-soft">No carrier affiliations found.</p>
+            <p className="mt-1 text-xs text-ink-muted">
               Import VIN data to detect shared vehicles between carriers.
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500">
+              <tr className="border-b border-border bg-surface-0 text-[10px] uppercase tracking-wider text-ink-soft">
                 <th className="px-4 py-2 text-left">Carrier A</th>
                 <th className="px-4 py-2 text-left">Carrier B</th>
                 <th className="px-4 py-2 text-center">Shared VINs</th>
@@ -109,26 +109,26 @@ export function AffiliationsExplorer() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={row.id} className="border-b border-border hover:bg-surface-0">
                   <td className="px-4 py-2.5">
-                    <a href={`/?dot=${row.carrierA.dotNumber}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                    <a href={`/?dot=${row.carrierA.dotNumber}`} className="font-medium text-ink hover:text-accent">
                       {row.carrierA.legalName ?? `DOT ${row.carrierA.dotNumber}`}
                     </a>
-                    <p className="text-[10px] text-gray-400">DOT {row.carrierA.dotNumber}</p>
+                    <p className="text-[10px] text-ink-muted">DOT {row.carrierA.dotNumber}</p>
                   </td>
                   <td className="px-4 py-2.5">
-                    <a href={`/?dot=${row.carrierB.dotNumber}`} className="font-medium text-gray-900 hover:text-indigo-600">
+                    <a href={`/?dot=${row.carrierB.dotNumber}`} className="font-medium text-ink hover:text-accent">
                       {row.carrierB.legalName ?? `DOT ${row.carrierB.dotNumber}`}
                     </a>
-                    <p className="text-[10px] text-gray-400">DOT {row.carrierB.dotNumber}</p>
+                    <p className="text-[10px] text-ink-muted">DOT {row.carrierB.dotNumber}</p>
                   </td>
-                  <td className="px-4 py-2.5 text-center font-semibold tabular-nums text-gray-900">
+                  <td className="px-4 py-2.5 text-center font-semibold tabular-nums text-ink">
                     {row.sharedVinCount}
                   </td>
                   <td className="px-4 py-2.5 text-center">
                     <span className={`font-semibold tabular-nums ${
                       row.affiliationScore >= 60 ? "text-rose-600" :
-                      row.affiliationScore >= 30 ? "text-amber-600" : "text-gray-600"
+                      row.affiliationScore >= 30 ? "text-amber-600" : "text-ink-soft"
                     }`}>
                       {row.affiliationScore}
                     </span>
@@ -140,7 +140,7 @@ export function AffiliationsExplorer() {
                       {TYPE_LABELS[row.affiliationType] ?? row.affiliationType}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-xs text-gray-400">
+                  <td className="px-4 py-2.5 text-xs text-ink-muted">
                     {new Date(row.firstDetectedAt).toLocaleDateString()}
                   </td>
                 </tr>
@@ -156,17 +156,17 @@ export function AffiliationsExplorer() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="rounded-lg border border-border px-3 py-1 text-xs text-ink-soft hover:bg-surface-0 disabled:opacity-40"
           >
             Previous
           </button>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-ink-muted">
             Page {page} of {pages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(pages, p + 1))}
             disabled={page >= pages}
-            className="rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+            className="rounded-lg border border-border px-3 py-1 text-xs text-ink-soft hover:bg-surface-0 disabled:opacity-40"
           >
             Next
           </button>

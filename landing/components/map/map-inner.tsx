@@ -216,8 +216,8 @@ export default function MapInner() {
             >
               <Popup>
                 <div className="text-sm min-w-[200px]">
-                  <p className="font-semibold text-zinc-900">{c.legalName}</p>
-                  <p className="text-zinc-500 text-xs mt-0.5">
+                  <p className="font-semibold text-ink">{c.legalName}</p>
+                  <p className="text-ink-muted text-xs mt-0.5">
                     USDOT: {c.dotNumber}
                   </p>
                   <p className="text-xs mt-1">
@@ -271,11 +271,11 @@ export default function MapInner() {
                   <div className="text-sm min-w-[200px]">
                     <p className="font-semibold text-red-700">Crash Report</p>
                     {crash.legalName && (
-                      <p className="text-zinc-700 text-xs mt-0.5">
+                      <p className="text-ink-soft text-xs mt-0.5">
                         {crash.legalName}
                       </p>
                     )}
-                    <p className="text-zinc-500 text-xs">
+                    <p className="text-ink-muted text-xs">
                       USDOT: {crash.dotNumber}
                     </p>
                     {crash.reportDate && (
@@ -307,8 +307,8 @@ export default function MapInner() {
 
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/50 dark:bg-zinc-900/50 pointer-events-none">
-          <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 px-4 py-2 rounded-lg shadow-lg">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-1/50 dark:bg-surface-0/50 pointer-events-none">
+          <div className="flex items-center gap-2 bg-surface-1 dark:bg-surface-1 px-4 py-2 rounded-lg shadow-lg">
             <svg
               className="animate-spin h-5 w-5 text-blue-600"
               xmlns="http://www.w3.org/2000/svg"
@@ -329,7 +329,7 @@ export default function MapInner() {
                 d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
               />
             </svg>
-            <span className="text-sm text-zinc-700 dark:text-zinc-300">
+            <span className="text-sm text-ink-soft dark:text-ink-soft">
               Loading map data...
             </span>
           </div>
@@ -337,10 +337,10 @@ export default function MapInner() {
       )}
 
       {/* Control panel */}
-      <div className="absolute top-4 right-4 z-30 w-72 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-xl shadow-lg p-4 space-y-4">
+      <div className="absolute top-4 right-4 z-30 w-72 bg-surface-1/90 dark:bg-surface-0/90 backdrop-blur-sm rounded-xl shadow-lg p-4 space-y-4">
         {/* Search */}
         <div>
-          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+          <label className="block text-xs font-medium text-ink-soft dark:text-ink-muted mb-1">
             Find carrier by USDOT
           </label>
           <div className="flex gap-1.5">
@@ -350,7 +350,7 @@ export default function MapInner() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="e.g. 1234567"
-              className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded-lg border border-border dark:border-border bg-surface-1 dark:bg-surface-1 px-3 py-1.5 text-sm text-ink dark:text-ink placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               onClick={handleSearch}
@@ -363,7 +363,7 @@ export default function MapInner() {
 
         {/* Layer toggle */}
         <div>
-          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+          <label className="block text-xs font-medium text-ink-soft dark:text-ink-muted mb-2">
             Map layers
           </label>
           <div className="flex gap-1.5">
@@ -374,7 +374,7 @@ export default function MapInner() {
                 className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
                   layer === l
                     ? "bg-blue-600 text-white"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    : "bg-surface-2 dark:bg-surface-1 text-ink-soft dark:text-ink-muted hover:bg-surface-2 dark:hover:bg-surface-2"
                 }`}
               >
                 {l === "all" ? "All" : l === "carriers" ? "Carriers" : "Crashes"}
@@ -384,7 +384,7 @@ export default function MapInner() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="flex gap-3 text-xs text-ink-muted dark:text-ink-muted">
           {showCarriers && (
             <span>
               <span className="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1" />

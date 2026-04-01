@@ -93,7 +93,7 @@ export function AppShell({
       >
         {/* Logo */}
         <div className="flex h-14 items-center gap-3 px-4 shrink-0" style={{ borderBottom: "1px solid var(--border)" }}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white text-xs font-bold">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent text-white text-xs font-bold">
             FS
           </div>
           {!collapsed && (
@@ -125,7 +125,7 @@ export function AppShell({
                       className={`
                         group relative flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
                         ${active
-                          ? "text-indigo-400"
+                          ? "text-accent"
                           : "hover:bg-[var(--surface-2)]"
                         }
                       `}
@@ -135,7 +135,7 @@ export function AppShell({
                       }}
                     >
                       {active && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-indigo-500" />
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-full bg-accent-soft0" />
                       )}
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span>{item.label}</span>}
@@ -243,7 +243,7 @@ export function AppShell({
 
             {/* User avatar */}
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold text-white bg-indigo-600"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold text-white bg-accent"
               title={user.email ?? "User"}
             >
               {initials}

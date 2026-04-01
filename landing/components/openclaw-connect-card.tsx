@@ -47,13 +47,13 @@ export function OpenClawConnectCard() {
   }, [tokenData]);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-border bg-surface-1 shadow-sm">
       <div className="h-0.5 bg-gradient-to-r from-amber-500 to-amber-400" />
       <div className="p-5">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-ink">
           Connect OpenClaw
         </h3>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-ink-soft">
           Generate a customer-scoped token to allow OpenClaw to call FleetSight
           carrier endpoints.
         </p>
@@ -62,7 +62,7 @@ export function OpenClawConnectCard() {
           <button
             onClick={connect}
             disabled={loading}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-60"
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-hover disabled:opacity-60"
           >
             {loading ? (
               <>
@@ -99,7 +99,7 @@ export function OpenClawConnectCard() {
               </p>
               <button
                 onClick={copyToken}
-                className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-white px-2 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-50"
+                className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-surface-1 px-2 py-1 text-xs font-medium text-emerald-700 transition hover:bg-emerald-50"
               >
                 {copied ? (
                   <>
@@ -137,7 +137,7 @@ export function OpenClawConnectCard() {
                 )}
               </button>
             </div>
-            <code className="block break-all rounded border border-emerald-200 bg-white px-3 py-2 text-xs text-emerald-800">
+            <code className="block break-all rounded border border-emerald-200 bg-surface-1 px-3 py-2 text-xs text-emerald-800">
               {tokenData.token}
             </code>
             <dl className="grid grid-cols-2 gap-2 text-xs text-emerald-700">
