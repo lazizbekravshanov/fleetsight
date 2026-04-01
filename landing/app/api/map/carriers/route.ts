@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/lib/http";
 
+export const dynamic = "force-dynamic";
+
 /**
  * US state abbreviation -> approximate centroid { lat, lng }.
  * Used to plot FmcsaCrash records that only have a state field.
