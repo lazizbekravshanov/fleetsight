@@ -1,4 +1,5 @@
 import { callClaude } from "./client";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
 export type AiSearchResult = {
   soqlWhere: string;
@@ -46,6 +47,11 @@ If the query cannot be translated, respond with: {"error": "reason"}`;
 export async function translateSearchQuery(
   query: string
 ): Promise<AiSearchResult | null> {
+  // Cache AI translations for 1 hour — same query always produces the same SoQL
+  const cacheKey = `ai-search:${query.toLowerCase().trim()}`;
+  const cached = await cacheGet<AiSearchResult | null>(cacheKey);
+  if (cached !== undefined && cached !== null) return cached;
+
   const response = await callClaude(
     SYSTEM_PROMPT,
     [{ role: "user", content: query }],
@@ -68,11 +74,13 @@ export async function translateSearchQuery(
       return null;
     }
 
-    return {
+    const result: AiSearchResult = {
       soqlWhere: parsed.where,
       limit: Math.min(parsed.limit ?? 50, 50),
       description: parsed.description ?? query,
     };
+    await cacheSet(cacheKey, result, 3600); // 1 hour
+    return result;
   } catch {
     return null;
   }
