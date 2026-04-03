@@ -25,6 +25,79 @@ const EXAMPLE_QUERIES = [
   "sole proprietorship trucking in Georgia",
 ];
 
+/* ── Landing page content ─────────────────────────────────────────── */
+
+const FEATURES = [
+  {
+    title: "Safety & BASIC Scores",
+    desc: "Full BASIC percentile breakdown with intervention thresholds. Understand crash risk, HOS compliance, and vehicle maintenance scores at a glance.",
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l5.5 3v5c0 3.5-2.5 5.5-5.5 6.5-3-1-5.5-3-5.5-6.5v-5z" /></svg>,
+  },
+  {
+    title: "Inspection & Violation History",
+    desc: "Every roadside inspection on record with driver and vehicle violations, OOS rates, state heatmaps, and level distribution analysis.",
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M5 5h6M5 11h4" /></svg>,
+  },
+  {
+    title: "Chameleon Carrier Detection",
+    desc: "7-signal scoring algorithm detects carriers that re-register to shed safety records. Shared VIN tracking, temporal analysis, and network clustering.",
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6" /><path d="M8 5v3l2 2" /></svg>,
+  },
+  {
+    title: "Fleet & VIN Intelligence",
+    desc: "Track every vehicle in a carrier's fleet by VIN. NHTSA recall alerts, complaint flags, make/model decoding, and cross-carrier VIN transfers.",
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4h10v8H1z" /><path d="M11 7h3l2 2.5V12h-5V7z" /><circle cx="4" cy="13" r="1.5" /><circle cx="13" cy="13" r="1.5" /></svg>,
+  },
+  {
+    title: "Background & Compliance Checks",
+    desc: "OFAC sanctions screening, SAM.gov exclusions, SEC filings, federal court records, OSHA violations, and corporate network analysis in one view.",
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="5" r="3" /><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" /></svg>,
+  },
+  {
+    title: "AI-Powered Search",
+    desc: 'Search in plain English \u2014 "hazmat carriers in Ohio with 50+ trucks" works. Claude-powered query translation turns natural language into precise results.',
+    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1l1.5 4.5H14l-3.5 2.5 1.3 4.5L8 10l-3.8 2.5 1.3-4.5L2 5.5h4.5z" /></svg>,
+  },
+];
+
+const AUDIENCES = [
+  {
+    title: "Freight Brokers",
+    desc: "Vet carriers before tendering loads. Spot double-brokering signals and chameleon carriers instantly.",
+    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1v14M1 8h14" /><circle cx="8" cy="8" r="6" /></svg>,
+  },
+  {
+    title: "Shippers & 3PLs",
+    desc: "Ensure every carrier in your routing guide meets safety thresholds. Continuous monitoring catches compliance changes.",
+    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="12" height="9" rx="1" /><path d="M5 4V2.5a3 3 0 016 0V4" /></svg>,
+  },
+  {
+    title: "Insurance Underwriters",
+    desc: "Assess fleet risk with composite scores, crash severity analysis, and historical violation trends for accurate premium setting.",
+    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l5.5 3v5c0 3.5-2.5 5.5-5.5 6.5-3-1-5.5-3-5.5-6.5v-5z" /><path d="M6 8l1.5 1.5L10.5 6" /></svg>,
+  },
+  {
+    title: "Compliance Teams",
+    desc: "Monitor your own authority, track fleet inspections, and get alerted to BASIC score changes before they become interventions.",
+    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M8 5v6" /></svg>,
+  },
+];
+
+const STEPS = [
+  {
+    title: "Search any carrier",
+    desc: "Enter a DOT number, MC number, company name, or a plain-English query like \"large hazmat carriers in Texas.\" FleetSight searches 4.4 million FMCSA registrations in under a second.",
+  },
+  {
+    title: "Get the full intelligence picture",
+    desc: "See safety scores, inspection history with state heatmaps, crash records, insurance status, fleet vehicles with VIN tracking, chameleon detection signals, and background checks \u2014 all in one view.",
+  },
+  {
+    title: "Monitor and act",
+    desc: "Add carriers to your watchlist for continuous monitoring. Get alerts on authority revocations, OOS orders, insurance lapses, and BASIC score spikes. Export data, generate reports, and integrate with your TMS.",
+  },
+];
+
 function updateUrl(params: Record<string, string | null>) {
   const url = new URL(window.location.href);
   for (const [k, v] of Object.entries(params)) {
@@ -149,6 +222,8 @@ export function CarrierLookup() {
     doSearch(example);
   }
 
+  const showLanding = !searched && !selectedDot;
+
   return (
     <main className="min-h-screen bg-[var(--surface-2)] text-[var(--ink)]">
       {/* Header */}
@@ -157,20 +232,40 @@ export function CarrierLookup() {
           <p className="text-sm font-semibold tracking-wide text-accent">
             FleetSight
           </p>
-          {/* Free — no credit badge needed */}
+          <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-600/20">
+            100% Free
+          </span>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        {/* Search */}
+        {/* Hero + Search */}
         <div className="text-center">
-          <h1 className="text-4xl font-semibold text-[var(--ink)] sm:text-5xl">
-            FMCSA Carrier Lookup
-          </h1>
-          <p className="mt-2 text-sm text-[var(--ink-soft)]">
-            Search 4.4M FMCSA-registered carriers, brokers &amp; freight
-            forwarders by name, DOT number, or MC number
-          </p>
+          {showLanding ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-3">
+                Carrier Intelligence Platform
+              </p>
+              <h1 className="text-4xl font-semibold text-[var(--ink)] sm:text-5xl" style={{ fontFamily: "var(--font-serif)" }}>
+                Know every carrier<br className="hidden sm:block" /> before they touch your freight
+              </h1>
+              <p className="mx-auto mt-4 max-w-2xl text-base text-[var(--ink-soft)] leading-relaxed">
+                FleetSight gives freight brokers, shippers, and compliance teams instant access to
+                deep safety intelligence on 4.4 million FMCSA-registered carriers &mdash; inspections, crash
+                records, insurance, chameleon detection, and more. No signup required.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl font-semibold text-[var(--ink)] sm:text-5xl">
+                FMCSA Carrier Lookup
+              </h1>
+              <p className="mt-2 text-sm text-[var(--ink-soft)]">
+                Search 4.4M FMCSA-registered carriers, brokers &amp; freight
+                forwarders by name, DOT number, or MC number
+              </p>
+            </>
+          )}
         </div>
 
         <form
@@ -217,7 +312,7 @@ export function CarrierLookup() {
         </div>
 
         {/* Example query chips */}
-        {!searched && !selectedDot && (
+        {showLanding && (
           <div className="mx-auto mt-3 max-w-2xl">
             <p className="mb-1.5 text-xs text-[var(--ink-muted)]">Try a smart search:</p>
             <div className="flex flex-wrap gap-1.5">
@@ -232,6 +327,119 @@ export function CarrierLookup() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* ── Landing content (visible before first search) ──────────── */}
+        {showLanding && (
+          <>
+            {/* Stat ribbon */}
+            <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { value: "4.4M", label: "Registered Carriers" },
+                { value: "13M+", label: "VIN Observations" },
+                { value: "8M+", label: "Inspection Records" },
+                { value: "100%", label: "Free, No Signup" },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] px-4 py-4 text-center"
+                >
+                  <p className="text-2xl font-bold text-accent">{s.value}</p>
+                  <p className="mt-1 text-[11px] text-[var(--ink-muted)]">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* What is FleetSight */}
+            <section className="mx-auto mt-16 max-w-4xl">
+              <h2 className="text-center text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-serif)" }}>
+                Deep carrier intelligence, completely free
+              </h2>
+              <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-[var(--ink-soft)] leading-relaxed">
+                FleetSight aggregates public FMCSA, DOT, and NHTSA data into a single intelligence layer.
+                Every lookup gives you the full picture &mdash; not just a safety rating, but the context
+                behind it.
+              </p>
+
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {FEATURES.map((f) => (
+                  <div
+                    key={f.title}
+                    className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                      {f.icon}
+                    </div>
+                    <h3 className="mt-3 text-sm font-semibold text-[var(--ink)]">{f.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[var(--ink-soft)]">{f.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Who it helps */}
+            <section className="mx-auto mt-16 max-w-4xl">
+              <h2 className="text-center text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-serif)" }}>
+                Built for the people who move freight
+              </h2>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {AUDIENCES.map((a) => (
+                  <div key={a.title} className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5 text-center">
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-accent text-lg">
+                      {a.icon}
+                    </div>
+                    <h3 className="mt-3 text-sm font-semibold text-[var(--ink)]">{a.title}</h3>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[var(--ink-soft)]">{a.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* How it works */}
+            <section className="mx-auto mt-16 max-w-3xl">
+              <h2 className="text-center text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-serif)" }}>
+                Three steps to carrier clarity
+              </h2>
+              <div className="mt-8 space-y-4">
+                {STEPS.map((step, i) => (
+                  <div key={step.title} className="flex gap-4 items-start rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-white text-sm font-bold">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-[var(--ink)]">{step.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-[var(--ink-soft)]">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Data sources */}
+            <section className="mx-auto mt-16 max-w-3xl mb-8">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-6 text-center">
+                <p className="text-xs font-semibold uppercase tracking-widest text-[var(--ink-muted)] mb-3">
+                  Powered by public data
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[var(--ink-soft)]">
+                  <span>FMCSA Safety &amp; Fitness</span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span>DOT Inspections &amp; Crashes</span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span>NHTSA Vehicle Data</span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span>OFAC &amp; SAM.gov</span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span>SEC EDGAR</span>
+                  <span className="text-[var(--border)]">|</span>
+                  <span>Court Records</span>
+                </div>
+                <p className="mt-3 text-[11px] text-[var(--ink-muted)]">
+                  All data sourced directly from federal agencies. Updated daily. No third-party data brokers.
+                </p>
+              </div>
+            </section>
+          </>
         )}
 
         {/* Search mode indicator + description */}
