@@ -1,8 +1,16 @@
+# Build output
 .next/
-node_modules/
-dev.db
-dev.db-journal
-.env.local
-
 *.tsbuildinfo
 .vercel
+
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Database
+dev.db
+dev.db-journal

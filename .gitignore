@@ -1,6 +1,20 @@
-.vercel
+# Dependencies
 node_modules/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+.next/
+.vercel
+*.tsbuildinfo
+
+# Dev artifacts
 screenshot.mjs
 screenshot-detail.mjs
 screenshot.png
 screenshot-detail.png
+dev.db
+dev.db-journal
