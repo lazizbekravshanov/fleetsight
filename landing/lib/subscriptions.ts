@@ -70,14 +70,14 @@ export async function getUserCarrierCount(userId: string): Promise<number> {
 
 export async function canAddCarriers(
   userId: string,
-  tier: string,
+  _tier: string,
   count: number
 ): Promise<{ allowed: boolean; current: number; limit: number }> {
-  const limit = getCarrierLimit(tier);
+  // All features are free — no carrier limits
   const current = await getUserCarrierCount(userId);
   return {
-    allowed: current + count <= limit,
+    allowed: true,
     current,
-    limit,
+    limit: Infinity,
   };
 }

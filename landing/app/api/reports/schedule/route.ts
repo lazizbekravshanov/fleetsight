@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/reports/schedule — get user's scheduled reports
 export async function GET() {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ carriers: [], schedule: { enabled: false, frequency: "weekly", nextRun: null } });
 
   const watched = await prisma.watchedCarrier.findMany({
     where: { userId: session.user.id },
@@ -27,7 +27,7 @@ export async function GET() {
 // POST /api/reports/schedule — trigger a compliance report for specific carriers
 export async function POST(req: NextRequest) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Sign in to generate reports" }, { status: 401 });
 
   const body = await req.json();
   const { dotNumbers } = body;

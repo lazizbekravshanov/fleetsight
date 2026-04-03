@@ -1,6 +1,4 @@
 import { NextRequest } from "next/server";
-import { getServerAuthSession } from "@/auth";
-import { deductCredit } from "@/lib/credits";
 import { jsonError } from "@/lib/http";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
@@ -26,11 +24,6 @@ function buildSystemPrompt(dotNumber?: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return jsonError("Authentication required", 401);
-  }
-
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return jsonError("AI service not configured", 503);
@@ -47,16 +40,7 @@ export async function POST(req: NextRequest) {
     return jsonError("Messages array is required", 400);
   }
 
-  // Rate limit: deduct 1 credit per conversation turn
-  const { success, remaining } = await deductCredit(
-    session.user.id,
-    "ai_chat",
-    `chat_${Date.now()}`
-  );
-
-  if (!success) {
-    return jsonError("Insufficient credits", 402, { remaining });
-  }
+  const remaining = Infinity;
 
   const systemPrompt = buildSystemPrompt(body.context?.dotNumber);
 

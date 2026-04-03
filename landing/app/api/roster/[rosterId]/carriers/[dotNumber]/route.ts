@@ -9,7 +9,7 @@ export async function DELETE(
 ) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
+    return Response.json({ ok: true });
   }
 
   // Verify ownership

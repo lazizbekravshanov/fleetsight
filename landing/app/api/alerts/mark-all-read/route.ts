@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
+    return Response.json({ ok: true, count: 0 });
   }
 
   const result = await prisma.monitoringAlert.updateMany({

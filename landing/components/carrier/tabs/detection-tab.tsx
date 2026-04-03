@@ -1,7 +1,6 @@
 "use client";
 
 import { SkeletonRows } from "../shared";
-import { AiUpgradePrompt } from "@/components/credits/ai-upgrade-prompt";
 import type { DetectionData, AnomalyFlag } from "../types";
 
 const SEVERITY: Record<string, { bg: string; text: string; border: string; dot: string }> = {
@@ -247,8 +246,6 @@ export function DetectionTab({
           </div>
           <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{data.aiExplanation}</p>
         </div>
-      ) : data.aiGated?.skipped ? (
-        <AiUpgradePrompt reason={data.aiGated.reason} />
       ) : null}
       {hasAnomalies && <AnomalyFlagsCard flags={data.anomalyFlags} />}
       {hasMill && <AuthorityMillCard mill={data.authorityMill} />}

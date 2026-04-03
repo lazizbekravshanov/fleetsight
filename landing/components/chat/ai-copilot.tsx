@@ -90,10 +90,7 @@ export function AICopilot() {
               m.id === assistantMsg.id
                 ? {
                     ...m,
-                    content:
-                      err.error === "Insufficient credits"
-                        ? "You have run out of credits. Please purchase more to continue using AI Chat."
-                        : `Error: ${err.error || "Something went wrong. Please try again."}`,
+                    content: `Error: ${err.error || "Something went wrong. Please try again."}`,
                   }
                 : m
             )

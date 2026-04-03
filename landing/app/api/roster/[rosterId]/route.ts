@@ -9,7 +9,7 @@ export async function GET(
 ) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
+    return Response.json({ roster: null });
   }
 
   const roster = await prisma.monitoredRoster.findFirst({

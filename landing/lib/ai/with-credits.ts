@@ -1,23 +1,9 @@
-import { getServerAuthSession } from "@/auth";
-import { deductCredit } from "@/lib/credits";
-
-type GateResult =
-  | { allowed: true; userId: string; remaining: number }
-  | { allowed: false; reason: "not_authenticated" | "no_credits" };
+type GateResult = { allowed: true; userId: string; remaining: number };
 
 export async function gateAiFeature(
-  featureType: string,
-  reference?: string
+  _featureType: string,
+  _reference?: string
 ): Promise<GateResult> {
-  const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return { allowed: false, reason: "not_authenticated" };
-  }
-
-  const { success, remaining } = await deductCredit(session.user.id, featureType, reference);
-  if (!success) {
-    return { allowed: false, reason: "no_credits" };
-  }
-
-  return { allowed: true, userId: session.user.id, remaining };
+  // All AI features are free — no credit gating
+  return { allowed: true, userId: "anonymous", remaining: Infinity };
 }

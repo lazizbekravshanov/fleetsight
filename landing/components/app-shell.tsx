@@ -27,12 +27,7 @@ const NAV_SECTIONS = [
       { label: "Teams", href: "/teams", icon: TeamsIcon },
     ],
   },
-  {
-    label: "Account",
-    items: [
-      { label: "Credits", href: "/credits", icon: CreditsIcon },
-    ],
-  },
+  // All features are free — no credits/account section needed
 ];
 
 /* ── Shell ────────────────────────────────────────────────────────── */
@@ -68,6 +63,7 @@ export function AppShell({
   }, [pathname]);
 
   const isDark = theme === "dark";
+  const isAnonymous = !user.email;
   const initials = user.email?.slice(0, 2).toUpperCase() ?? "FS";
 
   return (
@@ -149,14 +145,25 @@ export function AppShell({
 
         {/* Bottom */}
         <div className="shrink-0 p-2 space-y-1" style={{ borderTop: "1px solid var(--border)" }}>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-2)]"
-            style={{ color: "var(--ink-soft)" }}
-          >
-            <SignOutIcon className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Sign Out</span>}
-          </button>
+          {isAnonymous ? (
+            <Link
+              href="/login"
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-2)]"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              <SignOutIcon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span>Sign In</span>}
+            </Link>
+          ) : (
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-2)]"
+              style={{ color: "var(--ink-soft)" }}
+            >
+              <SignOutIcon className="h-4 w-4 shrink-0" />
+              {!collapsed && <span>Sign Out</span>}
+            </button>
+          )}
         </div>
       </aside>
 

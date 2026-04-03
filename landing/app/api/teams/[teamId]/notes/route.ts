@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: { teamId: string } }
 ) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ notes: [] });
 
   const membership = await prisma.teamMember.findUnique({
     where: { teamId_userId: { teamId: params.teamId, userId: session.user.id } },
@@ -35,7 +35,7 @@ export async function POST(
   { params }: { params: { teamId: string } }
 ) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ error: "Sign in to create notes" }, { status: 401 });
 
   const membership = await prisma.teamMember.findUnique({
     where: { teamId_userId: { teamId: params.teamId, userId: session.user.id } },

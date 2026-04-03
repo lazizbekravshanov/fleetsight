@@ -8,7 +8,10 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return new Response("Unauthorized", { status: 401 });
+    // Return an empty SSE stream for anonymous users
+    return new Response("data: {\"alerts\":[]}\n\n", {
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" },
+    });
   }
 
   const userId = session.user.id;

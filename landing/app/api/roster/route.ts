@@ -7,12 +7,7 @@ import { getUserSubscription } from "@/lib/subscriptions";
 export async function GET() {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  const subscription = await getUserSubscription(session.user.id);
-  if (!subscription || subscription.status !== "active") {
-    return jsonError("Active subscription required", 403);
+    return Response.json({ rosters: [] });
   }
 
   const rosters = await prisma.monitoredRoster.findMany({
@@ -34,12 +29,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  const subscription = await getUserSubscription(session.user.id);
-  if (!subscription || subscription.status !== "active") {
-    return jsonError("Active subscription required", 403);
+    return jsonError("Sign in to create rosters", 401);
   }
 
   const body = await req.json().catch(() => ({}));

@@ -16,9 +16,7 @@ export async function POST(
   context: { params: { dotNumber: string } }
 ) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) {
-    return jsonError("Unauthorized — sign in to submit reports", 401);
-  }
+  const userId = session?.user?.id ?? "anonymous";
 
   const dotNumber = context.params.dotNumber;
   if (!/^\d{1,10}$/.test(dotNumber)) {
@@ -38,7 +36,7 @@ export async function POST(
   // Rate limit: max 10 reports/day per user
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const dailyCount = await prisma.communityReport.count({
-    where: { userId: session.user.id, createdAt: { gte: dayAgo } },
+    where: { userId: userId, createdAt: { gte: dayAgo } },
   });
   if (dailyCount >= 10) {
     return jsonError("Daily report limit reached (10/day). Try again tomorrow.", 429);
@@ -48,7 +46,7 @@ export async function POST(
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const recentSameType = await prisma.communityReport.findFirst({
     where: {
-      userId: session.user.id,
+      userId: userId,
       dotNumber,
       reportType: parsed.data.reportType,
       createdAt: { gte: thirtyDaysAgo },
@@ -65,7 +63,7 @@ export async function POST(
 
   const report = await prisma.communityReport.create({
     data: {
-      userId: session.user.id,
+      userId: userId,
       dotNumber,
       reportType: parsed.data.reportType,
       description: parsed.data.description,

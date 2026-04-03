@@ -1,7 +1,6 @@
 "use client";
 
 import { SkeletonRows } from "../shared";
-import { AiUpgradePrompt } from "@/components/credits/ai-upgrade-prompt";
 import type {
   BackgroundData,
   OfficerProfile,
@@ -1188,8 +1187,6 @@ export function BackgroundTab({
           </div>
           <p className="text-sm leading-relaxed text-[var(--ink-soft)]">{data.riskNarrative}</p>
         </div>
-      ) : data.aiGated?.skipped ? (
-        <AiUpgradePrompt reason={data.aiGated.reason} />
       ) : null}
 
       {/* Digital Footprint & Address Intel side by side on wide screens */}

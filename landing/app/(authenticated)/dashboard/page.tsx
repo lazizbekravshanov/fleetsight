@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getServerAuthSession } from "@/auth";
 import { CarrierSnapshot } from "@/components/carrier-snapshot";
@@ -7,37 +6,38 @@ import { WatchlistSection } from "@/components/dashboard/watchlist-section";
 import { RecentSearchesSection } from "@/components/dashboard/recent-searches-section";
 import { FleetHealthSection } from "@/components/dashboard/fleet-health-section";
 import { AlertsSection } from "@/components/dashboard/alerts-section";
-import { SubscriptionBanner } from "@/components/dashboard/subscription-banner";
 import { prisma } from "@/lib/prisma";
-import { getCreditBalance } from "@/lib/credits";
+import type { WatchedCarrier, SearchHistory } from "@prisma/client";
 
 export default async function DashboardPage() {
   const session = await getServerAuthSession();
-  if (!session?.user?.id || !session.user.email) {
-    redirect("/login");
+  const userId = session?.user?.id;
+
+  let profile = null;
+  let watchedCarriers: WatchedCarrier[] = [];
+  let searchHistory: SearchHistory[] = [];
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+    profile = user?.profile ?? null;
+
+    const [watched, history] = await Promise.all([
+      prisma.watchedCarrier.findMany({
+        where: { userId },
+        orderBy: { addedAt: "desc" },
+      }),
+      prisma.searchHistory.findMany({
+        where: { userId },
+        orderBy: { searchedAt: "desc" },
+        take: 15,
+      }),
+    ]);
+    watchedCarriers = watched;
+    searchHistory = history;
   }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: { profile: true },
-  });
-
-  if (!user?.profile) {
-    redirect("/onboarding");
-  }
-
-  const [creditBalance, watchedCarriers, searchHistory] = await Promise.all([
-    getCreditBalance(session.user.id),
-    prisma.watchedCarrier.findMany({
-      where: { userId: session.user.id },
-      orderBy: { addedAt: "desc" },
-    }),
-    prisma.searchHistory.findMany({
-      where: { userId: session.user.id },
-      orderBy: { searchedAt: "desc" },
-      take: 15,
-    }),
-  ]);
 
   const hour = new Date().getHours();
   const greeting =
@@ -49,22 +49,21 @@ export default async function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold" style={{ color: "var(--ink)" }}>
-            {greeting}, {user.profile.companyName}
+            {greeting}{profile ? `, ${profile.companyName}` : ""}
           </h1>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" style={{ color: "var(--ink-soft)" }}>
-            <span>{user.email}</span>
+            {session?.user?.email && <span>{session.user.email}</span>}
+            {profile && (
+              <>
+                <span style={{ color: "var(--border-hover)" }}>|</span>
+                <span>USDOT {profile.usdotNumber}</span>
+              </>
+            )}
             <span style={{ color: "var(--border-hover)" }}>|</span>
-            <span>USDOT {user.profile.usdotNumber}</span>
-            <span style={{ color: "var(--border-hover)" }}>|</span>
-            <Link href="/credits" className="text-accent hover:text-accent transition-colors">
-              {creditBalance} AI credits
-            </Link>
+            <span className="text-accent">All features free</span>
           </div>
         </div>
       </div>
-
-      {/* Subscription Banner */}
-      <SubscriptionBanner />
 
       {/* Fleet Health + Alerts Row */}
       <FleetHealthSection />
@@ -77,10 +76,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* Carrier Snapshot + API Access */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <CarrierSnapshot usdotNumber={user.profile.usdotNumber} />
-        <OpenClawConnectCard />
-      </div>
+      {profile && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <CarrierSnapshot usdotNumber={profile.usdotNumber} />
+          <OpenClawConnectCard />
+        </div>
+      )}
     </div>
   );
 }

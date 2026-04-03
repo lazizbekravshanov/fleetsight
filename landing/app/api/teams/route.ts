@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET /api/teams — list user's teams
 export async function GET() {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ teams: [] });
 
   const memberships = await prisma.teamMember.findMany({
     where: { userId: session.user.id },

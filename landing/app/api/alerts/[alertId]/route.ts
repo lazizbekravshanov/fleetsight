@@ -9,7 +9,7 @@ export async function PATCH(
 ) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
+    return Response.json({ ok: true });
   }
 
   const alert = await prisma.monitoringAlert.findFirst({

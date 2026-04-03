@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { getServerAuthSession } from "@/auth";
 import { jsonError } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
-import { getUserSubscription, canAddCarriers } from "@/lib/subscriptions";
 
 export async function POST(
   req: NextRequest,
@@ -10,12 +9,7 @@ export async function POST(
 ) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
-  }
-
-  const subscription = await getUserSubscription(session.user.id);
-  if (!subscription || subscription.status !== "active") {
-    return jsonError("Active subscription required", 403);
+    return Response.json({ carriers: [] });
   }
 
   const roster = await prisma.monitoredRoster.findFirst({
@@ -47,15 +41,6 @@ export async function POST(
     return jsonError("Invalid carrier data. Each entry needs dotNumber and legalName.", 400);
   }
 
-  // Check tier limit
-  const check = await canAddCarriers(session.user.id, subscription.tier, entries.length);
-  if (!check.allowed) {
-    return jsonError(
-      `Carrier limit exceeded. You have ${check.current}/${check.limit} carriers. Cannot add ${entries.length} more.`,
-      403
-    );
-  }
-
   // Upsert carriers
   let added = 0;
   for (const entry of entries) {
@@ -82,5 +67,5 @@ export async function POST(
     }
   }
 
-  return Response.json({ added, total: check.current + added }, { status: 201 });
+  return Response.json({ added, total: added }, { status: 201 });
 }

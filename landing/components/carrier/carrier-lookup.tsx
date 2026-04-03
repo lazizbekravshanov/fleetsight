@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
 import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
 import { CarrierDetailView } from "./carrier-detail";
-import { CreditBadge } from "@/components/credits/credit-badge";
 import type { SearchResult, CarrierDetail, Tab } from "./types";
 
 const RISK_GRADE_COLORS: Record<string, string> = {
@@ -158,7 +157,7 @@ export function CarrierLookup() {
           <p className="text-sm font-semibold tracking-wide text-accent">
             FleetSight
           </p>
-          <CreditBadge />
+          {/* Free — no credit badge needed */}
         </div>
       </header>
 
@@ -249,25 +248,7 @@ export function CarrierLookup() {
           </div>
         )}
 
-        {/* AI skipped banner */}
-        {searched && aiSkipped && (
-          <div className="mx-auto mt-3 max-w-2xl">
-            <div className="flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-xs text-violet-700">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M8 1l1.5 4.5H14l-3.5 2.5 1.3 4.5L8 10l-3.8 2.5 1.3-4.5L2 5.5h4.5z" />
-              </svg>
-              {aiSkipped === "not_authenticated" ? (
-                <span>
-                  <a href="/login" className="font-medium underline hover:text-violet-900">Sign in</a> for AI-powered search
-                </span>
-              ) : (
-                <span>
-                  <a href="/credits" className="font-medium underline hover:text-violet-900">Add credits</a> for AI-powered search
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+        {/* AI search is free for all users */}
 
         {/* Results */}
         {searched && results.length === 0 && (

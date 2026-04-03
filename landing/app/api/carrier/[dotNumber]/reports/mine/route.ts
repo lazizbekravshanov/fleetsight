@@ -10,7 +10,7 @@ export async function GET(
 ) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) {
-    return jsonError("Unauthorized", 401);
+    return Response.json({ reports: [] });
   }
 
   const dotNumber = context.params.dotNumber;

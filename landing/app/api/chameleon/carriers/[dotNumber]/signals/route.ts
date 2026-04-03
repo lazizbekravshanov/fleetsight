@@ -11,7 +11,6 @@ import {
 import type { InsuranceCrossMatch } from "@/lib/detection-signals";
 import { computeAllSignals } from "@/lib/detection-signals";
 import { explainAnomalies } from "@/lib/ai/anomaly-explainer";
-import { gateAiFeature } from "@/lib/ai/with-credits";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
@@ -180,19 +179,11 @@ export async function GET(
     addressMatches,
   };
 
-  // Gate AI explanation behind credits
-  const gate = await gateAiFeature("ai_anomaly_explanation", String(dotNumber));
-  let aiExplanation: string | null = null;
-  let aiGated: { skipped: true; reason: string } | undefined;
+  // AI explanation is free for all users
+  const aiExplanation = await explainAnomalies(
+    carrier.legal_name,
+    responseData
+  ).catch(() => null);
 
-  if (gate.allowed) {
-    aiExplanation = await explainAnomalies(
-      carrier.legal_name,
-      responseData
-    ).catch(() => null);
-  } else {
-    aiGated = { skipped: true, reason: gate.reason };
-  }
-
-  return Response.json({ ...responseData, aiExplanation, aiGated });
+  return Response.json({ ...responseData, aiExplanation });
 }

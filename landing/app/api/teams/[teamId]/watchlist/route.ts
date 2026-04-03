@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: { teamId: string } }
 ) {
   const session = await getServerAuthSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user?.id) return NextResponse.json({ carriers: [] });
 
   const membership = await getTeamMembership(params.teamId, session.user.id);
   if (!membership) return NextResponse.json({ error: "Not a team member" }, { status: 403 });
