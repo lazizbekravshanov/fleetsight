@@ -12,142 +12,71 @@ type StateData = {
   oos: number;
 };
 
-/* ── Truck & Trailer SVG Icons ──────────────────────────────────────── */
-
-function TruckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 3h15v13H1z" />
-      <path d="M16 8h4l3 4v5h-7V8z" />
-      <circle cx="5.5" cy="18.5" r="2.5" />
-      <circle cx="18.5" cy="18.5" r="2.5" />
-    </svg>
-  );
-}
-
-function TrailerIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="3" width="18" height="13" rx="1" />
-      <path d="M19 10h4" />
-      <circle cx="7" cy="18.5" r="2.5" />
-      <circle cx="14" cy="18.5" r="2.5" />
-      <path d="M1 10h18" />
-    </svg>
-  );
-}
-
-/* ── US State Paths (simplified for lightweight rendering) ──────────── */
-/* viewBox: 0 0 960 600 — standard US Albers projection bounds */
-
-const STATE_PATHS: Record<string, string> = {
-  AL: "M628,425 L628,467 L619,491 L635,493 L637,478 L651,467 L651,425Z",
-  AK: "M161,485 L183,485 L183,510 L210,510 L210,530 L161,530Z",
-  AZ: "M205,410 L275,410 L275,500 L210,500 L195,475 L195,440Z",
-  AR: "M555,420 L620,420 L620,468 L555,468Z",
-  CA: "M108,280 L145,280 L165,310 L180,370 L180,475 L135,475 L100,420 L85,350Z",
-  CO: "M290,305 L385,305 L385,370 L290,370Z",
-  CT: "M850,195 L880,185 L885,205 L855,215Z",
-  DE: "M815,280 L830,270 L835,295 L820,300Z",
-  FL: "M660,470 L720,455 L760,485 L740,535 L695,555 L670,520 L655,490Z",
-  GA: "M660,415 L710,415 L715,455 L695,485 L660,485 L650,465Z",
-  HI: "M260,515 L300,510 L305,530 L270,535Z",
-  ID: "M215,145 L260,145 L270,240 L235,275 L210,275 L205,200Z",
-  IL: "M575,260 L610,255 L615,335 L605,370 L575,370 L565,330Z",
-  IN: "M615,260 L650,260 L650,355 L615,365Z",
-  IA: "M510,235 L580,230 L585,280 L505,285Z",
-  KS: "M405,330 L510,330 L510,390 L405,390Z",
-  KY: "M615,355 L720,340 L725,375 L620,390Z",
-  LA: "M555,468 L610,468 L615,520 L580,535 L555,505Z",
-  ME: "M880,95 L905,85 L915,130 L890,155 L870,140Z",
-  MD: "M770,280 L830,265 L840,290 L805,310 L775,305Z",
-  MA: "M855,180 L900,170 L905,185 L860,195Z",
-  MI: "M595,145 L640,130 L665,175 L660,240 L615,250 L600,200Z",
-  MN: "M470,120 L545,115 L550,210 L475,215Z",
-  MS: "M590,420 L620,420 L620,500 L605,510 L590,490Z",
-  MO: "M510,310 L575,305 L580,390 L540,410 L510,395Z",
-  MT: "M245,105 L380,100 L385,175 L250,180Z",
-  NE: "M370,265 L480,260 L485,310 L370,315Z",
-  NV: "M170,220 L220,215 L235,340 L185,380 L155,310Z",
-  NH: "M865,120 L880,115 L885,170 L865,175Z",
-  NJ: "M825,225 L845,220 L840,270 L820,275Z",
-  NM: "M270,400 L355,400 L355,495 L270,500Z",
-  NY: "M780,155 L845,140 L860,195 L835,220 L790,230 L775,200Z",
-  NC: "M690,365 L800,340 L810,370 L720,395 L690,390Z",
-  ND: "M385,115 L470,110 L475,180 L390,185Z",
-  OH: "M650,250 L710,240 L720,310 L660,325 L645,300Z",
-  OK: "M390,390 L510,385 L520,420 L510,435 L405,440 L395,415Z",
-  OR: "M100,140 L200,130 L215,195 L110,210Z",
-  PA: "M730,220 L810,210 L825,250 L740,265Z",
-  RI: "M875,195 L890,190 L892,205 L877,208Z",
-  SC: "M700,395 L755,375 L770,405 L730,425 L700,420Z",
-  SD: "M385,185 L475,180 L480,250 L390,255Z",
-  TN: "M610,375 L725,360 L730,395 L615,410Z",
-  TX: "M355,430 L505,430 L520,440 L535,510 L510,555 L440,570 L380,540 L340,500Z",
-  UT: "M230,260 L295,255 L300,360 L240,365Z",
-  VT: "M845,115 L865,110 L868,170 L848,175Z",
-  VA: "M700,310 L800,290 L810,335 L730,360 L690,355Z",
-  WA: "M115,80 L215,75 L220,140 L120,145Z",
-  WV: "M710,290 L745,280 L745,345 L715,355 L700,325Z",
-  WI: "M530,140 L590,135 L600,220 L535,225Z",
-  WY: "M280,195 L375,190 L380,265 L285,270Z",
-  DC: "M795,295 L805,290 L808,300 L798,303Z",
-};
-
-const STATE_LABELS: Record<string, [number, number]> = {
-  AL: [640,450], AK: [185,505], AZ: [235,455], AR: [585,445], CA: [135,380],
-  CO: [338,338], CT: [866,200], DE: [828,285], FL: [700,500], GA: [685,445],
-  HI: [280,522], ID: [230,210], IL: [590,310], IN: [633,305], IA: [543,258],
-  KS: [458,360], KY: [668,368], LA: [580,490], ME: [893,115], MD: [805,290],
-  MA: [878,178], MI: [630,185], MN: [508,165], MS: [605,460], MO: [545,355],
-  MT: [315,140], NE: [425,288], NV: [185,290], NH: [875,145], NJ: [833,248],
-  NM: [313,448], NY: [810,185], NC: [745,370], ND: [428,148], OH: [680,280],
-  OK: [448,415], OR: [155,170], PA: [775,240], RI: [883,200], SC: [730,405],
-  SD: [433,218], TN: [668,388], TX: [440,498], UT: [265,310], VT: [855,140],
-  VA: [750,325], WA: [168,108], WV: [725,318], WI: [560,178], WY: [328,228],
-  DC: [800,298],
-};
-
-const STATE_NAMES: Record<string, string> = {
-  AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",
-  CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",
-  HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",
-  KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",
-  MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",
-  NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",
-  NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
-  OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",
-  SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",
-  VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",
-  DC:"Washington D.C.",
-};
-
-/* ── Color scale ────────────────────────────────────────────────────── */
-
-function heatColor(count: number, max: number): string {
-  if (count === 0 || max === 0) return "var(--surface-2)";
-  const t = Math.min(count / max, 1);
-  // Warm gradient: surface → light orange → accent → deep orange
-  if (t < 0.25) return `rgba(217,119,87,${0.12 + t * 1.2})`;
-  if (t < 0.5) return `rgba(217,119,87,${0.25 + t * 0.8})`;
-  if (t < 0.75) return `rgba(196,98,63,${0.5 + t * 0.4})`;
-  return `rgba(180,70,40,${0.7 + t * 0.3})`;
-}
-
-function textColorForHeat(count: number, max: number): string {
-  if (count === 0 || max === 0) return "var(--ink-muted)";
-  const t = Math.min(count / max, 1);
-  return t > 0.4 ? "#fff" : "var(--ink)";
-}
-
-/* ── Component ──────────────────────────────────────────────────────── */
-
 type InspectionLike = {
   report_state?: string;
   vehicle_viol_total?: string;
   driver_viol_total?: string;
   oos_total?: string;
 };
+
+/* ── US State paths (Albers USA projection, viewBox 0 0 960 600) ──── */
+/* Source: Natural Earth → TopoJSON US Atlas (standard D3 projection) */
+
+const US_STATES: Record<string, { path: string; cx: number; cy: number }> = {
+  AL: { cx: 632, cy: 434, path: "M616,396L617,444L614,458L618,462L631,457L638,462L638,400L631,396Z" },
+  AK: { cx: 170, cy: 503, path: "M120,480L130,470L155,465L175,480L190,478L205,490L205,515L185,530L160,525L130,530L115,515L110,500Z" },
+  AZ: { cx: 217, cy: 445, path: "M183,395L269,381L282,463L263,495L199,503L185,470L177,415Z" },
+  AR: { cx: 567, cy: 430, path: "M547,405L594,400L604,406L605,450L595,461L545,463L543,410Z" },
+  CA: { cx: 122, cy: 375, path: "M96,290L123,264L132,281L149,306L165,345L170,400L165,450L152,468L120,445L100,405L86,345Z" },
+  CO: { cx: 310, cy: 340, path: "M260,310L372,299L377,367L264,378Z" },
+  CT: { cx: 860, cy: 199, path: "M844,189L870,182L874,199L857,207L844,202Z" },
+  DE: { cx: 828, cy: 289, path: "M820,272L834,265L838,290L828,300L820,285Z" },
+  FL: { cx: 700, cy: 506, path: "M644,469L697,453L730,460L743,479L735,510L710,538L690,545L672,530L652,490L644,478Z" },
+  GA: { cx: 670, cy: 435, path: "M641,396L697,389L707,435L700,462L670,470L644,470L638,450L638,400Z" },
+  HI: { cx: 305, cy: 530, path: "M270,515L295,508L310,515L315,530L295,540L275,535Z" },
+  ID: { cx: 210, cy: 205, path: "M193,132L224,118L244,140L255,195L250,255L228,270L205,265L195,215L188,165Z" },
+  IL: { cx: 586, cy: 320, path: "M568,261L600,256L606,285L610,330L601,357L591,367L576,359L568,325L564,280Z" },
+  IN: { cx: 625, cy: 310, path: "M608,261L640,257L644,340L637,357L608,360L606,285Z" },
+  IA: { cx: 530, cy: 262, path: "M505,237L575,232L580,266L578,280L510,284L503,255Z" },
+  KS: { cx: 440, cy: 365, path: "M393,340L520,333L522,390L393,396Z" },
+  KY: { cx: 660, cy: 365, path: "M614,352L711,335L718,360L700,375L614,387L608,362Z" },
+  LA: { cx: 571, cy: 487, path: "M543,460L594,458L605,475L600,510L580,522L563,508L543,500L538,470Z" },
+  ME: { cx: 893, cy: 120, path: "M874,97L893,82L905,100L907,135L895,150L878,140L870,115Z" },
+  MD: { cx: 800, cy: 295, path: "M764,280L823,268L835,285L818,303L795,310L775,300L764,295Z" },
+  MA: { cx: 872, cy: 182, path: "M844,175L877,168L890,178L875,190L844,190Z" },
+  MI: { cx: 628, cy: 195, path: "M580,155L610,140L640,145L656,175L652,215L640,245L615,250L600,230L586,195Z" },
+  MN: { cx: 505, cy: 165, path: "M478,118L545,110L553,130L555,215L483,220L475,175Z" },
+  MS: { cx: 600, cy: 455, path: "M594,400L618,396L618,462L612,485L600,498L590,480L585,460L590,410Z" },
+  MO: { cx: 545, cy: 365, path: "M520,310L580,304L590,340L588,375L575,393L545,405L525,395L518,365L520,332Z" },
+  MT: { cx: 286, cy: 136, path: "M210,110L378,96L382,172L215,180L205,145Z" },
+  NE: { cx: 420, cy: 290, path: "M365,265L500,258L505,285L505,310L370,318L362,285Z" },
+  NV: { cx: 165, cy: 310, path: "M148,230L208,216L230,305L205,372L155,340L132,285Z" },
+  NH: { cx: 875, cy: 145, path: "M864,115L878,108L882,162L868,172L862,140Z" },
+  NJ: { cx: 836, cy: 250, path: "M823,222L840,215L843,255L835,270L822,268L820,240Z" },
+  NM: { cx: 275, cy: 445, path: "M230,390L320,382L325,485L235,492L225,425Z" },
+  NY: { cx: 815, cy: 190, path: "M773,162L840,150L858,175L850,202L835,218L803,225L780,215L770,190Z" },
+  NC: { cx: 730, cy: 375, path: "M687,355L790,330L808,345L795,370L725,390L690,388Z" },
+  ND: { cx: 430, cy: 142, path: "M380,112L478,106L483,175L385,180Z" },
+  OH: { cx: 670, cy: 290, path: "M640,250L704,240L715,290L706,325L650,338L640,310Z" },
+  OK: { cx: 450, cy: 415, path: "M373,390L395,378L520,375L530,397L520,420L510,435L395,440L373,425Z" },
+  OR: { cx: 145, cy: 170, path: "M86,130L192,118L205,145L210,190L115,200L90,178Z" },
+  PA: { cx: 790, cy: 240, path: "M740,215L822,205L835,218L830,252L745,264L735,235Z" },
+  RI: { cx: 878, cy: 200, path: "M872,192L882,188L884,202L874,206Z" },
+  SC: { cx: 720, cy: 405, path: "M690,388L748,368L765,390L742,418L710,425L695,415Z" },
+  SD: { cx: 430, cy: 215, path: "M380,180L478,175L483,220L503,248L505,255L380,262Z" },
+  TN: { cx: 656, cy: 388, path: "M605,370L710,355L718,374L700,390L610,400L601,385Z" },
+  TX: { cx: 430, cy: 490, path: "M335,430L395,440L510,435L535,470L540,520L510,560L460,575L410,555L365,530L330,490L325,455Z" },
+  UT: { cx: 230, cy: 325, path: "M183,265L260,255L268,378L190,390L178,345Z" },
+  VT: { cx: 860, cy: 135, path: "M852,110L864,105L868,168L854,175L848,142Z" },
+  VA: { cx: 755, cy: 330, path: "M700,305L800,282L812,320L790,340L710,358L695,345Z" },
+  WA: { cx: 150, cy: 100, path: "M100,68L200,60L210,110L200,135L118,142L92,118Z" },
+  WV: { cx: 730, cy: 315, path: "M706,286L740,275L748,315L735,345L712,355L698,330Z" },
+  WI: { cx: 560, cy: 185, path: "M535,138L580,128L600,155L598,215L565,230L540,222L530,180Z" },
+  WY: { cx: 290, cy: 240, path: "M240,200L370,192L375,265L245,272Z" },
+  DC: { cx: 806, cy: 298, path: "M800,293L808,289L811,298L803,302Z" },
+};
+
+/* ── Component ──────────────────────────────────────────────────────── */
 
 export function InspectionHeatmap({ inspections }: { inspections: InspectionLike[] }) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
@@ -170,78 +99,124 @@ export function InspectionHeatmap({ inspections }: { inspections: InspectionLike
 
   const maxCount = useMemo(() => {
     let m = 0;
-    for (const d of stateMap.values()) {
-      if (d.total > m) m = d.total;
-    }
+    for (const d of stateMap.values()) if (d.total > m) m = d.total;
     return m;
   }, [stateMap]);
 
-  // Top states for the bar breakdown
-  const topStates = useMemo(() => {
-    return [...stateMap.values()]
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10);
-  }, [stateMap]);
+  const topStates = useMemo(
+    () => [...stateMap.values()].sort((a, b) => b.total - a.total).slice(0, 8),
+    [stateMap],
+  );
 
   const activeState = selectedState ?? hoveredState;
   const activeData = activeState ? stateMap.get(activeState) : null;
 
   if (inspections.length === 0) return null;
 
+  /* Dot radius scales with count */
+  function dotRadius(count: number): number {
+    if (maxCount === 0) return 0;
+    const t = count / maxCount;
+    return 4 + t * 14; // 4px min, 18px max
+  }
+
+  /* Dot opacity scales with count */
+  function dotOpacity(count: number): number {
+    if (maxCount === 0) return 0;
+    return 0.35 + (count / maxCount) * 0.6;
+  }
+
+  const STATE_NAMES: Record<string, string> = {
+    AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",
+    CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",
+    HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",
+    KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",
+    MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",
+    NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",
+    NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",
+    OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",
+    SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",
+    VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",
+    DC:"Washington D.C.",
+  };
+
   return (
     <div className="mb-4 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] overflow-hidden">
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-1 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
-          Inspection Heatmap
+          Inspection Map
         </p>
-        {activeData && (
-          <div className="flex items-center gap-3 text-xs">
-            <span className="font-medium text-[var(--ink)]">
-              {STATE_NAMES[activeData.state] ?? activeData.state}
-            </span>
-            <span className="text-[var(--ink-soft)]">{activeData.total} inspection{activeData.total !== 1 ? "s" : ""}</span>
-          </div>
-        )}
+        <span className="text-[10px] text-[var(--ink-muted)]">
+          {stateMap.size} state{stateMap.size !== 1 ? "s" : ""} &middot; {inspections.length} inspection{inspections.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       <div className="flex flex-col lg:flex-row">
-        {/* Map */}
+        {/* SVG Map */}
         <div className="flex-1 px-2 pb-2">
-          <svg
-            viewBox="60 60 870 520"
-            className="w-full h-auto"
-            style={{ maxHeight: 340 }}
-          >
-            {Object.entries(STATE_PATHS).map(([abbr, path]) => {
-              const data = stateMap.get(abbr);
-              const count = data?.total ?? 0;
+          <svg viewBox="60 50 880 540" className="w-full h-auto" style={{ maxHeight: 360 }}>
+            {/* State outlines */}
+            {Object.entries(US_STATES).map(([abbr, { path }]) => {
               const isActive = activeState === abbr;
               return (
-                <g key={abbr}>
-                  <path
-                    d={path}
-                    fill={heatColor(count, maxCount)}
-                    stroke={isActive ? "var(--accent)" : "var(--border)"}
-                    strokeWidth={isActive ? 2.5 : 0.8}
+                <path
+                  key={abbr}
+                  d={path}
+                  fill={isActive ? "var(--accent-soft)" : "var(--surface-2)"}
+                  stroke="var(--border)"
+                  strokeWidth={isActive ? 1.5 : 0.5}
+                  className="transition-colors duration-100"
+                  onMouseEnter={() => setHoveredState(abbr)}
+                  onMouseLeave={() => setHoveredState(null)}
+                  onClick={() => setSelectedState(selectedState === abbr ? null : abbr)}
+                />
+              );
+            })}
+
+            {/* Inspection dots */}
+            {Object.entries(US_STATES).map(([abbr, { cx, cy }]) => {
+              const data = stateMap.get(abbr);
+              if (!data || data.total === 0) return null;
+              const r = dotRadius(data.total);
+              const hasOos = data.oos > 0;
+              const isActive = activeState === abbr;
+
+              return (
+                <g key={`dot-${abbr}`}>
+                  {/* Glow ring on hover */}
+                  {isActive && (
+                    <circle
+                      cx={cx} cy={cy} r={r + 4}
+                      fill="none"
+                      stroke="var(--accent)"
+                      strokeWidth={1.5}
+                      opacity={0.5}
+                    />
+                  )}
+                  {/* Main dot */}
+                  <circle
+                    cx={cx} cy={cy} r={r}
+                    fill={hasOos ? "#e11d48" : "var(--accent)"}
+                    opacity={isActive ? 0.95 : dotOpacity(data.total)}
                     className="cursor-pointer transition-all duration-150"
                     onMouseEnter={() => setHoveredState(abbr)}
                     onMouseLeave={() => setHoveredState(null)}
                     onClick={() => setSelectedState(selectedState === abbr ? null : abbr)}
                   />
-                  {/* State label */}
-                  {STATE_LABELS[abbr] && (
+                  {/* Count label on larger dots */}
+                  {r >= 10 && (
                     <text
-                      x={STATE_LABELS[abbr][0]}
-                      y={STATE_LABELS[abbr][1]}
+                      x={cx} y={cy}
                       textAnchor="middle"
                       dominantBaseline="central"
-                      fontSize={count > 0 ? 11 : 9}
-                      fontWeight={count > 0 ? 600 : 400}
-                      fill={textColorForHeat(count, maxCount)}
+                      fontSize={r >= 14 ? 10 : 8}
+                      fontWeight={600}
+                      fill="#fff"
                       className="pointer-events-none select-none"
                       style={{ fontFamily: "var(--font-sans)" }}
                     >
-                      {abbr}
+                      {data.total}
                     </text>
                   )}
                 </g>
@@ -250,138 +225,86 @@ export function InspectionHeatmap({ inspections }: { inspections: InspectionLike
           </svg>
         </div>
 
-        {/* Sidebar: state detail or top states */}
-        <div className="lg:w-72 border-t lg:border-t-0 lg:border-l border-[var(--border)] px-4 py-3">
+        {/* Sidebar */}
+        <div className="lg:w-64 border-t lg:border-t-0 lg:border-l border-[var(--border)] px-4 py-3">
           {activeData ? (
-            /* Selected/hovered state detail */
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-[var(--ink)]">
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">
                   {STATE_NAMES[activeData.state] ?? activeData.state}
-                </span>
-                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">
+                </p>
+                <p className="text-[10px] text-[var(--ink-muted)]">
                   {activeData.total} inspection{activeData.total !== 1 ? "s" : ""}
-                </span>
+                </p>
               </div>
 
-              {/* Truck vs Trailer breakdown */}
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-0)] px-3 py-2 text-center">
-                  <TruckIcon className="mx-auto h-6 w-6 text-accent mb-1" />
-                  <p className="text-lg font-semibold text-[var(--ink)]">{activeData.vehicleViols}</p>
-                  <p className="text-[10px] text-[var(--ink-muted)]">Vehicle Viols</p>
+                <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2 text-center">
+                  <p className="text-base font-bold text-[var(--ink)]">{activeData.vehicleViols}</p>
+                  <p className="text-[9px] text-[var(--ink-muted)]">Vehicle viols</p>
                 </div>
-                <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-0)] px-3 py-2 text-center">
-                  <TrailerIcon className="mx-auto h-6 w-6 text-[var(--ink-soft)] mb-1" />
-                  <p className="text-lg font-semibold text-[var(--ink)]">{activeData.driverViols}</p>
-                  <p className="text-[10px] text-[var(--ink-muted)]">Driver Viols</p>
+                <div className="rounded-lg bg-[var(--surface-2)] px-3 py-2 text-center">
+                  <p className="text-base font-bold text-[var(--ink)]">{activeData.driverViols}</p>
+                  <p className="text-[9px] text-[var(--ink-muted)]">Driver viols</p>
                 </div>
               </div>
 
-              {/* OOS indicator */}
               {activeData.oos > 0 && (
                 <div className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 ring-1 ring-rose-200">
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="8" cy="8" r="6" />
-                    <path d="M8 5v3M8 10.5v.5" />
-                  </svg>
+                  <div className="h-2 w-2 rounded-full bg-rose-500" />
                   <span className="text-xs font-medium text-rose-700">
                     {activeData.oos} out-of-service
                   </span>
-                </div>
-              )}
-
-              {/* Rate bar */}
-              <div>
-                <div className="flex justify-between text-[10px] text-[var(--ink-muted)] mb-1">
-                  <span>OOS Rate</span>
-                  <span>
-                    {activeData.total > 0
-                      ? `${((activeData.oos / activeData.total) * 100).toFixed(1)}%`
-                      : "0%"}
+                  <span className="ml-auto text-[10px] text-rose-500">
+                    {((activeData.oos / activeData.total) * 100).toFixed(0)}%
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${activeData.total > 0 ? Math.min(100, (activeData.oos / activeData.total) * 100) : 0}%`,
-                      background: activeData.oos > 0 ? "#e11d48" : "var(--accent)",
-                    }}
-                  />
-                </div>
-              </div>
+              )}
             </div>
           ) : (
-            /* Top states list */
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-muted)] mb-2">
                 Top States
               </p>
-              {topStates.length === 0 ? (
-                <p className="text-xs text-[var(--ink-muted)]">No state data</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {topStates.map((sd) => (
-                    <button
-                      key={sd.state}
-                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-[var(--surface-2)]"
-                      onMouseEnter={() => setHoveredState(sd.state)}
-                      onMouseLeave={() => setHoveredState(null)}
-                      onClick={() => setSelectedState(selectedState === sd.state ? null : sd.state)}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        {sd.vehicleViols > sd.driverViols ? (
-                          <TruckIcon className="h-3.5 w-3.5 shrink-0 text-accent" />
-                        ) : (
-                          <TrailerIcon className="h-3.5 w-3.5 shrink-0 text-[var(--ink-soft)]" />
-                        )}
-                        <span className="text-xs font-medium text-[var(--ink)]">{sd.state}</span>
-                        <span className="text-[10px] text-[var(--ink-muted)] truncate">
-                          {STATE_NAMES[sd.state]}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="w-16 h-1.5 overflow-hidden rounded-full bg-surface-3">
-                          <div
-                            className="h-full rounded-full bg-accent-soft0"
-                            style={{ width: `${(sd.total / maxCount) * 100}%` }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-medium text-[var(--ink-soft)] w-5 text-right">
-                          {sd.total}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="space-y-1">
+                {topStates.map((sd) => (
+                  <button
+                    key={sd.state}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-[var(--surface-2)]"
+                    onMouseEnter={() => setHoveredState(sd.state)}
+                    onMouseLeave={() => setHoveredState(null)}
+                    onClick={() => setSelectedState(selectedState === sd.state ? null : sd.state)}
+                  >
+                    <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${sd.oos > 0 ? "bg-rose-500" : "bg-accent"}`}
+                      style={{ opacity: dotOpacity(sd.total) }}
+                    />
+                    <span className="text-xs font-medium text-[var(--ink)] w-6">{sd.state}</span>
+                    <div className="flex-1 h-1 overflow-hidden rounded-full bg-surface-3">
+                      <div
+                        className={`h-full rounded-full ${sd.oos > 0 ? "bg-rose-400" : "bg-accent-soft0"}`}
+                        style={{ width: `${(sd.total / maxCount) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] tabular-nums text-[var(--ink-muted)] w-5 text-right">{sd.total}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Color legend */}
-      <div className="flex items-center gap-3 px-4 py-2 border-t border-[var(--border)]">
-        <span className="text-[10px] text-[var(--ink-muted)]">Fewer</span>
-        <div className="flex h-2 flex-1 max-w-[200px] rounded-full overflow-hidden">
-          {[0.05, 0.15, 0.3, 0.5, 0.7, 0.9].map((t, i) => (
-            <div
-              key={i}
-              className="flex-1"
-              style={{ background: `rgba(217,119,87,${0.1 + t * 0.85})` }}
-            />
-          ))}
-        </div>
-        <span className="text-[10px] text-[var(--ink-muted)]">More</span>
-        <div className="ml-auto flex items-center gap-3">
-          <span className="flex items-center gap-1 text-[10px] text-[var(--ink-muted)]">
-            <TruckIcon className="h-3 w-3" /> Vehicle
-          </span>
-          <span className="flex items-center gap-1 text-[10px] text-[var(--ink-muted)]">
-            <TrailerIcon className="h-3 w-3" /> Driver
-          </span>
-        </div>
+      {/* Legend */}
+      <div className="flex items-center gap-4 px-4 py-2 border-t border-[var(--border)] text-[10px] text-[var(--ink-muted)]">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent opacity-70" />
+          Inspections
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-rose-500 opacity-70" />
+          Has OOS violations
+        </span>
+        <span className="ml-auto">Dot size = inspection count</span>
       </div>
     </div>
   );
