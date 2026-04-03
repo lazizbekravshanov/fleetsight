@@ -161,7 +161,7 @@ export type InsuranceData = {
   authorityHistory: SocrataAuthorityHistory[];
 };
 
-export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports" | "vulnerability" | "cost-impact" | "drivers" | "enforcement" | "enablers";
+export type Tab = "overview" | "safety" | "inspections" | "crashes" | "insurance" | "fleet" | "detection" | "affiliations" | "background" | "notes" | "reports" | "vulnerability" | "cost-impact" | "drivers" | "enforcement" | "enablers" | "timeline";
 
 export type SharedVinInfo = {
   vin: string;

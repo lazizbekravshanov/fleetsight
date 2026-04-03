@@ -20,6 +20,7 @@ import { VulnerabilityTab } from "./tabs/vulnerability-tab";
 import { CostImpactTab } from "./tabs/cost-impact-tab";
 import { DriverScorecardTab } from "./tabs/driver-scorecard-tab";
 import { EnforcementTab } from "./tabs/enforcement-tab";
+import { TimelineTab } from "./tabs/timeline-tab";
 import { EnablerWarningPanel } from "../enablers/enabler-risk-badge";
 import { ViolationSparkline, type MonthlyViolationData } from "./violation-sparkline";
 import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData, FleetVulnerabilityReport, CostImpactReport, DriverScorecardData, HeatmapData, CarrierEnablersData } from "./types";
@@ -402,6 +403,7 @@ export function CarrierDetailView({
     { key: "cost-impact", label: "Cost Impact", group: "intelligence" },
     { key: "enforcement", label: "Enforcement", group: "intelligence" },
     { key: "enablers", label: "Enablers", count: enablerData?.enablers?.length, group: "intelligence" },
+    { key: "timeline", label: "Timeline", group: "intelligence" },
     { key: "notes", label: "Notes", group: "intelligence" },
     { key: "reports", label: "Reports", count: detail.communityReportSummary?.totalReports12m, group: "intelligence" },
   ];
@@ -727,6 +729,9 @@ export function CarrierDetailView({
           )}
           {activeTab === "notes" && (
             <NotesTab dotNumber={c.dot_number} />
+          )}
+          {activeTab === "timeline" && (
+            <TimelineTab dotNumber={c.dot_number} addDate={c.add_date} carrierName={c.legal_name} />
           )}
           {activeTab === "reports" && (
             <ReportsTab dotNumber={c.dot_number} />
