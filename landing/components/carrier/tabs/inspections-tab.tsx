@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { SocrataInspection } from "@/lib/socrata";
 import { decodeInspectionLevel } from "@/lib/fmcsa-codes";
 import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import { InspectionHeatmap } from "./inspection-heatmap";
 import type { CsvColumn } from "../shared";
 
 function inspDurationMinutes(start?: string, end?: string): number | null {
@@ -223,6 +224,9 @@ export function InspectionsTab({
           </div>
         </div>
       )}
+
+      {/* Inspection Heatmap */}
+      <InspectionHeatmap inspections={rows} />
 
       {/* Table */}
       <div className="max-h-[32rem] overflow-auto rounded-xl border border-[var(--border)]">
