@@ -39,6 +39,18 @@ function mapCarrier(r: SocrataCarrier) {
   };
 }
 
+/** Build a Response with edge-cache headers */
+function jsonCached(data: unknown): Response {
+  return new Response(JSON.stringify(data), {
+    headers: {
+      "Content-Type": "application/json",
+      // Cache at Vercel edge for 2 min, stale-while-revalidate for 10 min
+      "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+      "CDN-Cache-Control": "public, s-maxage=120, stale-while-revalidate=600",
+    },
+  });
+}
+
 export async function GET(req: NextRequest) {
   const params = Object.fromEntries(req.nextUrl.searchParams);
   const parsed = querySchema.safeParse(params);
@@ -48,14 +60,14 @@ export async function GET(req: NextRequest) {
 
   const { q, limit } = parsed.data;
 
-  // Check search cache first (5 min TTL)
+  // ── Layer 1: App-level cache (Redis or in-memory, 5 min) ──────
   const cacheKey = `search:${q.toLowerCase().trim()}:${limit}`;
   const cached = await cacheGet<unknown>(cacheKey);
   if (cached) {
-    return Response.json(cached);
+    return jsonCached(cached);
   }
 
-  // 1. Try regex-based natural language parsing first (fast, free)
+  // ── Layer 2: Regex natural language parser (free, <1ms) ───────
   const natural = parseNaturalQuery(q);
   if (natural) {
     const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
@@ -71,38 +83,58 @@ export async function GET(req: NextRequest) {
       searchDescription: natural.description,
     };
     await cacheSet(cacheKey, response, 300);
-    return Response.json(response);
+    return jsonCached(response);
   }
 
-  // 2. Check if it looks like a natural language query (not just a name/number)
+  // ── Layer 3: Natural language → parallel AI + standard search ─
   const isNaturalLanguage = /\b(in|with|more than|less than|over|under|between|near|new|large|small|active|inactive|hazmat|broker|carrier|trucking|freight|who|where|find|show|list|get)\b/i.test(q);
 
   if (isNaturalLanguage) {
-    // 3. Try LLM-powered translation (Haiku) — free for all users
-    const aiResult = await translateSearchQuery(q);
-    if (aiResult) {
-      try {
-        const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
-          $where: aiResult.soqlWhere,
-          $limit: String(Math.min(aiResult.limit, limit)),
-          $order: "legal_name ASC",
-        });
-
-        const response = {
+    // Fire BOTH searches in parallel — return AI results if they succeed,
+    // otherwise fall back to standard results. User always gets a fast response.
+    const [aiResult, standardResults] = await Promise.all([
+      translateSearchQuery(q)
+        .then(async (ai) => {
+          if (!ai) return null;
+          try {
+            const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+              $where: ai.soqlWhere,
+              $limit: String(Math.min(ai.limit, limit)),
+              $order: "legal_name ASC",
+            });
+            return {
+              results: results.map(mapCarrier),
+              total: results.length,
+              searchMode: "ai" as const,
+              searchDescription: ai.description,
+            };
+          } catch {
+            return null;
+          }
+        })
+        .catch(() => null),
+      searchCarriers(q, limit)
+        .then((results) => ({
           results: results.map(mapCarrier),
           total: results.length,
-          searchMode: "ai" as const,
-          searchDescription: aiResult.description,
-        };
-        await cacheSet(cacheKey, response, 300);
-        return Response.json(response);
-      } catch {
-        // AI-generated query failed — fall through to standard search
-      }
-    }
+          searchMode: "standard" as const,
+          searchDescription: null as string | null,
+        }))
+        .catch(() => ({
+          results: [] as ReturnType<typeof mapCarrier>[],
+          total: 0,
+          searchMode: "standard" as const,
+          searchDescription: null as string | null,
+        })),
+    ]);
+
+    // Prefer AI results if they returned data, otherwise use standard
+    const response = (aiResult && aiResult.results.length > 0) ? aiResult : standardResults;
+    await cacheSet(cacheKey, response, 300);
+    return jsonCached(response);
   }
 
-  // 4. Standard search (DOT number, MC number, or name substring)
+  // ── Layer 4: Standard search (DOT#, MC#, name) ───────────────
   const results = await searchCarriers(q, limit);
 
   const response = {
@@ -112,5 +144,5 @@ export async function GET(req: NextRequest) {
     searchDescription: null,
   };
   await cacheSet(cacheKey, response, 300);
-  return Response.json(response);
+  return jsonCached(response);
 }

@@ -110,6 +110,8 @@ function updateUrl(params: Record<string, string | null>) {
 export function CarrierLookup() {
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -125,6 +127,11 @@ export function CarrierLookup() {
   const [aiSkipped, setAiSkipped] = useState<"not_authenticated" | "no_credits" | null>(null);
 
   const doSearch = useCallback(async (q: string) => {
+    // Cancel any in-flight request
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setSearching(true);
     setSearched(false);
     setSelectedDot(null);
@@ -132,7 +139,8 @@ export function CarrierLookup() {
     setDetailError(null);
     try {
       const res = await fetch(
-        `/api/carrier/search?q=${encodeURIComponent(q)}`
+        `/api/carrier/search?q=${encodeURIComponent(q)}`,
+        { signal: controller.signal }
       );
       if (!res.ok) throw new Error(`Search returned ${res.status}`);
       const data = await res.json();
@@ -141,13 +149,28 @@ export function CarrierLookup() {
       setSearchDescription(data.searchDescription || null);
       setAiSkipped(data.aiSkipped || null);
       setSearched(true);
-    } catch {
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return; // Superseded by newer search
       setResults([]);
       setSearched(true);
     } finally {
       setSearching(false);
     }
   }, []);
+
+  // Debounced typeahead: auto-search as user types (300ms delay, min 2 chars)
+  const handleInputChange = useCallback((value: string) => {
+    setQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const trimmed = value.trim();
+    if (trimmed.length < 2) return;
+
+    debounceRef.current = setTimeout(() => {
+      updateUrl({ q: trimmed, dot: null });
+      doSearch(trimmed);
+    }, 300);
+  }, [doSearch]);
 
   const doSelect = useCallback(async (dotNumber: number) => {
     setSelectedDot(dotNumber);
@@ -206,6 +229,7 @@ export function CarrierLookup() {
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!query.trim()) return;
     updateUrl({ q: query.trim(), dot: null });
     await doSearch(query.trim());
@@ -291,7 +315,7 @@ export function CarrierLookup() {
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               placeholder="DOT, MC, company name, or try &quot;large carriers in Texas&quot;..."
               aria-label="Search carriers by name, DOT number, MC number, or natural language"
               className="w-full rounded-xl border border-border bg-[var(--surface-1)] py-3 pl-11 pr-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] transition-shadow focus:border-accent focus:ring-2 focus:ring-accent/20"
@@ -458,8 +482,30 @@ export function CarrierLookup() {
 
         {/* AI search is free for all users */}
 
+        {/* Skeleton loading state */}
+        {searching && !searched && (
+          <div className="mx-auto mt-6 max-w-2xl space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg border-l-2 border-[var(--border)] px-3 py-2.5"
+                style={{ opacity: 1 - i * 0.15 }}
+              >
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3.5 w-48 rounded bg-surface-3 animate-pulse" />
+                  <div className="h-2.5 w-32 rounded bg-surface-3 animate-pulse" />
+                </div>
+                <div className="flex gap-1.5">
+                  <div className="h-5 w-14 rounded-full bg-surface-3 animate-pulse" />
+                  <div className="h-5 w-12 rounded-full bg-surface-3 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Results */}
-        {searched && results.length === 0 && (
+        {searched && results.length === 0 && !searching && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
