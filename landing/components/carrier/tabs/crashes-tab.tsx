@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import type { SocrataCrash } from "@/lib/socrata";
 import { decodeVehicleConfig, decodeCargoBodyType } from "@/lib/fmcsa-codes";
 import { Stat, SkeletonRows, useSort, SortHeader, ExportButton, downloadCsv, TruncationWarning } from "../shared";
+import { CrashMap } from "./crash-map";
 import type { CsvColumn } from "../shared";
 
 type CrashRow = SocrataCrash & {
@@ -158,6 +159,9 @@ export function CrashesTab({
       </div>
 
       <TruncationWarning count={crashes.length} limit={50} noun="crashes" />
+
+      {/* Crash Map */}
+      <CrashMap crashes={rows} />
 
       {/* Table */}
       <div className="mt-2 max-h-[32rem] overflow-auto rounded-xl border border-[var(--border)]">
