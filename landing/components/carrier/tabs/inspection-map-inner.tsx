@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { MapContainer, TileLayer, GeoJSON, CircleMarker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import type { PathOptions } from "leaflet";
+import type { PathOptions, Layer } from "leaflet";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -178,7 +178,7 @@ export default function InspectionMapInner({ inspections }: { inspections: Inspe
     };
   }
 
-  function onEachState(feature: Feature<Geometry>, layer: L.Layer) {
+  function onEachState(feature: Feature<Geometry>, layer: Layer) {
     const name = feature?.properties?.name;
     const abbr = name ? nameToAbbr[name.toLowerCase()] : null;
     if (abbr) {
