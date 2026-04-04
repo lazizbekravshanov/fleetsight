@@ -21,6 +21,7 @@ import { CostImpactTab } from "./tabs/cost-impact-tab";
 import { DriverScorecardTab } from "./tabs/driver-scorecard-tab";
 import { EnforcementTab } from "./tabs/enforcement-tab";
 import { TimelineTab } from "./tabs/timeline-tab";
+import { TrustScorePanel } from "./trust-score-panel";
 import { EnablerWarningPanel } from "../enablers/enabler-risk-badge";
 import { ViolationSparkline, type MonthlyViolationData } from "./violation-sparkline";
 import type { CarrierDetail, Tab, FleetData, DetectionData, BackgroundData, FmcsaStatus, AffiliationsData, FleetVulnerabilityReport, CostImpactReport, DriverScorecardData, HeatmapData, CarrierEnablersData } from "./types";
@@ -612,6 +613,9 @@ export function CarrierDetailView({
                 <ViolationSparkline monthlyData={violationTrend} />
               </div>
             </div>
+          )}
+          {activeTab === "overview" && (
+            <TrustScorePanel dotNumber={c.dot_number} />
           )}
           {activeTab === "overview" && (
             <OverviewTab
