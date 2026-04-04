@@ -1,10 +1,22 @@
 "use client";
 
-import { useMemo, useState, useEffect, Component, type ReactNode } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { geoAlbersUsa, geoPath } from "d3-geo";
+import { feature } from "topojson-client";
+import type { Topology, GeometryCollection } from "topojson-specification";
+import type { FeatureCollection, Feature, Geometry } from "geojson";
 
 /* ── Types ──────────────────────────────────────────────────────────── */
+
+type InspectionLike = {
+  report_state?: string;
+  vehicle_viol_total?: string;
+  driver_viol_total?: string;
+  oos_total?: string;
+  location_desc?: string;
+  insp_date?: string;
+  report_number?: string;
+};
 
 type StateData = {
   state: string;
@@ -14,52 +26,26 @@ type StateData = {
   oos: number;
 };
 
-type InspectionLike = {
-  report_state?: string;
-  vehicle_viol_total?: string;
-  driver_viol_total?: string;
-  oos_total?: string;
-};
-
-/* ── Error boundary ─────────────────────────────────────────────────── */
-
-class MapErrorBoundary extends Component<
-  { children: ReactNode; fallback: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: ReactNode; fallback: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  render() {
-    if (this.state.hasError) return this.props.fallback;
-    return this.props.children;
-  }
-}
-
-/* ── State centroids (lat, lng) ─────────────────────────────────────── */
+/* ── State centroids for dot placement ──────────────────────────────── */
 
 const STATE_CENTROIDS: Record<string, [number, number]> = {
-  AL: [32.81, -86.79], AK: [61.37, -152.40], AZ: [33.73, -111.43],
-  AR: [34.97, -92.37], CA: [36.12, -119.68], CO: [39.06, -105.31],
-  CT: [41.60, -72.76], DE: [39.32, -75.51], FL: [27.77, -81.69],
-  GA: [33.04, -83.64], HI: [21.09, -157.50], ID: [44.24, -114.48],
-  IL: [40.35, -88.99], IN: [39.85, -86.26], IA: [42.01, -93.21],
-  KS: [38.53, -96.73], KY: [37.67, -84.67], LA: [31.17, -91.87],
-  ME: [44.69, -69.38], MD: [39.06, -76.80], MA: [42.23, -71.53],
-  MI: [43.33, -84.54], MN: [45.69, -93.90], MS: [32.74, -89.68],
-  MO: [38.46, -92.29], MT: [46.92, -110.45], NE: [41.13, -98.27],
-  NV: [38.31, -117.06], NH: [43.45, -71.56], NJ: [40.30, -74.52],
-  NM: [34.84, -106.25], NY: [42.17, -74.95], NC: [35.63, -79.81],
-  ND: [47.53, -99.78], OH: [40.39, -82.76], OK: [35.57, -96.93],
-  OR: [44.57, -122.07], PA: [40.59, -77.21], RI: [41.68, -71.51],
-  SC: [33.86, -80.95], SD: [44.30, -99.44], TN: [35.75, -86.69],
-  TX: [31.05, -97.56], UT: [40.15, -111.86], VT: [44.05, -72.71],
-  VA: [37.77, -78.17], WA: [47.40, -121.49], WV: [38.49, -80.95],
-  WI: [44.27, -89.62], WY: [42.76, -107.30], DC: [38.90, -77.03],
+  AL: [-86.79, 32.81], AK: [-152.40, 61.37], AZ: [-111.43, 33.73],
+  AR: [-92.37, 34.97], CA: [-119.68, 36.12], CO: [-105.31, 39.06],
+  CT: [-72.76, 41.60], DE: [-75.51, 39.32], FL: [-81.69, 27.77],
+  GA: [-83.64, 33.04], HI: [-157.50, 21.09], ID: [-114.48, 44.24],
+  IL: [-88.99, 40.35], IN: [-86.26, 39.85], IA: [-93.21, 42.01],
+  KS: [-96.73, 38.53], KY: [-84.67, 37.67], LA: [-91.87, 31.17],
+  ME: [-69.38, 44.69], MD: [-76.80, 39.06], MA: [-71.53, 42.23],
+  MI: [-84.54, 43.33], MN: [-93.90, 45.69], MS: [-89.68, 32.74],
+  MO: [-92.29, 38.46], MT: [-110.45, 46.92], NE: [-98.27, 41.13],
+  NV: [-117.06, 38.31], NH: [-71.56, 43.45], NJ: [-74.52, 40.30],
+  NM: [-106.25, 34.84], NY: [-74.95, 42.17], NC: [-79.81, 35.63],
+  ND: [-99.78, 47.53], OH: [-82.76, 40.39], OK: [-96.93, 35.57],
+  OR: [-122.07, 44.57], PA: [-77.21, 40.59], RI: [-71.51, 41.68],
+  SC: [-80.95, 33.86], SD: [-99.44, 44.30], TN: [-86.69, 35.75],
+  TX: [-97.56, 31.05], UT: [-111.86, 40.15], VT: [-72.71, 44.05],
+  VA: [-78.17, 37.77], WA: [-121.49, 47.40], WV: [-80.95, 38.49],
+  WI: [-89.62, 44.27], WY: [-107.30, 42.76], DC: [-77.03, 38.90],
 };
 
 const STATE_NAMES: Record<string, string> = {
@@ -76,21 +62,49 @@ const STATE_NAMES: Record<string, string> = {
   DC:"Washington D.C.",
 };
 
-/* ── Fit bounds helper ──────────────────────────────────────────────── */
+/* ── FIPS to state abbr ─────────────────────────────────────────────── */
 
-function FitUS() {
-  const map = useMap();
-  useEffect(() => {
-    map.fitBounds([[24.4, -125.0], [49.4, -66.9]], { padding: [10, 10], animate: false });
-  }, [map]);
-  return null;
-}
+const FIPS_TO_STATE: Record<string, string> = {
+  "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT",
+  "10":"DE","11":"DC","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL",
+  "18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD",
+  "25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE",
+  "32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND",
+  "39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD",
+  "47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV",
+  "55":"WI","56":"WY",
+};
 
-/* ── Map component ──────────────────────────────────────────────────── */
+/* ── D3 projection ──────────────────────────────────────────────────── */
 
-function InspectionMapLeaflet({ inspections }: { inspections: InspectionLike[] }) {
+const WIDTH = 760;
+const HEIGHT = 460;
+
+const projection = geoAlbersUsa()
+  .scale(900)
+  .translate([WIDTH / 2, HEIGHT / 2]);
+
+const pathGen = geoPath().projection(projection);
+
+/* ── Component ──────────────────────────────────────────────────────── */
+
+export default function InspectionMapInner({ inspections }: { inspections: InspectionLike[] }) {
+  const [topoData, setTopoData] = useState<FeatureCollection | null>(null);
+  const [hoveredState, setHoveredState] = useState<string | null>(null);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; state: string } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
+  // Load US states TopoJSON
+  useEffect(() => {
+    import("us-atlas/states-10m.json").then((us) => {
+      const topo = us.default as unknown as Topology;
+      const states = feature(topo, topo.objects.states as GeometryCollection) as FeatureCollection;
+      setTopoData(states);
+    });
+  }, []);
+
+  // Aggregate inspection data by state
   const stateMap = useMemo(() => {
     const map = new Map<string, StateData>();
     for (const insp of inspections) {
@@ -117,73 +131,135 @@ function InspectionMapLeaflet({ inspections }: { inspections: InspectionLike[] }
     [stateMap],
   );
 
+  // State fill color (purple choropleth matching our accent)
+  function stateFill(abbr: string | undefined): string {
+    if (!abbr) return "#f0eef8";
+    const data = stateMap.get(abbr);
+    if (!data || data.total === 0 || maxCount === 0) return "#f0eef8";
+    const t = data.total / maxCount;
+    if (t < 0.15) return "rgb(233,226,252)";
+    if (t < 0.3) return "rgb(220,206,250)";
+    if (t < 0.5) return "rgb(200,178,249)";
+    if (t < 0.7) return "rgb(183,152,247)";
+    return "rgb(160,117,245)";
+  }
+
   function dotRadius(count: number): number {
     if (maxCount === 0) return 4;
-    return 5 + (count / maxCount) * 18;
+    return 4 + (count / maxCount) * 14;
   }
 
   function dotOpacity(count: number): number {
-    if (maxCount === 0) return 0.4;
-    return 0.4 + (count / maxCount) * 0.5;
+    if (maxCount === 0) return 0.5;
+    return 0.5 + (count / maxCount) * 0.4;
   }
 
-  const activeData = selectedState ? stateMap.get(selectedState) : null;
+  const activeState = selectedState ?? hoveredState;
+  const activeData = activeState ? stateMap.get(activeState) : null;
 
   return (
     <div className="flex flex-col lg:flex-row">
-      <div className="flex-1 relative" style={{ minHeight: 340 }}>
-        <MapContainer
-          center={[39.5, -98.35]}
-          zoom={4}
-          scrollWheelZoom={false}
-          zoomControl={false}
-          dragging={true}
-          doubleClickZoom={false}
-          attributionControl={false}
-          style={{ height: "100%", minHeight: 340, background: "#f5f3ee" }}
+      {/* SVG Map */}
+      <div className="flex-1 relative">
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+          className="w-full h-auto"
+          style={{ maxHeight: 380, background: "var(--surface-1)", cursor: "default", overflow: "visible" }}
         >
-          <FitUS />
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          />
-          {Object.entries(STATE_CENTROIDS).map(([abbr, [lat, lng]]) => {
-            const data = stateMap.get(abbr);
-            if (!data || data.total === 0) return null;
-            const hasOos = data.oos > 0;
+          {/* State borders */}
+          {topoData?.features.map((feat: Feature<Geometry>) => {
+            const fips = String(feat.id);
+            const abbr = FIPS_TO_STATE[fips];
+            const isActive = activeState === abbr;
+            const d = pathGen(feat);
+            if (!d) return null;
             return (
-              <CircleMarker
-                key={abbr}
-                center={[lat, lng]}
-                radius={dotRadius(data.total)}
-                pathOptions={{
-                  fillColor: hasOos ? "#e11d48" : "#d97757",
-                  fillOpacity: dotOpacity(data.total),
-                  color: hasOos ? "#be123c" : "#c4623f",
-                  weight: 1.5,
-                }}
-                eventHandlers={{
-                  click: () => setSelectedState(abbr),
-                }}
-              >
-                <Popup>
-                  <div style={{ minWidth: 140, fontSize: 12, lineHeight: 1.5 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13 }}>{STATE_NAMES[abbr] ?? abbr}</div>
-                    <div style={{ color: "#666", marginTop: 4 }}>{data.total} inspection{data.total !== 1 ? "s" : ""}</div>
-                    <div style={{ marginTop: 4, display: "flex", gap: 12 }}>
-                      <span>{data.vehicleViols} vehicle</span>
-                      <span>{data.driverViols} driver</span>
-                    </div>
-                    {data.oos > 0 && (
-                      <div style={{ color: "#e11d48", fontWeight: 500, marginTop: 4 }}>
-                        {data.oos} OOS ({((data.oos / data.total) * 100).toFixed(0)}%)
-                      </div>
-                    )}
-                  </div>
-                </Popup>
-              </CircleMarker>
+              <path
+                key={fips}
+                d={d}
+                fill={stateFill(abbr)}
+                stroke="#fff"
+                strokeWidth={isActive ? 1.5 : 0.75}
+                className="transition-colors duration-100"
+                onMouseEnter={() => { setHoveredState(abbr ?? null); }}
+                onMouseLeave={() => setHoveredState(null)}
+                onClick={() => setSelectedState(selectedState === abbr ? null : abbr ?? null)}
+                style={{ cursor: "pointer" }}
+              />
             );
           })}
-        </MapContainer>
+
+          {/* Inspection dots at state centroids */}
+          {Object.entries(STATE_CENTROIDS).map(([abbr, lonlat]) => {
+            const data = stateMap.get(abbr);
+            if (!data || data.total === 0) return null;
+            const pos = projection(lonlat);
+            if (!pos) return null;
+            const [cx, cy] = pos;
+            const hasOos = data.oos > 0;
+            const r = dotRadius(data.total);
+            const isActive = activeState === abbr;
+
+            return (
+              <g key={`dot-${abbr}`}>
+                {isActive && (
+                  <circle cx={cx} cy={cy} r={r + 3} fill="none" stroke="var(--accent)" strokeWidth={1.5} opacity={0.5} />
+                )}
+                <circle
+                  cx={cx} cy={cy} r={r}
+                  fill={hasOos ? "#DC2626" : "#d97757"}
+                  fillOpacity={isActive ? 0.95 : dotOpacity(data.total)}
+                  stroke="#fff"
+                  strokeWidth={0.75}
+                  style={{ cursor: "pointer" }}
+                  onMouseEnter={(e) => {
+                    setHoveredState(abbr);
+                    const rect = svgRef.current?.getBoundingClientRect();
+                    if (rect) {
+                      const sx = (e.clientX - rect.left);
+                      const sy = (e.clientY - rect.top);
+                      setTooltip({ x: sx, y: sy, state: abbr });
+                    }
+                  }}
+                  onMouseLeave={() => { setHoveredState(null); setTooltip(null); }}
+                  onClick={() => setSelectedState(selectedState === abbr ? null : abbr)}
+                />
+                {r >= 10 && (
+                  <text
+                    x={cx} y={cy}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize={r >= 14 ? 10 : 8}
+                    fontWeight={600}
+                    fill="#fff"
+                    style={{ pointerEvents: "none", userSelect: "none", fontFamily: "var(--font-sans)" }}
+                  >
+                    {data.total}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* Tooltip */}
+        {tooltip && stateMap.get(tooltip.state) && (
+          <div
+            className="absolute z-10 rounded-lg border border-[var(--border)] bg-[var(--surface-1)] px-3 py-2 shadow-lg pointer-events-none text-xs"
+            style={{ left: tooltip.x + 12, top: tooltip.y - 10, minWidth: 140 }}
+          >
+            <p className="font-semibold text-[var(--ink)]">{STATE_NAMES[tooltip.state] ?? tooltip.state}</p>
+            <p className="text-[var(--ink-soft)] mt-0.5">{stateMap.get(tooltip.state)!.total} inspections</p>
+            <div className="flex gap-3 mt-0.5 text-[var(--ink-muted)]">
+              <span>{stateMap.get(tooltip.state)!.vehicleViols} vehicle</span>
+              <span>{stateMap.get(tooltip.state)!.driverViols} driver</span>
+            </div>
+            {stateMap.get(tooltip.state)!.oos > 0 && (
+              <p className="text-rose-600 font-medium mt-0.5">{stateMap.get(tooltip.state)!.oos} OOS</p>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Sidebar */}
@@ -239,7 +315,9 @@ function InspectionMapLeaflet({ inspections }: { inspections: InspectionLike[] }
                   <button
                     key={sd.state}
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-[var(--surface-2)]"
-                    onClick={() => setSelectedState(sd.state)}
+                    onMouseEnter={() => setHoveredState(sd.state)}
+                    onMouseLeave={() => setHoveredState(null)}
+                    onClick={() => setSelectedState(selectedState === sd.state ? null : sd.state)}
                   >
                     <div className={`h-2.5 w-2.5 rounded-full shrink-0 ${sd.oos > 0 ? "bg-rose-500" : "bg-accent"}`} />
                     <span className="text-xs font-medium text-[var(--ink)] w-6">{sd.state}</span>
@@ -258,21 +336,5 @@ function InspectionMapLeaflet({ inspections }: { inspections: InspectionLike[] }
         )}
       </div>
     </div>
-  );
-}
-
-/* ── Default export with error boundary ─────────────────────────────── */
-
-export default function InspectionMapInner({ inspections }: { inspections: InspectionLike[] }) {
-  return (
-    <MapErrorBoundary
-      fallback={
-        <div className="flex items-center justify-center px-4 py-12 text-xs text-[var(--ink-muted)]">
-          Map could not be loaded.
-        </div>
-      }
-    >
-      <InspectionMapLeaflet inspections={inspections} />
-    </MapErrorBoundary>
   );
 }
