@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import type { TrustResult } from "@/lib/intelligence/trust-score";
 import type { RiskSignal } from "@/lib/intelligence/risk-signals";
+import {
+  Shield, ClipboardCheck, AlertTriangle, TrendingUp,
+  AlertCircle, AlertOctagon, Info,
+} from "lucide-react";
 
 const GRADE_COLORS: Record<string, { bg: string; text: string; ring: string }> = {
   A: { bg: "bg-emerald-50", text: "text-emerald-700", ring: "ring-emerald-200" },
@@ -21,6 +25,20 @@ const SEVERITY_STYLES: Record<string, { bg: string; text: string; dot: string }>
 };
 
 const COMPONENT_COLORS = ["#d97757", "#3b82f6", "#a855f7", "#10b981"];
+const COMPONENT_ICONS = [
+  <Shield key="s" className="h-3.5 w-3.5" />,
+  <ClipboardCheck key="c" className="h-3.5 w-3.5" />,
+  <AlertTriangle key="f" className="h-3.5 w-3.5" />,
+  <TrendingUp key="st" className="h-3.5 w-3.5" />,
+];
+
+const SEVERITY_ICONS: Record<string, JSX.Element> = {
+  CRITICAL: <AlertTriangle className="h-3.5 w-3.5" />,
+  HIGH: <AlertCircle className="h-3.5 w-3.5" />,
+  MEDIUM: <AlertOctagon className="h-3.5 w-3.5" />,
+  LOW: <Info className="h-3.5 w-3.5" />,
+  INFO: <Info className="h-3.5 w-3.5" />,
+};
 
 function ScoreGauge({ score, grade }: { score: number; grade: string }) {
   const colors = GRADE_COLORS[grade] ?? GRADE_COLORS.C;
@@ -120,7 +138,10 @@ export function TrustScorePanel({ dotNumber }: { dotNumber: string }) {
             {trustScore.components.map((comp, i) => (
               <div key={comp.name}>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-[var(--ink-soft)]">{comp.name}</span>
+                  <span className="flex items-center gap-1.5 text-[var(--ink-soft)]">
+                    <span style={{ color: COMPONENT_COLORS[i] }}>{COMPONENT_ICONS[i]}</span>
+                    {comp.name}
+                  </span>
                   <span className="font-medium text-[var(--ink)]">{comp.score}/100</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-surface-3">
@@ -186,7 +207,9 @@ export function TrustScorePanel({ dotNumber }: { dotNumber: string }) {
               return (
                 <div key={i} className={`rounded-lg ${style.bg} px-3 py-2.5`}>
                   <div className="flex items-start gap-2">
-                    <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
+                    <div className={`mt-0.5 shrink-0 ${style.text}`}>
+                      {SEVERITY_ICONS[signal.severity] ?? <Info className="h-3.5 w-3.5" />}
+                    </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-xs font-medium ${style.text}`}>{signal.title}</span>

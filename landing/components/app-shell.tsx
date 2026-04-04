@@ -6,6 +6,12 @@ import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { CommandPalette } from "@/components/dashboard/command-palette";
+import {
+  LayoutGrid, Search, FileStack, BarChart3,
+  Map, Network, Users, LogOut, LogIn,
+  Menu, PanelLeftClose, PanelLeftOpen,
+  Sun, Moon,
+} from "lucide-react";
 
 /* ── Nav Items ───────────────────────────────────────────────────── */
 
@@ -13,21 +19,20 @@ const NAV_SECTIONS = [
   {
     label: "Intelligence",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: DashboardIcon },
-      { label: "Search", href: "/", icon: SearchIcon },
-      { label: "Bulk Screening", href: "/bulk", icon: BulkIcon },
-      { label: "Compare", href: "/compare", icon: CompareIcon },
+      { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+      { label: "Search", href: "/", icon: Search },
+      { label: "Bulk Screening", href: "/bulk", icon: FileStack },
+      { label: "Compare", href: "/compare", icon: BarChart3 },
     ],
   },
   {
     label: "Fleet",
     items: [
-      { label: "Fleet Map", href: "/map", icon: MapIcon },
-      { label: "Affiliations", href: "/affiliations", icon: AffiliationsIcon },
-      { label: "Teams", href: "/teams", icon: TeamsIcon },
+      { label: "Fleet Map", href: "/map", icon: Map },
+      { label: "Affiliations", href: "/affiliations", icon: Network },
+      { label: "Teams", href: "/teams", icon: Users },
     ],
   },
-  // All features are free — no credits/account section needed
 ];
 
 /* ── Shell ────────────────────────────────────────────────────────── */
@@ -151,7 +156,7 @@ export function AppShell({
               className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-2)]"
               style={{ color: "var(--ink-soft)" }}
             >
-              <SignOutIcon className="h-4 w-4 shrink-0" />
+              <LogIn className="h-4 w-4 shrink-0" />
               {!collapsed && <span>Sign In</span>}
             </Link>
           ) : (
@@ -160,7 +165,7 @@ export function AppShell({
               className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-2)]"
               style={{ color: "var(--ink-soft)" }}
             >
-              <SignOutIcon className="h-4 w-4 shrink-0" />
+              <LogOut className="h-4 w-4 shrink-0" />
               {!collapsed && <span>Sign Out</span>}
             </button>
           )}
@@ -181,9 +186,7 @@ export function AppShell({
               className="lg:hidden rounded-lg p-1.5 transition-colors hover:bg-[var(--surface-2)]"
               style={{ color: "var(--ink-soft)" }}
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M3 5h14M3 10h14M3 15h14" />
-              </svg>
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Sidebar collapse toggle (desktop) */}
@@ -193,13 +196,7 @@ export function AppShell({
               style={{ color: "var(--ink-muted)" }}
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                {collapsed ? (
-                  <><rect x="1" y="1" width="14" height="14" rx="2" /><path d="M5 1v14" /><path d="M8.5 6.5L11 8l-2.5 1.5" /></>
-                ) : (
-                  <><rect x="1" y="1" width="14" height="14" rx="2" /><path d="M5 1v14" /><path d="M11 6.5L8.5 8 11 9.5" /></>
-                )}
-              </svg>
+              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
             </button>
 
             {/* Page title */}
@@ -217,10 +214,7 @@ export function AppShell({
               className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs transition-colors hover:bg-[var(--surface-2)]"
               style={{ border: "1px solid var(--border)", color: "var(--ink-muted)" }}
             >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="7" cy="7" r="5" />
-                <path d="M14 14l-3.5-3.5" />
-              </svg>
+              <Search className="h-3.5 w-3.5" />
               <span>Search</span>
               <kbd className="ml-1 rounded px-1 py-0.5 text-[10px] font-medium" style={{ background: "var(--surface-2)", color: "var(--ink-muted)" }}>
                 {"\u2318"}K
@@ -235,16 +229,7 @@ export function AppShell({
                 style={{ color: "var(--ink-soft)" }}
                 aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
               >
-                {isDark ? (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="8" cy="8" r="3.5" />
-                    <path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7" />
-                  </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M13.5 8.5a5.5 5.5 0 1 1-6-6 4.5 4.5 0 0 0 6 6z" />
-                  </svg>
-                )}
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             )}
 
@@ -291,9 +276,8 @@ function getPageTitle(pathname: string): string {
   return "FleetSight";
 }
 
-/* ── Icons ────────────────────────────────────────────────────────── */
-
-function DashboardIcon({ className }: { className?: string }) {
+// Icons now provided by lucide-react — legacy SVG functions removed
+function _DashboardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="1.5" y="1.5" width="5" height="5" rx="1" />

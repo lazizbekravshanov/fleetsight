@@ -5,6 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
 import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
+import {
+  Shield, ClipboardList, Eye, Truck, Building2, Sparkles,
+  Briefcase, Package, ShieldCheck, CheckSquare,
+} from "lucide-react";
 import { CarrierDetailView } from "./carrier-detail";
 import type { SearchResult, CarrierDetail, Tab } from "./types";
 
@@ -31,32 +35,32 @@ const FEATURES = [
   {
     title: "Safety & BASIC Scores",
     desc: "Full BASIC percentile breakdown with intervention thresholds. Understand crash risk, HOS compliance, and vehicle maintenance scores at a glance.",
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l5.5 3v5c0 3.5-2.5 5.5-5.5 6.5-3-1-5.5-3-5.5-6.5v-5z" /></svg>,
+    icon: <Shield className="h-[18px] w-[18px]" />,
   },
   {
     title: "Inspection & Violation History",
     desc: "Every roadside inspection on record with driver and vehicle violations, OOS rates, state heatmaps, and level distribution analysis.",
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M5 5h6M5 11h4" /></svg>,
+    icon: <ClipboardList className="h-[18px] w-[18px]" />,
   },
   {
     title: "Chameleon Carrier Detection",
     desc: "7-signal scoring algorithm detects carriers that re-register to shed safety records. Shared VIN tracking, temporal analysis, and network clustering.",
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6" /><path d="M8 5v3l2 2" /></svg>,
+    icon: <Eye className="h-[18px] w-[18px]" />,
   },
   {
     title: "Fleet & VIN Intelligence",
     desc: "Track every vehicle in a carrier's fleet by VIN. NHTSA recall alerts, complaint flags, make/model decoding, and cross-carrier VIN transfers.",
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 4h10v8H1z" /><path d="M11 7h3l2 2.5V12h-5V7z" /><circle cx="4" cy="13" r="1.5" /><circle cx="13" cy="13" r="1.5" /></svg>,
+    icon: <Truck className="h-[18px] w-[18px]" />,
   },
   {
     title: "Background & Compliance Checks",
     desc: "OFAC sanctions screening, SAM.gov exclusions, SEC filings, federal court records, OSHA violations, and corporate network analysis in one view.",
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="5" r="3" /><path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" /></svg>,
+    icon: <Building2 className="h-[18px] w-[18px]" />,
   },
   {
     title: "AI-Powered Search",
     desc: 'Search in plain English \u2014 "hazmat carriers in Ohio with 50+ trucks" works. Claude-powered query translation turns natural language into precise results.',
-    icon: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1l1.5 4.5H14l-3.5 2.5 1.3 4.5L8 10l-3.8 2.5 1.3-4.5L2 5.5h4.5z" /></svg>,
+    icon: <Sparkles className="h-[18px] w-[18px]" />,
   },
 ];
 
@@ -64,22 +68,22 @@ const AUDIENCES = [
   {
     title: "Freight Brokers",
     desc: "Vet carriers before tendering loads. Spot double-brokering signals and chameleon carriers instantly.",
-    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1v14M1 8h14" /><circle cx="8" cy="8" r="6" /></svg>,
+    icon: <Briefcase className="h-5 w-5" />,
   },
   {
     title: "Shippers & 3PLs",
     desc: "Ensure every carrier in your routing guide meets safety thresholds. Continuous monitoring catches compliance changes.",
-    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="12" height="9" rx="1" /><path d="M5 4V2.5a3 3 0 016 0V4" /></svg>,
+    icon: <Package className="h-5 w-5" />,
   },
   {
     title: "Insurance Underwriters",
     desc: "Assess fleet risk with composite scores, crash severity analysis, and historical violation trends for accurate premium setting.",
-    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l5.5 3v5c0 3.5-2.5 5.5-5.5 6.5-3-1-5.5-3-5.5-6.5v-5z" /><path d="M6 8l1.5 1.5L10.5 6" /></svg>,
+    icon: <ShieldCheck className="h-5 w-5" />,
   },
   {
     title: "Compliance Teams",
     desc: "Monitor your own authority, track fleet inspections, and get alerted to BASIC score changes before they become interventions.",
-    icon: <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="12" height="12" rx="2" /><path d="M5 8h6M8 5v6" /></svg>,
+    icon: <CheckSquare className="h-5 w-5" />,
   },
 ];
 
