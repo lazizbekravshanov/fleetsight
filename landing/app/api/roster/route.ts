@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { getServerAuthSession } from "@/auth";
 import { jsonError } from "@/lib/http";
 import { prisma } from "@/lib/prisma";
-import { getUserSubscription } from "@/lib/subscriptions";
 
 export async function GET() {
   const session = await getServerAuthSession();

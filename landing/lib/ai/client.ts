@@ -1,6 +1,10 @@
 /**
- * Shared Anthropic API client using raw fetch (no SDK dependency).
- * Uses Claude Haiku for speed and cost efficiency (~$0.001/search).
+ * Shared Anthropic helper for one-shot calls (no tools, no streaming).
+ *
+ * Used by lib/ai/anomaly-explainer, risk-narrative, and search-translator —
+ * the existing pre-agent narrative generators. The new agent runtime in
+ * lib/agent/runtime.ts uses the official @anthropic-ai/sdk directly with
+ * tool-use; this helper exists only for the legacy Haiku one-shot callers.
  */
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";

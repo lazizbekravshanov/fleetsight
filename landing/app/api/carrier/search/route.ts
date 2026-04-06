@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
+import { getServerAuthSession } from "@/auth";
 import { searchCarriers, socrataFetch, CENSUS_RESOURCE } from "@/lib/socrata";
 import type { SocrataCarrier } from "@/lib/socrata";
 import { parseNaturalQuery } from "@/lib/search-parser";
@@ -90,8 +91,26 @@ export async function GET(req: NextRequest) {
   const isNaturalLanguage = /\b(in|with|more than|less than|over|under|between|near|new|large|small|active|inactive|hazmat|broker|carrier|trucking|freight|who|where|find|show|list|get)\b/i.test(q);
 
   if (isNaturalLanguage) {
-    // Fire BOTH searches in parallel — return AI results if they succeed,
-    // otherwise fall back to standard results. User always gets a fast response.
+    // Anthropic translation is gated to authenticated users only. Anonymous
+    // visitors fall through to the standard fuzzy search (no AI call).
+    const session = await getServerAuthSession();
+    const allowAi = !!session?.user?.id;
+
+    if (!allowAi) {
+      const standardResults = await searchCarriers(q, limit).catch(() => [] as SocrataCarrier[]);
+      const response = {
+        results: standardResults.map(mapCarrier),
+        total: standardResults.length,
+        searchMode: "standard" as const,
+        searchDescription: null,
+        aiSkipped: "not_authenticated" as const,
+      };
+      await cacheSet(cacheKey, response, 300);
+      return jsonCached(response);
+    }
+
+    // Authenticated: fire BOTH searches in parallel — return AI results if
+    // they succeed, otherwise fall back to standard.
     const [aiResult, standardResults] = await Promise.all([
       translateSearchQuery(q)
         .then(async (ai) => {

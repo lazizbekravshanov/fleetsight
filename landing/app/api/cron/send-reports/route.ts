@@ -13,42 +13,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Get all users with active subscriptions and watched carriers
-  const subscribers = await prisma.subscription.findMany({
-    where: { status: "active" },
-    include: {
-      user: {
-        include: {
-          watchedCarriers: true,
-          profile: true,
-        },
-      },
-    },
+  // All users with watched carriers get a weekly compliance report.
+  // Subscriptions/credits were removed in the agentic pivot.
+  const users = await prisma.user.findMany({
+    where: { watchedCarriers: { some: {} } },
+    include: { watchedCarriers: true, profile: true },
   });
 
   let sent = 0;
 
-  for (const sub of subscribers) {
-    if (!sub.user.watchedCarriers.length || !sub.user.email) continue;
+  for (const user of users) {
+    if (!user.watchedCarriers.length || !user.email) continue;
 
-    const dotNumbers = sub.user.watchedCarriers.map((w) => w.dotNumber);
+    const dotNumbers = user.watchedCarriers.map((w) => w.dotNumber);
 
-    // Generate compliance summary for each carrier
     const summaries = await Promise.all(
-      dotNumbers.slice(0, 20).map(async (dot) => {
+      dotNumbers.slice(0, 20).map(async (dot: string) => {
+        const dotInt = parseInt(dot, 10);
         const [risk, trust, alertCount] = await Promise.all([
-          prisma.carrierRiskScore.findUnique({ where: { dotNumber: parseInt(dot) } }),
-          prisma.carrierTrustScore.findUnique({ where: { dotNumber: parseInt(dot) } }),
+          Number.isFinite(dotInt)
+            ? prisma.carrierRiskScore.findUnique({ where: { dotNumber: dotInt } })
+            : Promise.resolve(null),
+          Number.isFinite(dotInt)
+            ? prisma.carrierTrustScore.findUnique({ where: { dotNumber: dotInt } })
+            : Promise.resolve(null),
           prisma.monitoringAlert.count({
             where: {
-              userId: sub.userId,
+              userId: user.id,
               dotNumber: dot,
               createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
             },
           }),
         ]);
 
-        const watched = sub.user.watchedCarriers.find((w) => w.dotNumber === dot);
+        const watched = user.watchedCarriers.find((w) => w.dotNumber === dot);
         return {
           dotNumber: dot,
           legalName: watched?.legalName ?? `USDOT ${dot}`,
@@ -61,11 +59,9 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    // In production, this would send an email via Resend
-    // For now, create a monitoring alert as a report delivery notification
     await prisma.monitoringAlert.create({
       data: {
-        userId: sub.userId,
+        userId: user.id,
         dotNumber: "REPORT",
         legalName: "Weekly Report",
         alertType: "COMPLIANCE_REPORT",
@@ -80,5 +76,5 @@ export async function POST(req: NextRequest) {
     sent++;
   }
 
-  return NextResponse.json({ sent, total: subscribers.length });
+  return NextResponse.json({ sent, total: users.length });
 }

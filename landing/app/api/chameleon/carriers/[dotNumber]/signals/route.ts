@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
+import { getServerAuthSession } from "@/auth";
 import {
   getCarrierByDot,
   getInsuranceByDot,
@@ -179,11 +180,12 @@ export async function GET(
     addressMatches,
   };
 
-  // AI explanation is free for all users
-  const aiExplanation = await explainAnomalies(
-    carrier.legal_name,
-    responseData
-  ).catch(() => null);
+  // Anthropic enrichment is gated to authenticated users only — prevents
+  // unauthenticated callers from burning the API budget.
+  const session = await getServerAuthSession();
+  const aiExplanation = session?.user?.id
+    ? await explainAnomalies(carrier.legal_name, responseData).catch(() => null)
+    : null;
 
   return Response.json({ ...responseData, aiExplanation });
 }

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
+import { getServerAuthSession } from "@/auth";
 import { getCarrierByDot } from "@/lib/socrata";
 import { runBackgroundChecks } from "@/lib/background";
 import { generateRiskNarrative } from "@/lib/ai/risk-narrative";
@@ -26,11 +27,12 @@ export async function GET(
 
   const data = await runBackgroundChecks(carrier);
 
-  // AI risk narrative is free for all users
-  const riskNarrative = await generateRiskNarrative(
-    carrier.legal_name,
-    data
-  ).catch(() => null);
+  // Anthropic enrichment is gated to authenticated users only — prevents
+  // unauthenticated callers from burning the API budget.
+  const session = await getServerAuthSession();
+  const riskNarrative = session?.user?.id
+    ? await generateRiskNarrative(carrier.legal_name, data).catch(() => null)
+    : null;
 
   return Response.json({ ...data, riskNarrative });
 }

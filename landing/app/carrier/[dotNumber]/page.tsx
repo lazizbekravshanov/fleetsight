@@ -1,351 +1,299 @@
+/**
+ * Public carrier SEO snapshot.
+ *
+ * Renders a thin static profile for crawlers and unauthenticated visitors:
+ *   - Carrier identity (name, DOT, MC, address)
+ *   - Headline verdict from CarrierVerdictCache (populated nightly by the
+ *     agent watchdog) — falls back to a quick computed risk grade if missing
+ *   - "Open Investigator" CTA that lands authed users on /console/[dotNumber]
+ *
+ * NOT a full intelligence dashboard — that's the agent console behind auth.
+ * This page exists for SEO indexability and shareable links only.
+ */
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCarrierByDot, getInspectionsByDot, getCrashesByDot } from "@/lib/socrata";
-import { getCarrierBasics, getCarrierProfile, extractCarrierRecord } from "@/lib/fmcsa";
-import { decodeStatus, entityTypeBadge, decodeInspectionLevel } from "@/lib/fmcsa-codes";
+import { getCarrierByDot } from "@/lib/socrata";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
+import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
+import { prisma } from "@/lib/prisma";
 
 type Props = { params: { dotNumber: string } };
 
-/* ── Dynamic SEO metadata ─────────────────────────────────────────── */
+export const revalidate = 86400; // 24h ISR
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dot = params.dotNumber;
   if (!/^\d{1,10}$/.test(dot)) return { title: "Carrier Not Found | FleetSight" };
-
   const carrier = await getCarrierByDot(parseInt(dot, 10));
   if (!carrier) return { title: "Carrier Not Found | FleetSight" };
 
-  const name = carrier.legal_name;
-  const state = carrier.phy_state ?? "";
-  const units = carrier.power_units ? `${carrier.power_units} power units` : "";
-
   return {
-    title: `${name} — DOT ${dot} | FleetSight`,
-    description: `Safety profile for ${name} (USDOT ${dot})${state ? ` in ${state}` : ""}. ${units ? `Fleet: ${units}.` : ""} View inspections, crashes, insurance, BASIC scores, and chameleon detection signals.`,
+    title: `${carrier.legal_name} — DOT ${dot} | FleetSight`,
+    description: `FleetSight intelligence profile for ${carrier.legal_name} (USDOT ${dot})${carrier.phy_state ? ` in ${carrier.phy_state}` : ""}. Open the agent for a verdict-first investigation with citations.`,
     openGraph: {
-      title: `${name} — DOT ${dot}`,
-      description: `FMCSA carrier safety profile. Inspections, crashes, insurance, and compliance intelligence.`,
+      title: `${carrier.legal_name} — DOT ${dot}`,
+      description: `Verdict-first carrier intelligence powered by FleetSight's AI agent.`,
       type: "website",
     },
   };
 }
 
-/* ── Page ──────────────────────────────────────────────────────────── */
+type Verdict = "pass" | "watch" | "fail";
+
+interface VerdictView {
+  source: "cache" | "fallback";
+  verdict: Verdict;
+  headline: string;
+  bullets: string[];
+  generatedAt: string | null;
+}
 
 export default async function PublicCarrierPage({ params }: Props) {
   if (!/^\d{1,10}$/.test(params.dotNumber)) notFound();
-  const dotNumber = parseInt(params.dotNumber, 10);
+  const dotNumberStr = params.dotNumber;
+  const dotNumber = parseInt(dotNumberStr, 10);
 
-  const [carrier, inspections, crashes] = await Promise.all([
+  const [carrier, cached] = await Promise.all([
     getCarrierByDot(dotNumber),
-    getInspectionsByDot(dotNumber, 100).catch(() => []),
-    getCrashesByDot(dotNumber, 50).catch(() => []),
+    prisma.carrierVerdictCache.findUnique({ where: { dotNumber: dotNumberStr } }).catch(() => null),
   ]);
 
   if (!carrier) notFound();
 
-  // Optional FMCSA live data
-  let basics: unknown = null;
-  let safetyRating: string | null = null;
-  let allowedToOperate: string | null = null;
-  try {
-    const [basicsData, profile] = await Promise.all([
-      getCarrierBasics(String(dotNumber)).catch(() => null),
-      getCarrierProfile(String(dotNumber)).catch(() => null),
-    ]);
-    basics = basicsData;
-    const record = extractCarrierRecord(profile);
-    if (record) {
-      const rating = record.safetyRating ?? record.safety_rating;
-      if (rating && typeof rating === "string" && rating !== "None") safetyRating = rating;
-      if (typeof record.allowedToOperate === "string") allowedToOperate = record.allowedToOperate;
-    }
-  } catch {}
-
+  const verdictView = buildVerdictView(cached, carrier);
   const badge = entityTypeBadge(carrier.classdef);
-  const riskIndicator = computeQuickRiskIndicator({
-    powerUnits: carrier.power_units ? parseInt(carrier.power_units, 10) : undefined,
-    totalDrivers: carrier.total_drivers ? parseInt(carrier.total_drivers, 10) : undefined,
-    addDate: carrier.add_date,
-    mcs150Date: carrier.mcs150_date,
-    statusCode: carrier.status_code,
-  });
-
-  const totalViols = inspections.reduce((s, i) => s + (parseInt(i.viol_total ?? "0", 10) || 0), 0);
-  const totalOos = inspections.reduce((s, i) => s + (parseInt(i.oos_total ?? "0", 10) || 0), 0);
-  const oosRate = inspections.length > 0 ? ((totalOos / inspections.length) * 100).toFixed(1) : null;
-  const totalFatalities = crashes.reduce((s, c) => s + (parseInt(c.fatalities ?? "0", 10) || 0), 0);
-  const totalInjuries = crashes.reduce((s, c) => s + (parseInt(c.injuries ?? "0", 10) || 0), 0);
-
-  // Extract BASIC scores
-  type BasicEntry = { basicsId: number; basicsDescription: string; basicsPercentile: number };
-  let basicScores: BasicEntry[] = [];
-  if (basics && typeof basics === "object") {
-    const obj = basics as Record<string, unknown>;
-    const content = obj.content ?? obj;
-    const measures = (content as Record<string, unknown>)?.basics ?? (content as Record<string, unknown>)?.basicsArray;
-    if (Array.isArray(measures)) {
-      basicScores = measures.map((m: Record<string, unknown>) => ({
-        basicsId: Number(m.basicsId ?? m.basics_id ?? 0),
-        basicsDescription: String(m.basicsDescription ?? m.basics_description ?? ""),
-        basicsPercentile: Number(m.basicsPercentile ?? m.basics_percentile ?? 0),
-      }));
-    }
-  }
-
-  // Recent inspections (last 5)
-  const recentInspections = inspections.slice(0, 5);
-
-  // State distribution
-  const stateCounts = new Map<string, number>();
-  for (const insp of inspections) {
-    const st = insp.report_state;
-    if (st) stateCounts.set(st, (stateCounts.get(st) ?? 0) + 1);
-  }
-  const topStates = [...stateCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  const statusActive = carrier.status_code === "A" || allowedToOperate === "Y";
+  const statusActive = carrier.status_code === "A";
 
   return (
-    <main className="min-h-screen bg-[var(--surface-2)] text-[var(--ink)]">
-      {/* Header */}
-      <header className="border-b border-[var(--border)] bg-[var(--surface-1)]">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="text-sm font-semibold tracking-wide text-accent hover:text-accent-hover transition-colors">
+    <main className="min-h-screen" style={{ background: "var(--surface-2)", color: "var(--ink)" }}>
+      <header className="border-b" style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}>
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 sm:px-6">
+          <Link
+            href="/"
+            className="text-sm font-semibold tracking-wide"
+            style={{ color: "var(--accent)" }}
+          >
             FleetSight
           </Link>
           <Link
-            href={`/?dot=${dotNumber}`}
-            className="rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover transition-colors"
+            href={`/console/${dotNumberStr}`}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
+            style={{ background: "var(--accent)" }}
           >
-            View Full Intelligence
+            Open Investigator →
           </Link>
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        {/* Carrier header */}
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                  statusActive
-                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                    : "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                }`}>
-                  {allowedToOperate === "Y" ? "Authorized" : allowedToOperate === "N" ? "Not Authorized" : decodeStatus(carrier.status_code)}
-                </span>
-                <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">
-                  {badge.label}
-                </span>
-                {safetyRating && (
-                  <span className="rounded-full bg-[var(--surface-2)] px-2 py-0.5 text-[10px] font-medium text-[var(--ink-soft)]">
-                    Safety: {safetyRating}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-2xl font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-serif)" }}>
-                {carrier.legal_name}
-              </h1>
-              {carrier.dba_name && (
-                <p className="mt-0.5 text-sm text-[var(--ink-soft)]">DBA {carrier.dba_name}</p>
-              )}
-              <p className="mt-2 text-xs text-[var(--ink-muted)]">
-                USDOT {dotNumber}
-                {carrier.docket1 && <span className="ml-3">MC-{carrier.docket1}</span>}
-                {carrier.phy_city && carrier.phy_state && (
-                  <span className="ml-3">{carrier.phy_city}, {carrier.phy_state} {carrier.phy_zip}</span>
-                )}
-              </p>
-            </div>
-            {riskIndicator && (
-              <div className={`rounded-xl px-4 py-3 text-center ${
-                riskIndicator.grade === "A" ? "bg-emerald-50 ring-1 ring-emerald-200" :
-                riskIndicator.grade === "B" ? "bg-emerald-50 ring-1 ring-emerald-200" :
-                riskIndicator.grade === "C" ? "bg-amber-50 ring-1 ring-amber-200" :
-                riskIndicator.grade === "D" ? "bg-orange-50 ring-1 ring-orange-200" :
-                "bg-rose-50 ring-1 ring-rose-200"
-              }`}>
-                <p className="text-2xl font-bold">{riskIndicator.grade}</p>
-                <p className="text-[10px] text-[var(--ink-muted)]">Risk Grade</p>
-              </div>
-            )}
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        {/* Carrier identity */}
+        <div
+          className="rounded-xl border p-6"
+          style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
+        >
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+              style={{
+                background: statusActive ? "rgba(22, 163, 74, 0.10)" : "rgba(220, 38, 38, 0.10)",
+                color: statusActive ? "#15803d" : "#991b1b",
+              }}
+            >
+              {decodeStatus(carrier.status_code)}
+            </span>
+            <span
+              className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+              style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
+            >
+              {badge.label}
+            </span>
           </div>
+
+          <h1
+            className="text-2xl font-semibold"
+            style={{ color: "var(--ink)", fontFamily: "var(--font-serif)" }}
+          >
+            {carrier.legal_name}
+          </h1>
+          {carrier.dba_name && (
+            <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
+              DBA {carrier.dba_name}
+            </p>
+          )}
+          <p className="mt-2 text-xs" style={{ color: "var(--ink-muted)" }}>
+            USDOT {dotNumberStr}
+            {carrier.docket1 && <span className="ml-3">MC-{carrier.docket1}</span>}
+            {carrier.phy_city && carrier.phy_state && (
+              <span className="ml-3">
+                {carrier.phy_city}, {carrier.phy_state} {carrier.phy_zip}
+              </span>
+            )}
+          </p>
         </div>
 
-        {/* Stats grid */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+        {/* Verdict card */}
+        <VerdictCard view={verdictView} dotNumber={dotNumberStr} />
+
+        {/* Quick stats (census fields only — no live FMCSA fetches) */}
+        <div className="mt-4 grid grid-cols-3 gap-3">
           {[
-            { label: "Power Units", value: carrier.power_units ?? "N/A" },
-            { label: "Drivers", value: carrier.total_drivers ?? "N/A" },
-            { label: "Inspections", value: inspections.length },
-            { label: "Violations", value: totalViols },
-            { label: "Crashes", value: crashes.length },
-            { label: "OOS Rate", value: oosRate ? `${oosRate}%` : "N/A" },
+            { label: "Power Units", value: carrier.power_units ?? "—" },
+            { label: "Drivers", value: carrier.total_drivers ?? "—" },
+            { label: "MC Number", value: carrier.docket1 ? `MC-${carrier.docket1}` : "—" },
           ].map((s) => (
-            <div key={s.label} className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] px-4 py-3 text-center">
-              <p className="text-lg font-bold text-[var(--ink)]">{s.value}</p>
-              <p className="text-[10px] text-[var(--ink-muted)]">{s.label}</p>
+            <div
+              key={s.label}
+              className="rounded-xl border px-4 py-3 text-center"
+              style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
+            >
+              <p className="text-lg font-bold" style={{ color: "var(--ink)" }}>
+                {s.value}
+              </p>
+              <p className="text-[10px]" style={{ color: "var(--ink-muted)" }}>
+                {s.label}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Two-column layout */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {/* BASIC Scores */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
-            <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">BASIC Scores</h2>
-            {basicScores.length > 0 ? (
-              <div className="space-y-3">
-                {basicScores.map((b) => (
-                  <div key={b.basicsId}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-[var(--ink-soft)]">{b.basicsDescription}</span>
-                      <span className={`font-medium ${b.basicsPercentile >= 75 ? "text-rose-600" : b.basicsPercentile >= 50 ? "text-amber-600" : "text-[var(--ink)]"}`}>
-                        {b.basicsPercentile}%
-                      </span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-surface-3">
-                      <div
-                        className={`h-full rounded-full transition-all ${
-                          b.basicsPercentile >= 75 ? "bg-rose-500" : b.basicsPercentile >= 50 ? "bg-amber-500" : "bg-accent-soft0"
-                        }`}
-                        style={{ width: `${b.basicsPercentile}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[var(--ink-muted)]">No BASIC scores available.</p>
-            )}
-          </div>
-
-          {/* Crash summary */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
-            <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Crash Summary</h2>
-            {crashes.length > 0 ? (
-              <>
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="text-center">
-                    <p className={`text-2xl font-bold ${totalFatalities > 0 ? "text-rose-600" : "text-[var(--ink)]"}`}>{totalFatalities}</p>
-                    <p className="text-[10px] text-[var(--ink-muted)]">Fatalities</p>
-                  </div>
-                  <div className="text-center">
-                    <p className={`text-2xl font-bold ${totalInjuries > 0 ? "text-amber-600" : "text-[var(--ink)]"}`}>{totalInjuries}</p>
-                    <p className="text-[10px] text-[var(--ink-muted)]">Injuries</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-[var(--ink)]">{crashes.length}</p>
-                    <p className="text-[10px] text-[var(--ink-muted)]">Total Crashes</p>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  {crashes.slice(0, 5).map((c, i) => (
-                    <div key={c.crash_id ?? i} className="flex items-center justify-between text-xs py-1 border-b border-[var(--border)] last:border-0">
-                      <span className="text-[var(--ink-soft)]">{c.report_date ? new Date(c.report_date).toLocaleDateString() : "N/A"}</span>
-                      <span className="text-[var(--ink-muted)]">{c.report_state}</span>
-                      <span className={parseInt(c.fatalities ?? "0") > 0 ? "text-rose-600 font-medium" : "text-[var(--ink-muted)]"}>
-                        {parseInt(c.fatalities ?? "0") > 0 ? `${c.fatalities} fatal` : parseInt(c.injuries ?? "0") > 0 ? `${c.injuries} inj` : "Tow-away"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-[var(--ink-muted)]">No crash records found.</p>
-            )}
-          </div>
-
-          {/* Recent inspections */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
-            <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Recent Inspections</h2>
-            {recentInspections.length > 0 ? (
-              <div className="space-y-1.5">
-                {recentInspections.map((insp, i) => (
-                  <div key={insp.inspection_id ?? i} className="flex items-center justify-between text-xs py-1.5 border-b border-[var(--border)] last:border-0">
-                    <span className="text-[var(--ink-soft)]">{insp.insp_date ? new Date(insp.insp_date).toLocaleDateString() : "N/A"}</span>
-                    <span className="text-[var(--ink-muted)]">{insp.report_state}</span>
-                    <span className="text-[var(--ink-muted)]">{decodeInspectionLevel(insp.insp_level_id)}</span>
-                    <span className="text-[var(--ink)]">{insp.viol_total ?? 0} viols</span>
-                    {(parseInt(insp.oos_total ?? "0") > 0) && (
-                      <span className="text-rose-600 font-medium">{insp.oos_total} OOS</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[var(--ink-muted)]">No inspection records found.</p>
-            )}
-          </div>
-
-          {/* Top inspection states */}
-          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
-            <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Top Inspection States</h2>
-            {topStates.length > 0 ? (
-              <div className="space-y-2">
-                {topStates.map(([state, count]) => (
-                  <div key={state}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-[var(--ink)]">{state}</span>
-                      <span className="text-[var(--ink-soft)]">{count} inspection{count !== 1 ? "s" : ""}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
-                      <div
-                        className="h-full rounded-full bg-accent-soft0"
-                        style={{ width: `${(count / (topStates[0]?.[1] ?? 1)) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[var(--ink-muted)]">No state data available.</p>
-            )}
-          </div>
-        </div>
-
         {/* CTA */}
-        <div className="mt-8 rounded-xl border border-accent/30 bg-accent-soft/50 p-6 text-center">
-          <h2 className="text-lg font-semibold text-[var(--ink)]" style={{ fontFamily: "var(--font-serif)" }}>
-            Get the complete intelligence picture
+        <div
+          className="mt-6 rounded-xl border p-6 text-center"
+          style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
+        >
+          <h2 className="text-base font-semibold" style={{ color: "var(--ink)" }}>
+            See the full investigation
           </h2>
-          <p className="mt-2 text-sm text-[var(--ink-soft)]">
-            View chameleon detection, background checks, fleet VIN tracking, insurance history,
-            affiliation networks, and AI-powered anomaly analysis — all free.
+          <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
+            FleetSight&apos;s AI agent runs a verdict-first investigation in seconds — chameleon detection,
+            trust scoring, OOS analysis, insurance gaps, affiliation graphs.
           </p>
           <Link
-            href={`/?dot=${dotNumber}`}
-            className="mt-4 inline-block rounded-xl bg-accent px-6 py-2.5 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            href={`/console/${dotNumberStr}`}
+            className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            style={{ background: "var(--accent)" }}
           >
-            View Full Carrier Profile
+            Open Investigator →
           </Link>
         </div>
 
-        {/* Embed badge */}
-        <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-5">
-          <h2 className="text-sm font-semibold text-[var(--ink)] mb-2">Embed This Carrier&apos;s Badge</h2>
-          <p className="text-xs text-[var(--ink-muted)] mb-3">
-            Copy and paste this HTML to show this carrier&apos;s risk grade on your website.
-          </p>
-          <code className="block rounded-lg bg-[var(--surface-2)] p-3 text-[11px] text-[var(--ink-soft)] break-all select-all">
-            {`<a href="https://fleetsight.vercel.app/carrier/${dotNumber}"><img src="https://fleetsight.vercel.app/api/v1/badge/${dotNumber}" alt="${carrier.legal_name} Safety Badge" /></a>`}
-          </code>
-        </div>
-
-        {/* Footer */}
-        <footer className="mt-8 text-center text-xs text-[var(--ink-muted)]">
-          <p>Data sourced from FMCSA, DOT, and NHTSA public datasets. Updated daily.</p>
-          <p className="mt-1">
-            <Link href="/" className="text-accent hover:text-accent-hover">Search another carrier</Link>
-            <span className="mx-2">|</span>
-            <Link href="/dashboard" className="text-accent hover:text-accent-hover">Dashboard</Link>
-          </p>
-        </footer>
+        <p className="mt-6 text-center text-[11px]" style={{ color: "var(--ink-muted)" }}>
+          Public profile snapshot. Last verdict {verdictView.generatedAt ? `generated ${formatRel(verdictView.generatedAt)}` : "computed on this request"}.
+        </p>
       </div>
     </main>
   );
+}
+
+function buildVerdictView(
+  cached: { verdict: string; headline: string; bullets: string; confidence: number; generatedAt: Date } | null,
+  carrier: { power_units?: string; total_drivers?: string; add_date?: string; mcs150_date?: string; status_code?: string }
+): VerdictView {
+  if (cached) {
+    let bullets: string[] = [];
+    try {
+      const parsed = JSON.parse(cached.bullets);
+      if (Array.isArray(parsed)) bullets = parsed.filter((b): b is string => typeof b === "string");
+    } catch {
+      bullets = [];
+    }
+    return {
+      source: "cache",
+      verdict: (cached.verdict as Verdict) || "watch",
+      headline: cached.headline,
+      bullets,
+      generatedAt: cached.generatedAt.toISOString(),
+    };
+  }
+
+  // Fallback: compute a quick grade from census fields and synthesize a headline
+  const indicator = computeQuickRiskIndicator({
+    powerUnits: parseIntOrUndef(carrier.power_units),
+    totalDrivers: parseIntOrUndef(carrier.total_drivers),
+    addDate: carrier.add_date,
+    mcs150Date: carrier.mcs150_date,
+    statusCode: carrier.status_code,
+  });
+  const verdict: Verdict = indicator.grade === "A" || indicator.grade === "B" ? "pass" : indicator.grade === "C" ? "watch" : "fail";
+  const headline =
+    verdict === "pass"
+      ? "No headline risks detected from public registration data"
+      : verdict === "watch"
+      ? "Worth a closer look — open the Investigator for a full vetting"
+      : "Elevated risk — open the Investigator immediately for full investigation";
+
+  return {
+    source: "fallback",
+    verdict,
+    headline,
+    bullets: [
+      `Quick risk grade ${indicator.grade} (score ${indicator.score})`,
+      "This snapshot uses census fields only. The Investigator agent does a deeper sweep.",
+    ],
+    generatedAt: null,
+  };
+}
+
+function VerdictCard({ view, dotNumber }: { view: VerdictView; dotNumber: string }) {
+  const colors: Record<Verdict, { border: string; bg: string; fg: string; label: string }> = {
+    pass: { border: "#16a34a", bg: "rgba(22, 163, 74, 0.10)", fg: "#15803d", label: "PASS" },
+    watch: { border: "#d97757", bg: "rgba(217, 119, 87, 0.10)", fg: "#9a3412", label: "WATCH" },
+    fail: { border: "#dc2626", bg: "rgba(220, 38, 38, 0.10)", fg: "#991b1b", label: "FAIL" },
+  };
+  const c = colors[view.verdict];
+  return (
+    <div
+      className="mt-4 rounded-xl border-2 p-5"
+      style={{ borderColor: c.border, background: "var(--surface-1)" }}
+    >
+      <div className="mb-3 flex items-center justify-between">
+        <span
+          className="rounded-md px-3 py-1 text-xs font-bold tracking-widest"
+          style={{ background: c.bg, color: c.fg, border: `1px solid ${c.border}` }}
+        >
+          {c.label}
+        </span>
+        <span className="text-[10px]" style={{ color: "var(--ink-muted)" }}>
+          {view.source === "cache" ? "from agent watchdog" : "from quick indicator"}
+        </span>
+      </div>
+      <h3 className="text-base font-semibold" style={{ color: "var(--ink)" }}>
+        {view.headline}
+      </h3>
+      {view.bullets.length > 0 && (
+        <ul className="mt-3 space-y-1.5 text-sm" style={{ color: "var(--ink-soft)" }}>
+          {view.bullets.slice(0, 4).map((b, i) => (
+            <li key={i} className="flex gap-2">
+              <span style={{ color: c.border }}>•</span>
+              <span>{b}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link
+        href={`/console/${dotNumber}`}
+        className="mt-4 inline-block text-xs font-medium underline"
+        style={{ color: "var(--accent)" }}
+      >
+        Open the Investigator for the full evidence trail →
+      </Link>
+    </div>
+  );
+}
+
+function parseIntOrUndef(s: string | undefined): number | undefined {
+  if (!s) return undefined;
+  const n = parseInt(s, 10);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function formatRel(iso: string): string {
+  const t = Date.parse(iso);
+  if (!Number.isFinite(t)) return "recently";
+  const ageHours = (Date.now() - t) / (1000 * 60 * 60);
+  if (ageHours < 1) return "in the last hour";
+  if (ageHours < 24) return `${Math.round(ageHours)}h ago`;
+  return `${Math.round(ageHours / 24)}d ago`;
 }

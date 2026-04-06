@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
-import { BADGE_COLORS, BORDER_COLORS, SkeletonRows } from "./shared";
+import { BADGE_COLORS, BORDER_COLORS } from "./shared";
 import {
   Shield, ClipboardList, Eye, Truck, Building2, Sparkles,
   Briefcase, Package, ShieldCheck, CheckSquare,
 } from "lucide-react";
-import { CarrierDetailView } from "./carrier-detail";
-import type { SearchResult, CarrierDetail, Tab } from "./types";
+import type { SearchResult } from "./types";
 
 const RISK_GRADE_COLORS: Record<string, string> = {
   A: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -112,6 +111,7 @@ function updateUrl(params: Record<string, string | null>) {
 }
 
 export function CarrierLookup() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -122,10 +122,6 @@ export function CarrierLookup() {
   const [searching, setSearching] = useState(false);
   const [searched, setSearched] = useState(false);
   const [selectedDot, setSelectedDot] = useState<number | null>(null);
-  const [detail, setDetail] = useState<CarrierDetail | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [searchMode, setSearchMode] = useState<"standard" | "natural" | "ai">("standard");
   const [searchDescription, setSearchDescription] = useState<string | null>(null);
   const [aiSkipped, setAiSkipped] = useState<"not_authenticated" | "no_credits" | null>(null);
@@ -139,8 +135,6 @@ export function CarrierLookup() {
     setSearching(true);
     setSearched(false);
     setSelectedDot(null);
-    setDetail(null);
-    setDetailError(null);
     try {
       const res = await fetch(
         `/api/carrier/search?q=${encodeURIComponent(q)}`,
@@ -176,34 +170,19 @@ export function CarrierLookup() {
     }, 300);
   }, [doSearch]);
 
-  const doSelect = useCallback(async (dotNumber: number) => {
-    setSelectedDot(dotNumber);
-    setDetailLoading(true);
-    setDetailError(null);
-    setActiveTab("overview");
-    try {
-      const res = await fetch(`/api/carrier/${dotNumber}`);
-      if (!res.ok) throw new Error(`Detail returned ${res.status}`);
-      const data: CarrierDetail = await res.json();
-      setDetail(data);
-    } catch {
-      setDetailError("Failed to load carrier details.");
-    } finally {
-      setDetailLoading(false);
-    }
-  }, []);
-
-  // Initialize from URL params on mount
+  // Initialize from URL params on mount. ?dot=N shortcut now routes to the
+  // Investigator console (the inline detail view was retired in the agentic
+  // pivot — search → click → /console/[dot]).
   useEffect(() => {
     const q = searchParams.get("q");
     const dot = searchParams.get("dot");
+    if (dot && /^\d{1,10}$/.test(dot)) {
+      router.push(`/console/${dot}`);
+      return;
+    }
     if (q) {
       setQuery(q);
-      doSearch(q).then(() => {
-        if (dot) doSelect(parseInt(dot, 10));
-      });
-    } else if (dot) {
-      doSelect(parseInt(dot, 10));
+      doSearch(q);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -239,9 +218,11 @@ export function CarrierLookup() {
     await doSearch(query.trim());
   }
 
-  async function handleSelect(dotNumber: number) {
-    updateUrl({ q: query.trim() || null, dot: String(dotNumber) });
-    await doSelect(dotNumber);
+  function handleSelect(dotNumber: number) {
+    // Agentic pivot: clicking a search result opens the Investigator console.
+    // The console auto-briefs the carrier (parallel tool sweep + decision card).
+    setSelectedDot(dotNumber);
+    router.push(`/console/${dotNumber}`);
   }
 
   function handleExampleClick(example: string) {
@@ -636,31 +617,6 @@ export function CarrierLookup() {
               })}
             </motion.ul>
           </div>
-        )}
-
-        {/* Detail */}
-        {selectedDot && (
-          <motion.div
-            key={selectedDot}
-            className="mt-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-          >
-            {detailLoading && <SkeletonRows />}
-            {detailError && (
-              <p className="text-center text-sm text-rose-600">
-                {detailError}
-              </p>
-            )}
-            {detail && (
-              <CarrierDetailView
-                detail={detail}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
-            )}
-          </motion.div>
         )}
       </div>
     </main>
