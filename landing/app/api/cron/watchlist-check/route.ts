@@ -132,7 +132,7 @@ function buildAlertEmail(carriers: string[]): string {
         <tbody>${rows}</tbody>
       </table>
       <p style="font-size:13px;color:#9ca3af;margin:24px 0 0">
-        Log in to <a href="https://fleetsight.vercel.app/dashboard" style="color:#6366f1">FleetSight</a> to review your watchlist.
+        Log in to <a href="https://fleetsight.vercel.app/" style="color:#6366f1">FleetSight</a> to review your watchlist.
       </p>
     </div>
   </div>

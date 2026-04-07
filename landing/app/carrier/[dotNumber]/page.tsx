@@ -1,14 +1,13 @@
 /**
- * Public carrier SEO snapshot.
+ * Public carrier intelligence page.
  *
- * Renders a thin static profile for crawlers and unauthenticated visitors:
+ * The destination users land on after clicking a search result. Renders a
+ * lean read-only intelligence snapshot from public FMCSA / Socrata data:
  *   - Carrier identity (name, DOT, MC, address)
- *   - Headline verdict from CarrierVerdictCache (populated nightly by the
- *     agent watchdog) — falls back to a quick computed risk grade if missing
- *   - "Open Investigator" CTA that lands authed users on /console/[dotNumber]
+ *   - Quick risk indicator + grade computed from census fields
+ *   - Headline numbers (power units, drivers, MC)
  *
- * NOT a full intelligence dashboard — that's the agent console behind auth.
- * This page exists for SEO indexability and shareable links only.
+ * No dashboards, no agent console, no auth required.
  */
 
 import type { Metadata } from "next";
@@ -17,7 +16,6 @@ import { notFound } from "next/navigation";
 import { getCarrierByDot } from "@/lib/socrata";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
 import { decodeStatus, entityTypeBadge } from "@/lib/fmcsa-codes";
-import { prisma } from "@/lib/prisma";
 
 type Props = { params: { dotNumber: string } };
 
@@ -31,10 +29,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${carrier.legal_name} — DOT ${dot} | FleetSight`,
-    description: `FleetSight intelligence profile for ${carrier.legal_name} (USDOT ${dot})${carrier.phy_state ? ` in ${carrier.phy_state}` : ""}. Open the agent for a verdict-first investigation with citations.`,
+    description: `FleetSight intelligence profile for ${carrier.legal_name} (USDOT ${dot})${carrier.phy_state ? ` in ${carrier.phy_state}` : ""}.`,
     openGraph: {
       title: `${carrier.legal_name} — DOT ${dot}`,
-      description: `Verdict-first carrier intelligence powered by FleetSight's AI agent.`,
+      description: `Carrier intelligence powered by FleetSight.`,
       type: "website",
     },
   };
@@ -42,27 +40,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 type Verdict = "pass" | "watch" | "fail";
 
-interface VerdictView {
-  source: "cache" | "fallback";
-  verdict: Verdict;
-  headline: string;
-  bullets: string[];
-  generatedAt: string | null;
-}
-
 export default async function PublicCarrierPage({ params }: Props) {
   if (!/^\d{1,10}$/.test(params.dotNumber)) notFound();
   const dotNumberStr = params.dotNumber;
   const dotNumber = parseInt(dotNumberStr, 10);
 
-  const [carrier, cached] = await Promise.all([
-    getCarrierByDot(dotNumber),
-    prisma.carrierVerdictCache.findUnique({ where: { dotNumber: dotNumberStr } }).catch(() => null),
-  ]);
-
+  const carrier = await getCarrierByDot(dotNumber);
   if (!carrier) notFound();
 
-  const verdictView = buildVerdictView(cached, carrier);
+  const indicator = computeQuickRiskIndicator({
+    powerUnits: parseIntOrUndef(carrier.power_units),
+    totalDrivers: parseIntOrUndef(carrier.total_drivers),
+    addDate: carrier.add_date,
+    mcs150Date: carrier.mcs150_date,
+    statusCode: carrier.status_code,
+  });
+  const verdict: Verdict =
+    indicator.grade === "A" || indicator.grade === "B"
+      ? "pass"
+      : indicator.grade === "C"
+      ? "watch"
+      : "fail";
+  const headline =
+    verdict === "pass"
+      ? "No headline risks detected from public registration data"
+      : verdict === "watch"
+      ? "Worth a closer look — review safety and inspection history"
+      : "Elevated risk — review safety, inspections, and authority history";
+
   const badge = entityTypeBadge(carrier.classdef);
   const statusActive = carrier.status_code === "A";
 
@@ -78,11 +83,11 @@ export default async function PublicCarrierPage({ params }: Props) {
             FleetSight
           </Link>
           <Link
-            href={`/console/${dotNumberStr}`}
-            className="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: "var(--accent)" }}
+            href="/"
+            className="text-xs font-medium hover:underline"
+            style={{ color: "var(--ink-soft)" }}
           >
-            Open Investigator →
+            ← Back to search
           </Link>
         </div>
       </header>
@@ -134,9 +139,9 @@ export default async function PublicCarrierPage({ params }: Props) {
         </div>
 
         {/* Verdict card */}
-        <VerdictCard view={verdictView} dotNumber={dotNumberStr} />
+        <VerdictCard verdict={verdict} headline={headline} grade={indicator.grade} score={indicator.score} />
 
-        {/* Quick stats (census fields only — no live FMCSA fetches) */}
+        {/* Quick stats */}
         <div className="mt-4 grid grid-cols-3 gap-3">
           {[
             { label: "Power Units", value: carrier.power_units ?? "—" },
@@ -158,91 +163,31 @@ export default async function PublicCarrierPage({ params }: Props) {
           ))}
         </div>
 
-        {/* CTA */}
-        <div
-          className="mt-6 rounded-xl border p-6 text-center"
-          style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
-        >
-          <h2 className="text-base font-semibold" style={{ color: "var(--ink)" }}>
-            See the full investigation
-          </h2>
-          <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
-            FleetSight&apos;s AI agent runs a verdict-first investigation in seconds — chameleon detection,
-            trust scoring, OOS analysis, insurance gaps, affiliation graphs.
-          </p>
-          <Link
-            href={`/console/${dotNumberStr}`}
-            className="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: "var(--accent)" }}
-          >
-            Open Investigator →
-          </Link>
-        </div>
-
         <p className="mt-6 text-center text-[11px]" style={{ color: "var(--ink-muted)" }}>
-          Public profile snapshot. Last verdict {verdictView.generatedAt ? `generated ${formatRel(verdictView.generatedAt)}` : "computed on this request"}.
+          Computed from public FMCSA registration data. Snapshot is cached for 24 hours.
         </p>
       </div>
     </main>
   );
 }
 
-function buildVerdictView(
-  cached: { verdict: string; headline: string; bullets: string; confidence: number; generatedAt: Date } | null,
-  carrier: { power_units?: string; total_drivers?: string; add_date?: string; mcs150_date?: string; status_code?: string }
-): VerdictView {
-  if (cached) {
-    let bullets: string[] = [];
-    try {
-      const parsed = JSON.parse(cached.bullets);
-      if (Array.isArray(parsed)) bullets = parsed.filter((b): b is string => typeof b === "string");
-    } catch {
-      bullets = [];
-    }
-    return {
-      source: "cache",
-      verdict: (cached.verdict as Verdict) || "watch",
-      headline: cached.headline,
-      bullets,
-      generatedAt: cached.generatedAt.toISOString(),
-    };
-  }
-
-  // Fallback: compute a quick grade from census fields and synthesize a headline
-  const indicator = computeQuickRiskIndicator({
-    powerUnits: parseIntOrUndef(carrier.power_units),
-    totalDrivers: parseIntOrUndef(carrier.total_drivers),
-    addDate: carrier.add_date,
-    mcs150Date: carrier.mcs150_date,
-    statusCode: carrier.status_code,
-  });
-  const verdict: Verdict = indicator.grade === "A" || indicator.grade === "B" ? "pass" : indicator.grade === "C" ? "watch" : "fail";
-  const headline =
-    verdict === "pass"
-      ? "No headline risks detected from public registration data"
-      : verdict === "watch"
-      ? "Worth a closer look — open the Investigator for a full vetting"
-      : "Elevated risk — open the Investigator immediately for full investigation";
-
-  return {
-    source: "fallback",
-    verdict,
-    headline,
-    bullets: [
-      `Quick risk grade ${indicator.grade} (score ${indicator.score})`,
-      "This snapshot uses census fields only. The Investigator agent does a deeper sweep.",
-    ],
-    generatedAt: null,
-  };
-}
-
-function VerdictCard({ view, dotNumber }: { view: VerdictView; dotNumber: string }) {
+function VerdictCard({
+  verdict,
+  headline,
+  grade,
+  score,
+}: {
+  verdict: Verdict;
+  headline: string;
+  grade: string;
+  score: number;
+}) {
   const colors: Record<Verdict, { border: string; bg: string; fg: string; label: string }> = {
     pass: { border: "#16a34a", bg: "rgba(22, 163, 74, 0.10)", fg: "#15803d", label: "PASS" },
     watch: { border: "#d97757", bg: "rgba(217, 119, 87, 0.10)", fg: "#9a3412", label: "WATCH" },
     fail: { border: "#dc2626", bg: "rgba(220, 38, 38, 0.10)", fg: "#991b1b", label: "FAIL" },
   };
-  const c = colors[view.verdict];
+  const c = colors[verdict];
   return (
     <div
       className="mt-4 rounded-xl border-2 p-5"
@@ -256,29 +201,22 @@ function VerdictCard({ view, dotNumber }: { view: VerdictView; dotNumber: string
           {c.label}
         </span>
         <span className="text-[10px]" style={{ color: "var(--ink-muted)" }}>
-          {view.source === "cache" ? "from agent watchdog" : "from quick indicator"}
+          quick risk indicator
         </span>
       </div>
       <h3 className="text-base font-semibold" style={{ color: "var(--ink)" }}>
-        {view.headline}
+        {headline}
       </h3>
-      {view.bullets.length > 0 && (
-        <ul className="mt-3 space-y-1.5 text-sm" style={{ color: "var(--ink-soft)" }}>
-          {view.bullets.slice(0, 4).map((b, i) => (
-            <li key={i} className="flex gap-2">
-              <span style={{ color: c.border }}>•</span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Link
-        href={`/console/${dotNumber}`}
-        className="mt-4 inline-block text-xs font-medium underline"
-        style={{ color: "var(--accent)" }}
-      >
-        Open the Investigator for the full evidence trail →
-      </Link>
+      <ul className="mt-3 space-y-1.5 text-sm" style={{ color: "var(--ink-soft)" }}>
+        <li className="flex gap-2">
+          <span style={{ color: c.border }}>•</span>
+          <span>Quick risk grade {grade} (score {score})</span>
+        </li>
+        <li className="flex gap-2">
+          <span style={{ color: c.border }}>•</span>
+          <span>Computed from registration census fields only.</span>
+        </li>
+      </ul>
     </div>
   );
 }
@@ -287,13 +225,4 @@ function parseIntOrUndef(s: string | undefined): number | undefined {
   if (!s) return undefined;
   const n = parseInt(s, 10);
   return Number.isFinite(n) ? n : undefined;
-}
-
-function formatRel(iso: string): string {
-  const t = Date.parse(iso);
-  if (!Number.isFinite(t)) return "recently";
-  const ageHours = (Date.now() - t) / (1000 * 60 * 60);
-  if (ageHours < 1) return "in the last hour";
-  if (ageHours < 24) return `${Math.round(ageHours)}h ago`;
-  return `${Math.round(ageHours / 24)}d ago`;
 }

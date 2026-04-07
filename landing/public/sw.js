@@ -1,5 +1,5 @@
 const CACHE_NAME = "fleetsight-v1";
-const STATIC_ASSETS = ["/", "/dashboard", "/offline"];
+const STATIC_ASSETS = ["/", "/offline"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -5,9 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
-import { CommandPalette } from "@/components/dashboard/command-palette";
 import {
-  LayoutGrid, Search, FileStack, BarChart3,
+  Search, FileStack, BarChart3,
   Map, Network, Users, LogOut, LogIn,
   Menu, PanelLeftClose, PanelLeftOpen,
   Sun, Moon,
@@ -19,7 +18,6 @@ const NAV_SECTIONS = [
   {
     label: "Intelligence",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
       { label: "Search", href: "/", icon: Search },
       { label: "Bulk Screening", href: "/bulk", icon: FileStack },
       { label: "Compare", href: "/compare", icon: BarChart3 },
@@ -73,8 +71,6 @@ export function AppShell({
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "var(--surface-0)", color: "var(--ink)" }}>
-      <CommandPalette />
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -206,21 +202,6 @@ export function AppShell({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Cmd+K trigger */}
-            <button
-              onClick={() => {
-                document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
-              }}
-              className="hidden sm:flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs transition-colors hover:bg-[var(--surface-2)]"
-              style={{ border: "1px solid var(--border)", color: "var(--ink-muted)" }}
-            >
-              <Search className="h-3.5 w-3.5" />
-              <span>Search</span>
-              <kbd className="ml-1 rounded px-1 py-0.5 text-[10px] font-medium" style={{ background: "var(--surface-2)", color: "var(--ink-muted)" }}>
-                {"\u2318"}K
-              </kbd>
-            </button>
-
             {/* Theme toggle */}
             {mounted && (
               <button
@@ -264,105 +245,12 @@ export function AppShell({
 /* ── Helpers ──────────────────────────────────────────────────────── */
 
 function getPageTitle(pathname: string): string {
-  if (pathname === "/dashboard") return "Dashboard";
   if (pathname === "/" || pathname.startsWith("/vehicle")) return "Carrier Search";
   if (pathname === "/bulk") return "Bulk Screening";
   if (pathname === "/compare") return "Compare Carriers";
   if (pathname === "/map") return "Fleet Map";
   if (pathname === "/affiliations") return "Affiliations";
   if (pathname === "/teams") return "Teams";
-  if (pathname === "/credits") return "Credits";
   if (pathname === "/onboarding") return "Onboarding";
   return "FleetSight";
-}
-
-// Icons now provided by lucide-react — legacy SVG functions removed
-function _DashboardIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1.5" y="1.5" width="5" height="5" rx="1" />
-      <rect x="9.5" y="1.5" width="5" height="5" rx="1" />
-      <rect x="1.5" y="9.5" width="5" height="5" rx="1" />
-      <rect x="9.5" y="9.5" width="5" height="5" rx="1" />
-    </svg>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="7" cy="7" r="5" />
-      <path d="M14 14l-3.5-3.5" />
-    </svg>
-  );
-}
-
-function BulkIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="12" height="12" rx="2" />
-      <path d="M5 8h6M5 5h6M5 11h4" />
-    </svg>
-  );
-}
-
-function CompareIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="3" width="5" height="10" rx="1" />
-      <rect x="10" y="3" width="5" height="10" rx="1" />
-      <path d="M8 5v6" />
-    </svg>
-  );
-}
-
-function MapIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="1,3 6,1 10,3 15,1 15,13 10,15 6,13 1,15" />
-      <line x1="6" y1="1" x2="6" y2="13" />
-      <line x1="10" y1="3" x2="10" y2="15" />
-    </svg>
-  );
-}
-
-function AffiliationsIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="4" r="2" />
-      <circle cx="4" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <path d="M8 6v2M6.5 9.5L4.5 10.5M9.5 9.5l2 1" />
-    </svg>
-  );
-}
-
-function TeamsIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="6" cy="5" r="2.5" />
-      <path d="M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" />
-      <circle cx="11.5" cy="5.5" r="2" />
-      <path d="M14.5 14c0-2-1.5-3.5-3-3.5" />
-    </svg>
-  );
-}
-
-function CreditsIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="8" r="6" />
-      <path d="M8 5v6M5.5 8h5" />
-    </svg>
-  );
-}
-
-function SignOutIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3" />
-      <path d="M10 11l3-3-3-3" />
-      <path d="M13 8H6" />
-    </svg>
-  );
 }

@@ -22,10 +22,6 @@
     {
       "path": "/api/cron/send-reports",
       "schedule": "0 8 * * 1"
-    },
-    {
-      "path": "/api/cron/agent-watchdog",
-      "schedule": "0 7 * * *"
     }
   ]
 }

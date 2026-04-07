@@ -65,7 +65,7 @@ export function OnboardingForm({ initialEmail }: { initialEmail: string }) {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/");
     router.refresh();
   }
 

@@ -170,14 +170,13 @@ export function CarrierLookup() {
     }, 300);
   }, [doSearch]);
 
-  // Initialize from URL params on mount. ?dot=N shortcut now routes to the
-  // Investigator console (the inline detail view was retired in the agentic
-  // pivot — search → click → /console/[dot]).
+  // Initialize from URL params on mount. ?dot=N shortcut sends straight to
+  // the public carrier intelligence page.
   useEffect(() => {
     const q = searchParams.get("q");
     const dot = searchParams.get("dot");
     if (dot && /^\d{1,10}$/.test(dot)) {
-      router.push(`/console/${dot}`);
+      router.push(`/carrier/${dot}`);
       return;
     }
     if (q) {
@@ -219,10 +218,9 @@ export function CarrierLookup() {
   }
 
   function handleSelect(dotNumber: number) {
-    // Agentic pivot: clicking a search result opens the Investigator console.
-    // The console auto-briefs the carrier (parallel tool sweep + decision card).
+    // Clicking a result opens the carrier intelligence page.
     setSelectedDot(dotNumber);
-    router.push(`/console/${dotNumber}`);
+    router.push(`/carrier/${dotNumber}`);
   }
 
   function handleExampleClick(example: string) {

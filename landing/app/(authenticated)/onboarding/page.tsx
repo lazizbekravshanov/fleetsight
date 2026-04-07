@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
   });
 
   if (existing) {
-    redirect("/dashboard");
+    redirect("/");
   }
 
   return (
@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
         <p className="text-xs uppercase tracking-[0.2em] text-accent">Onboarding</p>
         <h1 className="mt-3 text-3xl font-semibold">Complete customer setup</h1>
         <p className="mt-2 text-ink-soft">
-          We validate your USDOT against FMCSA before unlocking the dashboard.
+          We validate your USDOT against FMCSA before unlocking carrier search.
         </p>
         <OnboardingForm initialEmail={session.user.email} />
       </div>

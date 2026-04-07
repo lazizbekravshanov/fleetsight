@@ -106,8 +106,8 @@ export function TeamsManager() {
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <Link href="/dashboard" className="text-xs text-accent dark:text-accent hover:underline">
-              &larr; Dashboard
+            <Link href="/" className="text-xs text-accent dark:text-accent hover:underline">
+              &larr; Search
             </Link>
             <h1 className="mt-1 text-2xl font-semibold">Teams</h1>
             <p className="text-sm text-ink-soft dark:text-ink-muted">
