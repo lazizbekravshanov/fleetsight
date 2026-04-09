@@ -6,7 +6,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/releases`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.5 },
+    { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
+
+  // Blog posts
+  const blogSlugs = [
+    "how-to-vet-a-carrier",
+    "carrier-packet-checklist-2026",
+    "carrier-fraud-red-flags",
+    "fleetsight-vs-searchmule",
+    "fleetsight-vs-carrier411",
+    "fmcsa-basic-scores-explained",
+    "how-to-detect-chameleon-carriers",
+  ];
+  const blogPages: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
+    url: `${baseUrl}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
 
   // Top carriers by DOT number — major carriers that people search for frequently
   // These get their own public profile pages at /carrier/[dotNumber]
@@ -60,5 +81,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...carrierPages];
+  return [...staticPages, ...blogPages, ...carrierPages];
 }
