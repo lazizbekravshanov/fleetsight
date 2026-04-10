@@ -8,6 +8,7 @@ const CRASH_RESOURCE = "aayw-vxb3";
 const INSURANCE_RESOURCE = "qh9u-swkp";   // dot_number is 8-char zero-padded
 const AUTH_HIST_RESOURCE = "9mw4-x3tu";    // dot_number is 8-char zero-padded
 const FLEET_UNIT_RESOURCE = "wt8s-2hbx";   // joined via inspection_id (no dot_number)
+const VIOLATION_RESOURCE = "876r-jsdb";    // individual violations per inspection
 
 /** Zero-pad DOT number to 8 characters for datasets that use that format */
 export function padDot(dotNumber: number): string {
@@ -386,5 +387,33 @@ export async function searchCarriersByAddress(
     $where: `upper(phy_street)='${normStreet}' AND upper(phy_city)='${normCity}' AND upper(phy_state)='${normState}'`,
     $limit: String(limit),
     $order: "add_date DESC",
+  });
+}
+
+/* ── Violations ─────────────────────────────────────────────────── */
+
+export type SocrataViolation = {
+  inspection_id?: string;
+  dot_number: string;
+  insp_date?: string;
+  report_state?: string;
+  viol_code?: string;
+  viol_desc?: string;
+  oos?: string;
+  basic?: string;
+  unit_type?: string;
+  unit_number?: string;
+  section?: string;
+  group_desc?: string;
+};
+
+export async function getViolationsByDot(
+  dotNumber: number,
+  limit = 200,
+): Promise<SocrataViolation[]> {
+  return socrataFetch<SocrataViolation>(VIOLATION_RESOURCE, {
+    $where: `dot_number='${dotNumber}'`,
+    $limit: String(limit),
+    $order: "insp_date DESC",
   });
 }

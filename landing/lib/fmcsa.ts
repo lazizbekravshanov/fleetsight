@@ -61,6 +61,18 @@ export async function getCarrierOos(dotNumber: string): Promise<unknown> {
   return fetchJson(`carriers/${encodeURIComponent(dotNumber)}/oos`);
 }
 
+export async function getCarrierCargoCarried(dotNumber: string): Promise<unknown> {
+  return fetchJson(`carriers/${encodeURIComponent(dotNumber)}/cargo-carried`);
+}
+
+export async function getCarrierOperationClassification(dotNumber: string): Promise<unknown> {
+  return fetchJson(`carriers/${encodeURIComponent(dotNumber)}/operation-classification`);
+}
+
+export async function getCarrierDocketNumbers(dotNumber: string): Promise<unknown> {
+  return fetchJson(`carriers/${encodeURIComponent(dotNumber)}/docket-numbers`);
+}
+
 export function extractCarrierRecord(payload: unknown): Record<string, unknown> | null {
   if (!payload || typeof payload !== "object") {
     return null;
