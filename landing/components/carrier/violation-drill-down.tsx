@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 export type ViolationRow = {
   code: string;
@@ -91,5 +91,3 @@ export function ViolationDrillDown({ inspections }: { inspections: InspectionWit
   );
 }
 
-// Need Fragment import
-import { Fragment } from "react";
