@@ -3,8 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { buildMonitoringEmail } from "@/lib/monitoring";
 import { checkInspectionAlerts } from "@/lib/alerts/inspection-alerts";
 import { checkEnablerAlerts } from "@/lib/alerts/enabler-alerts";
+import { withCronLock } from "@/lib/cron-lock";
 import { Resend } from "resend";
 
+export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
 /** GET /api/cron/check-alerts — daily alert generation + email digest */
@@ -14,6 +16,10 @@ export async function GET(req: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  // Idempotency lock: a duplicate cron fire (Vercel retry, overlapping
+  // deploy) would double-send alert emails to every user. The lock makes
+  // the second invocation a no-op.
+  const locked = await withCronLock("check-alerts", async () => {
   // ── Run alert checkers ─────────────────────────────────────────
   const [inspectionAlerts, enablerAlerts] = await Promise.all([
     checkInspectionAlerts(),
@@ -90,9 +96,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return Response.json({
-    inspectionAlerts,
-    enablerAlerts,
-    emailsSent,
+    return {
+      inspectionAlerts,
+      enablerAlerts,
+      emailsSent,
+    };
   });
+
+  if (locked.skipped) {
+    return Response.json({ skipped: true, reason: "already running" });
+  }
+  return Response.json(locked.result);
 }

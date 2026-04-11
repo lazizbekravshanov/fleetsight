@@ -40,8 +40,16 @@ export async function POST(
     return NextResponse.json({ error: "Viewers cannot modify the watchlist" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { dotNumber, legalName } = body;
+  let body: { dotNumber?: unknown; legalName?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { dotNumber, legalName } = body as {
+    dotNumber?: string;
+    legalName?: string;
+  };
 
   if (!dotNumber || !legalName) {
     return NextResponse.json({ error: "dotNumber and legalName required" }, { status: 400 });
@@ -74,8 +82,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Viewers cannot modify the watchlist" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { dotNumber } = body;
+  let body: { dotNumber?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { dotNumber } = body as { dotNumber?: string };
 
   await prisma.teamWatchedCarrier.deleteMany({
     where: { teamId: params.teamId, dotNumber: String(dotNumber) },

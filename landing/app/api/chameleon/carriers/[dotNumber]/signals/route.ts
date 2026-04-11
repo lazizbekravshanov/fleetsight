@@ -13,6 +13,12 @@ import type { InsuranceCrossMatch } from "@/lib/detection-signals";
 import { computeAllSignals } from "@/lib/detection-signals";
 import { explainAnomalies } from "@/lib/ai/anomaly-explainer";
 
+// Fans out many Socrata calls in parallel AND calls Anthropic for anomaly
+// narration. Give it the wider 30s window so the tail Socrata call + the
+// Claude call don't push over Vercel's default.
+export const runtime = "nodejs";
+export const maxDuration = 30;
+
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
 });

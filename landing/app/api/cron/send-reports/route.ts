@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeCronHeartbeat } from "@/lib/cron-lock";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // POST /api/cron/send-reports — weekly scheduled compliance report
-// Called by Vercel Cron or external scheduler
+// Called by Vercel Cron or external scheduler.
+//
+// Always requires CRON_SECRET. The previous implementation skipped the check
+// outside production, which is fragile: if NODE_ENV is ever set to anything
+// other than literal "production" on Vercel (preview deploys, misconfigured
+// env, etc.) the endpoint becomes open. Failing closed universally is safer.
 export async function POST(req: NextRequest) {
-  // Verify cron secret
   const auth = req.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV === "production") {
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -75,6 +80,8 @@ export async function POST(req: NextRequest) {
 
     sent++;
   }
+
+  await writeCronHeartbeat("send-reports");
 
   return NextResponse.json({ sent, total: users.length });
 }

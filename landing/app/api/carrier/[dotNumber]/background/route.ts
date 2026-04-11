@@ -6,6 +6,11 @@ import { getCarrierByDot } from "@/lib/socrata";
 import { runBackgroundChecks } from "@/lib/background";
 import { generateRiskNarrative } from "@/lib/ai/risk-narrative";
 
+// runBackgroundChecks makes several Socrata calls and generateRiskNarrative
+// calls Anthropic. 30s keeps us comfortably above the typical ~10-15s tail.
+export const runtime = "nodejs";
+export const maxDuration = 30;
+
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
 });

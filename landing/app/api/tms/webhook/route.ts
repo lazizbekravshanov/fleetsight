@@ -3,21 +3,45 @@ import { prisma } from "@/lib/prisma";
 import { screenCarrier } from "@/lib/tms/screen";
 import crypto from "crypto";
 
-// POST /api/tms/webhook — receive events from TMS providers
+export const runtime = "nodejs";
+export const maxDuration = 30;
+
+// POST /api/tms/webhook — receive events from TMS providers.
+//
+// Fails closed: we reject requests whenever TMS_WEBHOOK_SECRET is unset or the
+// signature header is missing / invalid. Previously this soft-failed when the
+// secret was not configured, which meant a misconfigured production env would
+// accept spoofed carrier-assignment events and auto-trigger screenings on
+// arbitrary DOT numbers.
 export async function POST(req: NextRequest) {
+  const secret = process.env.TMS_WEBHOOK_SECRET;
+  if (!secret) {
+    console.error("[tms-webhook] TMS_WEBHOOK_SECRET not configured — rejecting");
+    return NextResponse.json(
+      { error: "Webhook not configured" },
+      { status: 500 }
+    );
+  }
+
   const body = await req.text();
   const signature = req.headers.get("x-tms-signature");
+  if (!signature) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+  }
 
-  // Verify HMAC signature if secret is configured
-  const secret = process.env.TMS_WEBHOOK_SECRET;
-  if (secret && signature) {
-    const expected = crypto
-      .createHmac("sha256", secret)
-      .update(body)
-      .digest("hex");
-    if (signature !== expected) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-    }
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(body)
+    .digest("hex");
+
+  // Timing-safe comparison to prevent signature-oracle attacks.
+  const sigBuf = Buffer.from(signature, "hex");
+  const expBuf = Buffer.from(expected, "hex");
+  if (
+    sigBuf.length !== expBuf.length ||
+    !crypto.timingSafeEqual(sigBuf, expBuf)
+  ) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let payload;

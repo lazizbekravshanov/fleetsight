@@ -44,8 +44,13 @@ export async function POST(
     return NextResponse.json({ error: "Viewers cannot create notes" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { dotNumber, content } = body;
+  let body: { dotNumber?: unknown; content?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { dotNumber, content } = body as { dotNumber?: string; content?: string };
 
   if (!dotNumber || !content?.trim()) {
     return NextResponse.json({ error: "dotNumber and content required" }, { status: 400 });

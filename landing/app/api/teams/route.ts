@@ -43,7 +43,12 @@ export async function POST(req: NextRequest) {
   const session = await getServerAuthSession();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json();
+  let body: { name?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const { name } = body;
 
   if (!name || typeof name !== "string" || name.trim().length < 2) {

@@ -3,7 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { checkCarrierHealth, createAlert, deriveHealthStatus, buildMonitoringEmail } from "@/lib/monitoring";
 import { Resend } from "resend";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { writeCronHeartbeat } from "@/lib/cron-lock";
 
+export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
 /** GET /api/cron/roster-check — called by Vercel Cron every 6 hours */
@@ -36,6 +38,7 @@ export async function GET(req: NextRequest) {
   if (carriers.length === 0) {
     // Reset cursor — we've processed all
     await cacheSet(cursorKey, 0, 86400);
+    await writeCronHeartbeat("roster-check");
     return Response.json({ checked: 0, alerts: 0, done: true });
   }
 
@@ -138,6 +141,8 @@ export async function GET(req: NextRequest) {
       // Email failure is non-fatal
     }
   }
+
+  await writeCronHeartbeat("roster-check");
 
   return Response.json({
     checked: carriers.length,

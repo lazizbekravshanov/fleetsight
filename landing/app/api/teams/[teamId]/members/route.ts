@@ -17,8 +17,13 @@ export async function POST(
     return NextResponse.json({ error: "Only admins can invite members" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { email, role = "member" } = body;
+  let body: { email?: unknown; role?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { email, role = "member" } = body as { email?: string; role?: string };
 
   if (!email || typeof email !== "string") {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -64,8 +69,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Only admins can remove members" }, { status: 403 });
   }
 
-  const body = await req.json();
-  const { userId } = body;
+  let body: { userId?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  const { userId } = body as { userId?: string };
 
   if (userId === session.user.id) {
     return NextResponse.json({ error: "Cannot remove yourself" }, { status: 400 });

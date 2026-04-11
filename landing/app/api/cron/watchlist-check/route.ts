@@ -2,10 +2,20 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCarrierProfile, getCarrierAuthority, extractCarrierRecord } from "@/lib/fmcsa";
 import { Resend } from "resend";
+import { cacheGet, cacheSet } from "@/lib/cache";
 
+export const runtime = "nodejs";
 export const maxDuration = 60;
 
-/** POST /api/cron/watchlist-check — called by Vercel Cron daily */
+// Bound per-run so a single cron tick cannot exhaust our 60s budget or
+// hammer FMCSA if the watchlist grows unbounded. 250 carriers × ~400ms of
+// FMCSA latency ≈ 100s worst case; in practice caches + parallelism keep it
+// well under maxDuration. Subsequent runs resume from the cursor.
+const BATCH_LIMIT = 250;
+const CURSOR_KEY = "cron:watchlist-check:cursor";
+const HEARTBEAT_KEY = "cron:watchlist-check:lastRun";
+
+/** GET /api/cron/watchlist-check — called by Vercel Cron daily */
 export async function GET(req: NextRequest) {
   // Verify this is a Vercel Cron call or internal call
   const authHeader = req.headers.get("authorization");
@@ -13,13 +23,26 @@ export async function GET(req: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  // Get all watched carriers grouped by user
+  // Resume from wherever the last run stopped. If the cursor is missing (new
+  // deployment, Redis flush) we start from the oldest addedAt carrier.
+  const cursor = await cacheGet<string | null>(CURSOR_KEY);
+
   const watched = await prisma.watchedCarrier.findMany({
+    ...(cursor
+      ? { cursor: { id: cursor }, skip: 1 }
+      : {}),
     include: { user: { select: { email: true } } },
     orderBy: { addedAt: "asc" },
+    take: BATCH_LIMIT,
   });
 
-  if (watched.length === 0) return Response.json({ checked: 0, alerts: 0 });
+  if (watched.length === 0) {
+    // Either the watchlist is empty, or we paged past the end. Clear the
+    // cursor so the next run starts from the beginning.
+    await cacheSet(CURSOR_KEY, null, 86400 * 7);
+    await cacheSet(HEARTBEAT_KEY, Date.now(), 86400 * 2);
+    return Response.json({ checked: 0, alerts: 0, wrapped: true });
+  }
 
   let alerts = 0;
   const changes: Map<string, { email: string; carriers: string[] }> = new Map();
@@ -104,7 +127,21 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return Response.json({ checked: watched.length, alerts });
+  // Persist the cursor so the next tick resumes where this one stopped.
+  // Wrap to the start when we've paged through the whole watchlist.
+  const nextCursor =
+    watched.length === BATCH_LIMIT ? watched[watched.length - 1].id : null;
+  await cacheSet(CURSOR_KEY, nextCursor, 86400 * 7);
+
+  // Heartbeat: a separate monitor checks this key and alerts if stale > 26h.
+  await cacheSet(HEARTBEAT_KEY, Date.now(), 86400 * 2);
+
+  return Response.json({
+    checked: watched.length,
+    alerts,
+    nextCursor,
+    batchLimit: BATCH_LIMIT,
+  });
 }
 
 function buildAlertEmail(carriers: string[]): string {

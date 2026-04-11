@@ -9,6 +9,12 @@ import { translateSearchQuery } from "@/lib/ai/search-translator";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
 import { cacheGet, cacheSet } from "@/lib/cache";
 
+// This route calls Anthropic via translateSearchQuery for authenticated
+// natural-language queries. Give it headroom beyond the Vercel default so the
+// model response (typically 3-8s) doesn't silently time out.
+export const runtime = "nodejs";
+export const maxDuration = 30;
+
 const querySchema = z.object({
   q: z.string().min(1).max(200),
   limit: z.coerce.number().int().min(1).max(50).default(20),

@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ingestViolationsForCarrier } from "@/lib/inspections/ingestion";
 import { cacheGet, cacheSet } from "@/lib/cache";
+import { writeCronHeartbeat } from "@/lib/cron-lock";
 
+export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
 const CHUNK_SIZE = 50;
@@ -35,6 +37,7 @@ export async function GET(req: NextRequest) {
   ).sort();
 
   if (allDots.length === 0) {
+    await writeCronHeartbeat("ingest-violations");
     return Response.json({ processed: 0, ingested: 0, errors: 0, done: true });
   }
 
@@ -48,6 +51,7 @@ export async function GET(req: NextRequest) {
   if (chunk.length === 0) {
     // All DOTs processed — reset cursor
     await cacheSet(cursorKey, 0, 86400);
+    await writeCronHeartbeat("ingest-violations");
     return Response.json({ processed: 0, ingested: 0, errors: 0, done: true });
   }
 
@@ -77,6 +81,8 @@ export async function GET(req: NextRequest) {
   await cacheSet(cursorKey, nextOffset, 86400);
 
   const done = nextOffset === 0;
+
+  await writeCronHeartbeat("ingest-violations");
 
   return Response.json({
     processed: chunk.length,
