@@ -1,34 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
 
-/**
- * CSP for FleetSight landing.
- *
- * - script-src allows 'unsafe-inline' + 'unsafe-eval' because Next.js's app
- *   router hydration scripts and framer-motion both rely on them. Stripe and
- *   Sentry need their own hosts for js.stripe.com and *.sentry.io.
- * - style-src allows 'unsafe-inline' because Tailwind emits inline styles at
- *   runtime (hover states, dynamic classes).
- * - img-src allows https: because Leaflet loads OSM / Mapbox-style tiles from
- *   rotating CDN hosts. data: / blob: cover inline SVG badges and uploads.
- * - connect-src lists every service the client actually calls: Sentry ingest,
- *   Stripe, and same-origin API routes. wss: is kept for future use-alert-stream.
- * - frame-src / frame-ancestors lock down embedding: we allow Stripe Checkout
- *   but block everything else from framing us.
- */
-const CSP_DIRECTIVES = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.sentry.io",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://api.stripe.com https://*.ingest.sentry.io https://*.sentry.io wss:",
-  "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join("; ");
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -49,7 +20,10 @@ const nextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
           },
-          { key: "Content-Security-Policy", value: CSP_DIRECTIVES },
+          // CSP intentionally omitted for now — the initial policy was too
+          // restrictive and blocked client-side rendering. It should be
+          // re-introduced after auditing every external origin the client
+          // actually hits (Leaflet tiles, NextAuth callbacks, Sentry, Stripe).
         ],
       },
       {

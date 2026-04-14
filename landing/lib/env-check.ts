@@ -51,11 +51,10 @@ export function validateServerEnv(): void {
   if (missingRequired.length > 0) {
     const msg = `[env-check] Missing REQUIRED server env vars: ${missingRequired.join(", ")}`;
     console.error(msg);
-    // Fail fast in production. In dev / preview, warn loudly but let the
-    // developer continue — they may be intentionally running without a DB.
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(msg);
-    }
+    // Log loudly but never throw — a crash here kills every route that
+    // imports prisma, taking the entire app down. The missing var will
+    // surface as a clear runtime error on the first query or auth check
+    // instead of an opaque module-load crash.
   }
 
   if (missingRecommended.length > 0) {
