@@ -11,7 +11,7 @@ import {
   getCarrierProfile,
   extractCarrierRecord,
 } from "@/lib/fmcsa";
-import { parseBasics } from "@/components/carrier/shared";
+import { parseBasics } from "@/components/carrier/parse";
 
 const bodySchema = z.object({
   dotNumbers: z

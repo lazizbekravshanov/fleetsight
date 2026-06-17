@@ -37,7 +37,7 @@ import {
   decodeFleetSize, decodeInspectionLevel, CARSHIP_CODES,
   CARRIER_OPERATION_CODES,
 } from "@/lib/fmcsa-codes";
-import { parseBasics, extractArray } from "@/components/carrier/shared";
+import { parseBasics, extractArray } from "@/components/carrier/parse";
 import type { BasicScore } from "@/components/carrier/types";
 import { prisma } from "@/lib/prisma";
 import { NetworkGraph } from "@/components/carrier/network-graph";

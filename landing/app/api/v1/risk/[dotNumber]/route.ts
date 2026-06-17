@@ -9,7 +9,7 @@ import { getCarrierByDot, getInspectionsByDot, getCrashesByDot } from "@/lib/soc
 import { getCarrierBasics, getCarrierAuthority, getCarrierOos, getCarrierProfile, extractCarrierRecord } from "@/lib/fmcsa";
 import { computeRiskScore } from "@/lib/risk-score";
 import type { SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
-import { parseBasics } from "@/components/carrier/shared";
+import { parseBasics } from "@/components/carrier/parse";
 
 const paramSchema = z.object({
   dotNumber: z.string().regex(/^\d{1,10}$/, "USDOT must be numeric"),
