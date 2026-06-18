@@ -365,6 +365,7 @@ export default async function CarrierIntelligencePage({ params }: Props) {
       crashes,
       insurance,
       basics,
+      authorityHistory,
       powerUnits: powerUnitsNum != null && Number.isFinite(powerUnitsNum) ? powerUnitsNum : null,
       asOf: new Date().toISOString().slice(0, 10),
     });

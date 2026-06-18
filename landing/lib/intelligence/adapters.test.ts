@@ -5,6 +5,7 @@ import {
   toInsurancePolicies,
   oosRates,
   recentFatalCrash,
+  authorityInstability,
   buildIntelligence,
 } from "./adapters";
 
@@ -81,10 +82,33 @@ describe("recentFatalCrash", () => {
   });
 });
 
+describe("authorityInstability", () => {
+  it("is false with no authority history", () => {
+    expect(authorityInstability([])).toBe(false);
+  });
+  it("is true on a revoked disposition", () => {
+    expect(authorityInstability([{ dot_number: "1", original_action_desc: "GRANTED", disp_action_desc: "REVOKED" }])).toBe(true);
+  });
+  it("is true on a suspended disposition", () => {
+    expect(authorityInstability([{ dot_number: "1", disp_action_desc: "SUSPENDED" }])).toBe(true);
+  });
+  it("is true when authority was granted more than once (reincarnation signal)", () => {
+    expect(
+      authorityInstability([
+        { dot_number: "1", original_action_desc: "GRANTED" },
+        { dot_number: "1", original_action_desc: "GRANTED" },
+      ])
+    ).toBe(true);
+  });
+  it("is false for a single clean grant", () => {
+    expect(authorityInstability([{ dot_number: "1", original_action_desc: "GRANTED" }])).toBe(false);
+  });
+});
+
 describe("buildIntelligence", () => {
   const asOf = "2026-06-01";
   it("composes all four modules and never throws on empty input", () => {
-    const intel = buildIntelligence({ inspections: [], crashes: [], insurance: [], basics: [], powerUnits: null, asOf });
+    const intel = buildIntelligence({ inspections: [], crashes: [], insurance: [], basics: [], authorityHistory: [], powerUnits: null, asOf });
     expect(intel.trajectory.verdict).toBe("insufficient_data");
     expect(intel.anomaly.anomalies).toEqual([]);
     expect(intel.benchmark.mode).toBe("national");
@@ -102,6 +126,7 @@ describe("buildIntelligence", () => {
       crashes: [{ dot_number: "1", report_date: "2025-12-01", fatalities: "1" }],
       insurance: [],
       basics: [{ name: "Unsafe Driving", percentile: 95, totalViolations: 0, totalInspections: 0, serious: 0, measureValue: 0, rdDeficient: true, code: "" }],
+      authorityHistory: [{ dot_number: "1", original_action_desc: "GRANTED", disp_action_desc: "REVOKED" }],
       powerUnits: 3,
       asOf,
     });
@@ -109,5 +134,6 @@ describe("buildIntelligence", () => {
     expect(intel.outlook.score).toBeGreaterThan(0);
     expect(intel.outlook.factors.some((f) => f.label === "recent_fatal_crash")).toBe(true);
     expect(intel.outlook.factors.some((f) => f.label === "basic_percentile_critical")).toBe(true);
+    expect(intel.outlook.factors.some((f) => f.label === "authority_instability")).toBe(true);
   });
 });

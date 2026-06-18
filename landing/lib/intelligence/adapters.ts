@@ -4,7 +4,7 @@
    failure in any one stat degrades to a safe fallback instead of throwing.
    Server-safe (no "use client"), pure. */
 
-import type { SocrataInspection, SocrataCrash, SocrataInsurance } from "@/lib/socrata";
+import type { SocrataInspection, SocrataCrash, SocrataInsurance, SocrataAuthorityHistory } from "@/lib/socrata";
 import type { BasicScore } from "@/components/carrier/types";
 import { computeTrajectory, type Trajectory, type DatedInspection, type DatedCrash } from "./trajectory";
 import { detectAnomalies, type AnomalyResult, type InsurancePolicy } from "./anomaly";
@@ -31,9 +31,19 @@ export type IntelligenceInput = {
   crashes: SocrataCrash[];
   insurance: SocrataInsurance[];
   basics: BasicScore[];
+  authorityHistory: SocrataAuthorityHistory[];
   powerUnits: number | null;
   asOf: string;
 };
+
+export function authorityInstability(history: SocrataAuthorityHistory[]): boolean {
+  const adverse = history.some((h) => {
+    const disp = (h.disp_action_desc ?? "").toUpperCase();
+    return disp.includes("REVOK") || disp.includes("SUSPEND");
+  });
+  const grants = history.filter((h) => (h.original_action_desc ?? "").toUpperCase() === "GRANTED").length;
+  return adverse || grants >= 2;
+}
 
 export function toDatedInspections(rows: SocrataInspection[]): DatedInspection[] {
   return rows
@@ -81,6 +91,7 @@ function safe<T>(fn: () => T, fallback: T): T {
 
 export function buildIntelligence(input: IntelligenceInput): CarrierIntelligence {
   const { inspections, crashes, insurance, basics, powerUnits, asOf } = input;
+  const authorityHistory = input.authorityHistory ?? [];
 
   const trajectory = safe(
     () => computeTrajectory({ inspections: toDatedInspections(inspections), crashes: toDatedCrashes(crashes), asOf }),
@@ -107,8 +118,8 @@ export function buildIntelligence(input: IntelligenceInput): CarrierIntelligence
         worstBasicPercentile,
         recentFatalCrash: safe(() => recentFatalCrash(crashes, asOf), false),
         insurerChurn: anomaly.insurerChurnFlag,
-        authorityInstability: false, // Phase 2: derive from authority history
-        chameleonScore: null, // Phase 2: feed chameleon detection score
+        authorityInstability: safe(() => authorityInstability(authorityHistory), false),
+        chameleonScore: null, // Phase 2: feed a chameleon detection score when available
       }),
     { score: 0, band: "stable", factors: [] }
   );
