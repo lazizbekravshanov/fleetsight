@@ -17,11 +17,22 @@ export const NATIONAL_AVERAGES: NationalAverages = {
   crashesPerPowerUnit: 0.04,
 };
 
+export type Cohort = {
+  fleetSizeBand: string;
+  carrierCount: number;
+  avgPowerUnits: number;
+  avgDrivers: number;
+  yourPowerUnits: number | null;
+  yourDrivers: number | null;
+};
+
 export type BenchmarkInput = {
   vehicleOosRate: number | null;
   driverOosRate: number | null;
   crashesPerPowerUnit: number | null;
   national?: NationalAverages;
+  /** Live cohort context (same fleet-size band) from the Socrata census. */
+  cohort?: Cohort;
 };
 
 export type BenchmarkRow = {
@@ -36,6 +47,7 @@ export type Benchmark = {
   rows: BenchmarkRow[];
   betterThanNationalCount: number;
   mode: "national" | "cohort";
+  cohort: Cohort | null;
 };
 
 export function computeBenchmark(input: BenchmarkInput): Benchmark {
@@ -53,9 +65,12 @@ export function computeBenchmark(input: BenchmarkInput): Benchmark {
     rows.push({ metric: d.metric, value: d.value, national: d.nat, deltaPct, better: d.value < d.nat });
   }
 
+  const cohort = input.cohort && input.cohort.carrierCount > 0 ? input.cohort : null;
+
   return {
     rows,
     betterThanNationalCount: rows.filter((r) => r.better).length,
-    mode: "national",
+    mode: cohort ? "cohort" : "national",
+    cohort,
   };
 }

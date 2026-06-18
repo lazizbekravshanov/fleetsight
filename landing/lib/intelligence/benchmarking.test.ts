@@ -34,6 +34,34 @@ describe("computeBenchmark", () => {
     expect(b.betterThanNationalCount).toBe(2);
   });
 
+  it("carries live cohort context and flips mode to cohort when peers exist", () => {
+    const b = computeBenchmark({
+      vehicleOosRate: 10,
+      driverOosRate: null,
+      crashesPerPowerUnit: null,
+      cohort: { fleetSizeBand: "6-20", carrierCount: 4210, avgPowerUnits: 11.2, avgDrivers: 9.8, yourPowerUnits: 14, yourDrivers: 12 },
+    });
+    expect(b.mode).toBe("cohort");
+    expect(b.cohort?.carrierCount).toBe(4210);
+    expect(b.cohort?.yourPowerUnits).toBe(14);
+  });
+
+  it("ignores an empty cohort (no peers) and stays national", () => {
+    const b = computeBenchmark({
+      vehicleOosRate: 10,
+      driverOosRate: null,
+      crashesPerPowerUnit: null,
+      cohort: { fleetSizeBand: "?", carrierCount: 0, avgPowerUnits: 0, avgDrivers: 0, yourPowerUnits: null, yourDrivers: null },
+    });
+    expect(b.mode).toBe("national");
+    expect(b.cohort).toBeNull();
+  });
+
+  it("has a null cohort when none is provided", () => {
+    const b = computeBenchmark({ vehicleOosRate: 10, driverOosRate: null, crashesPerPowerUnit: null });
+    expect(b.cohort).toBeNull();
+  });
+
   it("computes a signed delta percentage vs national", () => {
     const b = computeBenchmark({
       vehicleOosRate: 10,

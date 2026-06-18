@@ -314,7 +314,8 @@ export async function getPeerBenchmark(
 
   const results = await socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
     $where: `fleetsize='${fleetsize}' AND status_code='A'`,
-    $select: "avg(power_units) as avg_pu, avg(total_drivers) as avg_dr, count(*) as cnt",
+    // census columns are text in Socrata — cast to number or avg() errors
+    $select: "avg(power_units::number) as avg_pu, avg(total_drivers::number) as avg_dr, count(*) as cnt",
     $limit: "1",
   });
 

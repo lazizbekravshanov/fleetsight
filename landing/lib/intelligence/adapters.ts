@@ -8,8 +8,9 @@ import type { SocrataInspection, SocrataCrash, SocrataInsurance, SocrataAuthorit
 import type { BasicScore } from "@/components/carrier/types";
 import { computeTrajectory, type Trajectory, type DatedInspection, type DatedCrash } from "./trajectory";
 import { detectAnomalies, type AnomalyResult, type InsurancePolicy } from "./anomaly";
-import { computeBenchmark, type Benchmark } from "./benchmarking";
+import { computeBenchmark, type Benchmark, type Cohort } from "./benchmarking";
 import { computeOutlook, type Outlook } from "./outlook";
+import { computeChurn, type ChurnResult, type VinObservationLite, type DriverObservationLite } from "./churn";
 
 const num = (v: unknown): number => {
   const n = typeof v === "number" ? v : parseFloat(String(v ?? ""));
@@ -24,6 +25,7 @@ export type CarrierIntelligence = {
   anomaly: AnomalyResult;
   benchmark: Benchmark;
   outlook: Outlook;
+  churn: ChurnResult;
 };
 
 export type IntelligenceInput = {
@@ -32,6 +34,9 @@ export type IntelligenceInput = {
   insurance: SocrataInsurance[];
   basics: BasicScore[];
   authorityHistory: SocrataAuthorityHistory[];
+  cohort?: Cohort;
+  vins: VinObservationLite[];
+  drivers: DriverObservationLite[];
   powerUnits: number | null;
   asOf: string;
 };
@@ -106,8 +111,13 @@ export function buildIntelligence(input: IntelligenceInput): CarrierIntelligence
   const rates = safe(() => oosRates(inspections), { vehicleOosRate: null, driverOosRate: null });
   const crashesPerPowerUnit = powerUnits && powerUnits > 0 ? crashes.length / powerUnits : null;
   const benchmark = safe(
-    () => computeBenchmark({ vehicleOosRate: rates.vehicleOosRate, driverOosRate: rates.driverOosRate, crashesPerPowerUnit }),
-    { rows: [], betterThanNationalCount: 0, mode: "national" }
+    () => computeBenchmark({ vehicleOosRate: rates.vehicleOosRate, driverOosRate: rates.driverOosRate, crashesPerPowerUnit, cohort: input.cohort }),
+    { rows: [], betterThanNationalCount: 0, mode: "national", cohort: null }
+  );
+
+  const churn = safe(
+    () => computeChurn({ vins: input.vins ?? [], drivers: input.drivers ?? [], asOf }),
+    { vinsTotal: 0, vinsChurned: 0, vinChurnRate: 0, driversTotal: 0, driversChurned: 0, driverChurnRate: 0, hasData: false }
   );
 
   const worstBasicPercentile = basics.length ? Math.max(...basics.map((b) => b.percentile ?? 0)) : null;
@@ -124,5 +134,5 @@ export function buildIntelligence(input: IntelligenceInput): CarrierIntelligence
     { score: 0, band: "stable", factors: [] }
   );
 
-  return { trajectory, anomaly, benchmark, outlook };
+  return { trajectory, anomaly, benchmark, outlook, churn };
 }

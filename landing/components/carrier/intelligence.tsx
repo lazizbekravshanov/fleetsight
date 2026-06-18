@@ -8,6 +8,7 @@ import type { Trajectory } from "@/lib/intelligence/trajectory";
 import type { AnomalyResult } from "@/lib/intelligence/anomaly";
 import type { Benchmark } from "@/lib/intelligence/benchmarking";
 import type { Outlook, OutlookBand } from "@/lib/intelligence/outlook";
+import type { ChurnResult } from "@/lib/intelligence/churn";
 
 const cardStyle = { borderColor: "var(--border)", background: "var(--surface-1)" } as const;
 const num = (n: number | null | undefined) => (typeof n === "number" && Number.isFinite(n) ? n : null);
@@ -139,28 +140,38 @@ function TrajectoryCard({ trajectory }: { trajectory: Trajectory }) {
 
 function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
   const rows = benchmark.rows ?? [];
+  const cohort = benchmark.cohort;
   return (
     <div className="rounded-xl border p-4" style={cardStyle}>
-      <CardTitle>Peer Benchmark (vs national)</CardTitle>
+      <CardTitle>Peer Benchmark</CardTitle>
       {rows.length === 0 ? (
-        <p className="text-xs" style={{ color: "var(--ink-muted)" }}>No benchmark data.</p>
+        <p className="text-xs" style={{ color: "var(--ink-muted)" }}>No safety benchmark data.</p>
       ) : (
         <ul className="space-y-1.5">
           {rows.map((r) => (
             <li key={r.metric} className="flex items-center justify-between text-xs">
               <span style={{ color: "var(--ink-soft)" }}>{METRIC_LABELS[r.metric] ?? r.metric}</span>
               <span className="tabular-nums" style={{ color: r.better ? "#15803d" : "#991b1b" }}>
-                {pct(r.value)} <span style={{ color: "var(--ink-muted)" }}>vs {pct(r.national)}</span>
+                {pct(r.value)} <span style={{ color: "var(--ink-muted)" }}>vs {pct(r.national)} nat'l</span>
               </span>
             </li>
           ))}
         </ul>
       )}
+      {cohort && (
+        <div className="mt-3 pt-3 text-xs" style={{ borderTop: "1px solid var(--border)", color: "var(--ink-soft)" }}>
+          <div className="mb-1" style={{ color: "var(--ink-muted)" }}>
+            Cohort “{cohort.fleetSizeBand}” · {(cohort.carrierCount ?? 0).toLocaleString()} active peers
+          </div>
+          <Row label="Power units" value={`${cohort.yourPowerUnits ?? "—"} vs ${(num(cohort.avgPowerUnits) ?? 0).toFixed(1)} avg`} />
+          <Row label="Drivers" value={`${cohort.yourDrivers ?? "—"} vs ${(num(cohort.avgDrivers) ?? 0).toFixed(1)} avg`} />
+        </div>
+      )}
     </div>
   );
 }
 
-function AnomalyCard({ anomaly }: { anomaly: AnomalyResult }) {
+function AnomalyCard({ anomaly, churn }: { anomaly: AnomalyResult; churn: ChurnResult }) {
   const flags = anomaly.anomalies ?? [];
   return (
     <div className="rounded-xl border p-4" style={cardStyle}>
@@ -180,7 +191,12 @@ function AnomalyCard({ anomaly }: { anomaly: AnomalyResult }) {
       <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-xs" style={{ color: "var(--ink-soft)" }}>
         <Row label="Insurers seen" value={String(anomaly.insurerCount ?? 0)} />
         <Row label="Insp. last 12 mo" value={String(anomaly.inspectionsLast12mo ?? 0)} />
+        {churn.hasData && <Row label="VIN churn" value={`${(num(churn.vinChurnRate) ?? 0).toFixed(0)}% (${churn.vinsChurned}/${churn.vinsTotal})`} />}
+        {churn.hasData && <Row label="Driver churn" value={`${(num(churn.driverChurnRate) ?? 0).toFixed(0)}% (${churn.driversChurned}/${churn.driversTotal})`} />}
       </div>
+      {!churn.hasData && (
+        <p className="mt-2 text-[10px]" style={{ color: "var(--ink-muted)" }}>VIN/driver churn populates as fleet data is ingested.</p>
+      )}
     </div>
   );
 }
@@ -204,7 +220,7 @@ export function CarrierIntelligenceSections({ intel }: { intel: CarrierIntellige
         <OutlookCard outlook={intel.outlook} />
         <TrajectoryCard trajectory={intel.trajectory} />
         <BenchmarkCard benchmark={intel.benchmark} />
-        <AnomalyCard anomaly={intel.anomaly} />
+        <AnomalyCard anomaly={intel.anomaly} churn={intel.churn} />
       </div>
       <p className="mt-3 text-[10px]" style={{ color: "var(--ink-muted)" }}>
         Derived analytics — trajectory &amp; anomalies from inspection/crash history, benchmark vs FMCSA national averages,

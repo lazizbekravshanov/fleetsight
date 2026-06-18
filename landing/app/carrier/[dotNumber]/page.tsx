@@ -17,6 +17,7 @@ import {
   getCrashesByDot,
   getInsuranceByDot,
   getAuthorityHistoryByDot,
+  getPeerBenchmark,
   getViolationsByDot,
   type SocrataCarrier,
   type SocrataInspection,
@@ -358,6 +359,33 @@ export default async function CarrierIntelligencePage({ params }: Props) {
   // Predictive Intelligence — net-new derived analytics. Guarded so any failure
   // here hides the section rather than breaking the carrier page.
   const powerUnitsNum = carrier.power_units ? parseInt(String(carrier.power_units), 10) : null;
+  const driversNum = carrier.total_drivers ? parseInt(String(carrier.total_drivers), 10) : null;
+
+  // Live cohort (same fleet-size band) from the Socrata census — no ingestion.
+  const cohort = await (async () => {
+    try {
+      if (!carrier.fleetsize) return undefined;
+      const pb = await getPeerBenchmark(carrier.fleetsize);
+      if (!pb || pb.carrierCount <= 0) return undefined;
+      return {
+        fleetSizeBand: carrier.fleetsize,
+        carrierCount: pb.carrierCount,
+        avgPowerUnits: pb.avgPowerUnits,
+        avgDrivers: pb.avgDrivers,
+        yourPowerUnits: powerUnitsNum != null && Number.isFinite(powerUnitsNum) ? powerUnitsNum : null,
+        yourDrivers: driversNum != null && Number.isFinite(driversNum) ? driversNum : null,
+      };
+    } catch {
+      return undefined;
+    }
+  })();
+
+  // VIN/driver history (accrues via ingestion; empty for cold carriers).
+  const [vinRows, driverRows] = await Promise.all([
+    prisma.carrierVehicle.findMany({ where: { dotNumber: dotNum }, select: { vin: true, lastSeenAt: true } }).catch(() => [] as { vin: string; lastSeenAt: Date }[]),
+    prisma.driverObservation.findMany({ where: { dotNumber: dotNum }, select: { cdlKey: true, inspectionDate: true } }).catch(() => [] as { cdlKey: string; inspectionDate: Date }[]),
+  ]);
+
   let intel: CarrierIntelligence | null = null;
   try {
     intel = buildIntelligence({
@@ -366,6 +394,9 @@ export default async function CarrierIntelligencePage({ params }: Props) {
       insurance,
       basics,
       authorityHistory,
+      cohort,
+      vins: vinRows.map((r) => ({ vin: r.vin, lastSeenAt: r.lastSeenAt.toISOString() })),
+      drivers: driverRows.map((r) => ({ cdlKey: r.cdlKey, inspectionDate: r.inspectionDate.toISOString() })),
       powerUnits: powerUnitsNum != null && Number.isFinite(powerUnitsNum) ? powerUnitsNum : null,
       asOf: new Date().toISOString().slice(0, 10),
     });

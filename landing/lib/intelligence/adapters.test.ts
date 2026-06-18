@@ -108,11 +108,12 @@ describe("authorityInstability", () => {
 describe("buildIntelligence", () => {
   const asOf = "2026-06-01";
   it("composes all four modules and never throws on empty input", () => {
-    const intel = buildIntelligence({ inspections: [], crashes: [], insurance: [], basics: [], authorityHistory: [], powerUnits: null, asOf });
+    const intel = buildIntelligence({ inspections: [], crashes: [], insurance: [], basics: [], authorityHistory: [], vins: [], drivers: [], powerUnits: null, asOf });
     expect(intel.trajectory.verdict).toBe("insufficient_data");
     expect(intel.anomaly.anomalies).toEqual([]);
     expect(intel.benchmark.mode).toBe("national");
     expect(intel.outlook.band).toBe("stable");
+    expect(intel.churn.hasData).toBe(false);
   });
 
   it("feeds derived signals into the outlook", () => {
@@ -127,6 +128,8 @@ describe("buildIntelligence", () => {
       insurance: [],
       basics: [{ name: "Unsafe Driving", percentile: 95, totalViolations: 0, totalInspections: 0, serious: 0, measureValue: 0, rdDeficient: true, code: "" }],
       authorityHistory: [{ dot_number: "1", original_action_desc: "GRANTED", disp_action_desc: "REVOKED" }],
+      vins: [],
+      drivers: [],
       powerUnits: 3,
       asOf,
     });
