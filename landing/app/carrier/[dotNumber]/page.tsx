@@ -38,6 +38,8 @@ import {
   CARRIER_OPERATION_CODES,
 } from "@/lib/fmcsa-codes";
 import { parseBasics, extractArray } from "@/components/carrier/parse";
+import { buildIntelligence, type CarrierIntelligence } from "@/lib/intelligence/adapters";
+import { CarrierIntelligenceSections } from "@/components/carrier/intelligence";
 import type { BasicScore } from "@/components/carrier/types";
 import { prisma } from "@/lib/prisma";
 import { NetworkGraph } from "@/components/carrier/network-graph";
@@ -352,6 +354,23 @@ export default async function CarrierIntelligencePage({ params }: Props) {
 
   // Computed
   const basics = basicsPayload ? parseExtBasics(basicsPayload) : [];
+
+  // Predictive Intelligence — net-new derived analytics. Guarded so any failure
+  // here hides the section rather than breaking the carrier page.
+  const powerUnitsNum = carrier.power_units ? parseInt(String(carrier.power_units), 10) : null;
+  let intel: CarrierIntelligence | null = null;
+  try {
+    intel = buildIntelligence({
+      inspections,
+      crashes,
+      insurance,
+      basics,
+      powerUnits: powerUnitsNum != null && Number.isFinite(powerUnitsNum) ? powerUnitsNum : null,
+      asOf: new Date().toISOString().slice(0, 10),
+    });
+  } catch {
+    intel = null;
+  }
   const fmcsaRecord = profilePayload ? extractCarrierRecord(profilePayload) : null;
   const safetyRating = fmcsaRecord?.safetyRating as string | undefined;
   const safetyRatingDate = fmcsaRecord?.safetyRatingDate as string | undefined;
@@ -468,6 +487,8 @@ export default async function CarrierIntelligencePage({ params }: Props) {
             </div>
           )}
         </section>
+
+        {intel && <CarrierIntelligenceSections intel={intel} />}
 
         {/* ── Operation Classification Grid ────────────────────── */}
         {allOpCodes.length > 0 && (
