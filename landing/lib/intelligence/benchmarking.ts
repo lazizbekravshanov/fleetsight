@@ -26,6 +26,26 @@ export type Cohort = {
   yourDrivers: number | null;
 };
 
+export type StateCohortRow = {
+  metric: "vehicle_oos" | "driver_oos";
+  value: number;
+  cohortAvg: number;
+  better: boolean; // lower OOS rate is better
+};
+
+export type StateCohort = {
+  state: string;
+  sampleSize: number;
+  rows: StateCohortRow[];
+};
+
+export type StateSafetyInput = {
+  state: string;
+  vehicleOosRate: number;
+  driverOosRate: number;
+  sampleSize: number;
+};
+
 export type BenchmarkInput = {
   vehicleOosRate: number | null;
   driverOosRate: number | null;
@@ -33,6 +53,8 @@ export type BenchmarkInput = {
   national?: NationalAverages;
   /** Live cohort context (same fleet-size band) from the Socrata census. */
   cohort?: Cohort;
+  /** Live geographic (state) safety cohort from the inspections dataset. */
+  stateCohort?: StateSafetyInput;
 };
 
 export type BenchmarkRow = {
@@ -48,6 +70,7 @@ export type Benchmark = {
   betterThanNationalCount: number;
   mode: "national" | "cohort";
   cohort: Cohort | null;
+  stateCohort: StateCohort | null;
 };
 
 export function computeBenchmark(input: BenchmarkInput): Benchmark {
@@ -67,10 +90,24 @@ export function computeBenchmark(input: BenchmarkInput): Benchmark {
 
   const cohort = input.cohort && input.cohort.carrierCount > 0 ? input.cohort : null;
 
+  let stateCohort: StateCohort | null = null;
+  const sc = input.stateCohort;
+  if (sc && sc.sampleSize > 0) {
+    const scRows: StateCohortRow[] = [];
+    if (input.vehicleOosRate != null) {
+      scRows.push({ metric: "vehicle_oos", value: input.vehicleOosRate, cohortAvg: sc.vehicleOosRate, better: input.vehicleOosRate < sc.vehicleOosRate });
+    }
+    if (input.driverOosRate != null) {
+      scRows.push({ metric: "driver_oos", value: input.driverOosRate, cohortAvg: sc.driverOosRate, better: input.driverOosRate < sc.driverOosRate });
+    }
+    if (scRows.length > 0) stateCohort = { state: sc.state, sampleSize: sc.sampleSize, rows: scRows };
+  }
+
   return {
     rows,
     betterThanNationalCount: rows.filter((r) => r.better).length,
     mode: cohort ? "cohort" : "national",
     cohort,
+    stateCohort,
   };
 }

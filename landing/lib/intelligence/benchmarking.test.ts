@@ -62,6 +62,40 @@ describe("computeBenchmark", () => {
     expect(b.cohort).toBeNull();
   });
 
+  it("builds a state-cohort comparison when state safety data is provided", () => {
+    const b = computeBenchmark({
+      vehicleOosRate: 10,
+      driverOosRate: 8,
+      crashesPerPowerUnit: null,
+      stateCohort: { state: "CA", vehicleOosRate: 13.1, driverOosRate: 5.5, sampleSize: 1291593 },
+    });
+    expect(b.stateCohort?.state).toBe("CA");
+    expect(b.stateCohort?.sampleSize).toBe(1291593);
+    const veh = b.stateCohort?.rows.find((r) => r.metric === "vehicle_oos")!;
+    expect(veh.cohortAvg).toBeCloseTo(13.1);
+    expect(veh.better).toBe(true); // 10 < 13.1
+    const drv = b.stateCohort?.rows.find((r) => r.metric === "driver_oos")!;
+    expect(drv.better).toBe(false); // 8 > 5.5
+  });
+
+  it("omits state-cohort rows for metrics the carrier lacks", () => {
+    const b = computeBenchmark({
+      vehicleOosRate: 10,
+      driverOosRate: null,
+      crashesPerPowerUnit: null,
+      stateCohort: { state: "CA", vehicleOosRate: 13.1, driverOosRate: 5.5, sampleSize: 100 },
+    });
+    expect(b.stateCohort?.rows).toHaveLength(1);
+    expect(b.stateCohort?.rows[0].metric).toBe("vehicle_oos");
+  });
+
+  it("has a null state cohort when absent or sample is empty", () => {
+    expect(computeBenchmark({ vehicleOosRate: 10, driverOosRate: null, crashesPerPowerUnit: null }).stateCohort).toBeNull();
+    expect(
+      computeBenchmark({ vehicleOosRate: 10, driverOosRate: null, crashesPerPowerUnit: null, stateCohort: { state: "CA", vehicleOosRate: 13, driverOosRate: 5, sampleSize: 0 } }).stateCohort
+    ).toBeNull();
+  });
+
   it("computes a signed delta percentage vs national", () => {
     const b = computeBenchmark({
       vehicleOosRate: 10,

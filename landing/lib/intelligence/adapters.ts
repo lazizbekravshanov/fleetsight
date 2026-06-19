@@ -8,7 +8,7 @@ import type { SocrataInspection, SocrataCrash, SocrataInsurance, SocrataAuthorit
 import type { BasicScore } from "@/components/carrier/types";
 import { computeTrajectory, type Trajectory, type DatedInspection, type DatedCrash } from "./trajectory";
 import { detectAnomalies, type AnomalyResult, type InsurancePolicy } from "./anomaly";
-import { computeBenchmark, type Benchmark, type Cohort } from "./benchmarking";
+import { computeBenchmark, type Benchmark, type Cohort, type StateSafetyInput } from "./benchmarking";
 import { computeOutlook, type Outlook } from "./outlook";
 import { computeChurn, type ChurnResult, type VinObservationLite, type DriverObservationLite } from "./churn";
 
@@ -35,6 +35,7 @@ export type IntelligenceInput = {
   basics: BasicScore[];
   authorityHistory: SocrataAuthorityHistory[];
   cohort?: Cohort;
+  stateCohort?: StateSafetyInput;
   vins: VinObservationLite[];
   drivers: DriverObservationLite[];
   powerUnits: number | null;
@@ -111,8 +112,8 @@ export function buildIntelligence(input: IntelligenceInput): CarrierIntelligence
   const rates = safe(() => oosRates(inspections), { vehicleOosRate: null, driverOosRate: null });
   const crashesPerPowerUnit = powerUnits && powerUnits > 0 ? crashes.length / powerUnits : null;
   const benchmark = safe(
-    () => computeBenchmark({ vehicleOosRate: rates.vehicleOosRate, driverOosRate: rates.driverOosRate, crashesPerPowerUnit, cohort: input.cohort }),
-    { rows: [], betterThanNationalCount: 0, mode: "national", cohort: null }
+    () => computeBenchmark({ vehicleOosRate: rates.vehicleOosRate, driverOosRate: rates.driverOosRate, crashesPerPowerUnit, cohort: input.cohort, stateCohort: input.stateCohort }),
+    { rows: [], betterThanNationalCount: 0, mode: "national", cohort: null, stateCohort: null }
   );
 
   const churn = safe(

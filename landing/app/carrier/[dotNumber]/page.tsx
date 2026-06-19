@@ -18,6 +18,7 @@ import {
   getInsuranceByDot,
   getAuthorityHistoryByDot,
   getPeerBenchmark,
+  getStateSafetyBenchmark,
   getViolationsByDot,
   type SocrataCarrier,
   type SocrataInspection,
@@ -380,6 +381,9 @@ export default async function CarrierIntelligencePage({ params }: Props) {
     }
   })();
 
+  // Live state safety cohort (cached; degrades to null on miss/error).
+  const stateCohort = (await getStateSafetyBenchmark(carrier.phy_state).catch(() => null)) ?? undefined;
+
   // VIN/driver history (accrues via ingestion; empty for cold carriers).
   const [vinRows, driverRows] = await Promise.all([
     prisma.carrierVehicle.findMany({ where: { dotNumber: dotNum }, select: { vin: true, lastSeenAt: true } }).catch(() => [] as { vin: string; lastSeenAt: Date }[]),
@@ -395,6 +399,7 @@ export default async function CarrierIntelligencePage({ params }: Props) {
       basics,
       authorityHistory,
       cohort,
+      stateCohort,
       vins: vinRows.map((r) => ({ vin: r.vin, lastSeenAt: r.lastSeenAt.toISOString() })),
       drivers: driverRows.map((r) => ({ cdlKey: r.cdlKey, inspectionDate: r.inspectionDate.toISOString() })),
       powerUnits: powerUnitsNum != null && Number.isFinite(powerUnitsNum) ? powerUnitsNum : null,

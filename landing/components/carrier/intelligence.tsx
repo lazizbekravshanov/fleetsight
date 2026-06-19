@@ -158,6 +158,21 @@ function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
           ))}
         </ul>
       )}
+      {benchmark.stateCohort && benchmark.stateCohort.rows.length > 0 && (
+        <div className="mt-3 pt-3 text-xs" style={{ borderTop: "1px solid var(--border)" }}>
+          <div className="mb-1" style={{ color: "var(--ink-muted)" }}>
+            vs {benchmark.stateCohort.state} peers ({benchmark.stateCohort.sampleSize.toLocaleString()} inspections)
+          </div>
+          {benchmark.stateCohort.rows.map((r) => (
+            <div key={r.metric} className="flex items-center justify-between">
+              <span style={{ color: "var(--ink-soft)" }}>{METRIC_LABELS[r.metric] ?? r.metric}</span>
+              <span className="tabular-nums" style={{ color: r.better ? "#15803d" : "#991b1b" }}>
+                {pct(r.value)} <span style={{ color: "var(--ink-muted)" }}>vs {pct(r.cohortAvg)} {benchmark.stateCohort!.state}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
       {cohort && (
         <div className="mt-3 pt-3 text-xs" style={{ borderTop: "1px solid var(--border)", color: "var(--ink-soft)" }}>
           <div className="mb-1" style={{ color: "var(--ink-muted)" }}>

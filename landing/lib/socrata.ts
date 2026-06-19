@@ -333,6 +333,41 @@ export async function getPeerBenchmark(
   };
 }
 
+/** Live state-cohort safety benchmark: % of inspections in `state` with a
+ *  vehicle / driver OOS. Same OOS-rate definition as the carrier side, cached
+ *  24h (state aggregates are stable). Returns null on missing state / error. */
+export async function getStateSafetyBenchmark(
+  state: string | null | undefined
+): Promise<{ state: string; vehicleOosRate: number; driverOosRate: number; sampleSize: number } | null> {
+  if (!state) return null;
+  const st = state.toUpperCase();
+  const key = `state-safety:${st}`;
+  const cached = await cacheGet<{ state: string; vehicleOosRate: number; driverOosRate: number; sampleSize: number }>(key).catch(() => null);
+  if (cached) return cached;
+
+  try {
+    const rows = await socrataFetch<Record<string, string>>(INSPECTION_RESOURCE, {
+      $where: `report_state='${st}'`,
+      $select:
+        "count(*) as n, sum(case(vehicle_oos_total::number>0,1,true,0)) as veh, sum(case(driver_oos_total::number>0,1,true,0)) as drv",
+      $limit: "1",
+    });
+    const row = rows[0];
+    const n = row ? parseInt(row.n ?? "0", 10) : 0;
+    if (!row || n <= 0) return null;
+    const result = {
+      state: st,
+      vehicleOosRate: ((parseFloat(row.veh ?? "0") || 0) / n) * 100,
+      driverOosRate: ((parseFloat(row.drv ?? "0") || 0) / n) * 100,
+      sampleSize: n,
+    };
+    await cacheSet(key, result, 86400).catch(() => {});
+    return result;
+  } catch {
+    return null;
+  }
+}
+
 /* ── Cross-matching queries ─────────────────────────────────────── */
 
 export async function getInsuranceByPolicy(
