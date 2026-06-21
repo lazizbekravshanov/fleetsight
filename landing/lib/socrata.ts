@@ -426,6 +426,44 @@ export async function searchCarriersByAddress(
   });
 }
 
+export async function searchCarriersByPhone(
+  phone: string,
+  limit = 20
+): Promise<SocrataCarrier[]> {
+  const digits = phone.replace(/\D/g, "").slice(-10);
+  if (digits.length !== 10) return [];
+  return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `phone='${digits}' OR cell_phone='${digits}'`,
+    $limit: String(limit),
+    $order: "add_date DESC",
+  });
+}
+
+export async function searchCarriersByInsurer(
+  name: string,
+  limit = 20
+): Promise<SocrataCarrier[]> {
+  const norm = name.trim().replace(/'/g, "''").toUpperCase();
+  if (!norm) return [];
+  // 1) insurance records by insurer name → distinct DOT numbers
+  const ins = await socrataFetch<{ dot_number?: string }>(INSURANCE_RESOURCE, {
+    $where: `upper(name_company) like '%${norm}%'`,
+    $select: "dot_number",
+    $group: "dot_number",
+    $limit: String(limit),
+  });
+  const dots = Array.from(
+    new Set(ins.map((r) => parseInt(r.dot_number ?? "", 10)).filter((n) => Number.isFinite(n)))
+  );
+  if (dots.length === 0) return [];
+  // 2) resolve DOTs to carriers (census stores dot_number unpadded)
+  return socrataFetch<SocrataCarrier>(CENSUS_RESOURCE, {
+    $where: `dot_number in (${dots.map((d) => `'${d}'`).join(",")})`,
+    $limit: String(limit),
+    $order: "legal_name ASC",
+  });
+}
+
 /* ── Violations ─────────────────────────────────────────────────── */
 
 export type SocrataViolation = {
