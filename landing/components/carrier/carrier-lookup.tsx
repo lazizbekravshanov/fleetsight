@@ -10,6 +10,18 @@ import {
   Briefcase, Package, ShieldCheck, CheckSquare,
 } from "lucide-react";
 import type { SearchResult } from "./types";
+import { detectQuery, type SearchType } from "@/lib/search/detect";
+
+const DETECT_LABEL: Record<SearchType, string> = {
+  dot: "USDOT #",
+  mc: "MC #",
+  vin: "VIN",
+  phone: "Phone",
+  officer: "Officer",
+  address: "Address",
+  insurer: "Insurer",
+  name: "Name",
+};
 
 const RISK_GRADE_COLORS: Record<string, string> = {
   A: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20",
@@ -299,8 +311,8 @@ export function CarrierLookup() {
               type="text"
               value={query}
               onChange={(e) => handleInputChange(e.target.value)}
-              placeholder="DOT, MC, company name, or try &quot;large carriers in Texas&quot;..."
-              aria-label="Search carriers by name, DOT number, MC number, or natural language"
+              placeholder="DOT, MC, name, VIN, phone, or officer:smith · insurer:progressive..."
+              aria-label="Search carriers by name, DOT, MC, VIN, phone, officer, address, insurer, or natural language"
               className="w-full rounded-xl border border-border bg-[var(--surface-1)] py-3 pl-11 pr-3 text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-muted)] transition-shadow focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
           </div>
@@ -314,8 +326,13 @@ export function CarrierLookup() {
         </form>
         <div className="mx-auto mt-1.5 max-w-2xl flex items-center justify-between">
           <p className="text-xs text-[var(--ink-muted)]">
-            Press <kbd className="rounded border border-border bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-soft)]">/</kbd> to search
+            Press <kbd className="rounded border border-border bg-[var(--surface-2)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--ink-soft)]">/</kbd> to search · operators: <span className="font-mono">officer:</span> <span className="font-mono">insurer:</span> <span className="font-mono">vin:</span>
           </p>
+          {query.trim() && detectQuery(query).type !== "name" && (
+            <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-medium text-accent">
+              Detected: {DETECT_LABEL[detectQuery(query).type]}
+            </span>
+          )}
         </div>
 
         {/* Example query chips */}

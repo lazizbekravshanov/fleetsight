@@ -2,8 +2,18 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { jsonError } from "@/lib/http";
 import { getServerAuthSession } from "@/auth";
-import { searchCarriers, socrataFetch, CENSUS_RESOURCE } from "@/lib/socrata";
+import {
+  searchCarriers,
+  socrataFetch,
+  CENSUS_RESOURCE,
+  searchCarriersByOfficer,
+  searchCarriersByPhone,
+  searchCarriersByInsurer,
+  searchCarriersByAddress,
+} from "@/lib/socrata";
 import type { SocrataCarrier } from "@/lib/socrata";
+import { getVinCarriers } from "@/lib/affiliation-detection";
+import { detectQuery } from "@/lib/search/detect";
 import { parseNaturalQuery } from "@/lib/search-parser";
 import { translateSearchQuery } from "@/lib/ai/search-translator";
 import { computeQuickRiskIndicator } from "@/lib/risk-score";
@@ -46,6 +56,21 @@ function mapCarrier(r: SocrataCarrier) {
   };
 }
 
+function mapVinCarrier(r: { dotNumber: number; legalName: string | null; statusCode: string | null }) {
+  return {
+    dotNumber: r.dotNumber,
+    legalName: r.legalName ?? "",
+    dbaName: null,
+    statusCode: r.statusCode ?? null,
+    phyState: null,
+    powerUnits: null,
+    classdef: null,
+    businessOrgDesc: null,
+    addDate: null,
+    mcNumber: null,
+  };
+}
+
 /** Build a Response with edge-cache headers */
 function jsonCached(data: unknown): Response {
   return new Response(JSON.stringify(data), {
@@ -72,6 +97,44 @@ export async function GET(req: NextRequest) {
   const cached = await cacheGet<unknown>(cacheKey);
   if (cached) {
     return jsonCached(cached);
+  }
+
+  // ── Layer 1.5: Universal identifier detection ────────────────
+  // Smart auto-detect (+ operators) routes specific identifiers to dedicated
+  // lookups. name / dot / mc / natural-language fall through unchanged below.
+  const detected = detectQuery(q);
+  if (["vin", "phone", "officer", "address", "insurer"].includes(detected.type)) {
+    let results: (ReturnType<typeof mapCarrier> | ReturnType<typeof mapVinCarrier>)[] = [];
+    try {
+      if (detected.type === "officer") {
+        results = (await searchCarriersByOfficer(detected.value, limit)).map(mapCarrier);
+      } else if (detected.type === "phone") {
+        results = (await searchCarriersByPhone(detected.value, limit)).map(mapCarrier);
+      } else if (detected.type === "insurer") {
+        results = (await searchCarriersByInsurer(detected.value, limit)).map(mapCarrier);
+      } else if (detected.type === "address") {
+        const [street, city, st] = detected.value.split(",").map((s) => s.trim());
+        if (street && city && st) {
+          results = (await searchCarriersByAddress(street, city, st, limit)).map(mapCarrier);
+        }
+      } else if (detected.type === "vin") {
+        const seen = new Set<number>();
+        results = (await getVinCarriers(detected.value))
+          .filter((c) => (seen.has(c.dotNumber) ? false : (seen.add(c.dotNumber), true)))
+          .map(mapVinCarrier);
+      }
+    } catch {
+      results = [];
+    }
+
+    const response = {
+      results,
+      total: results.length,
+      searchMode: detected.type,
+      searchDescription: `Detected ${detected.type}`,
+    };
+    await cacheSet(cacheKey, response, 300);
+    return jsonCached(response);
   }
 
   // ── Layer 2: Regex natural language parser (free, <1ms) ───────
