@@ -20,6 +20,21 @@ const num = (v: unknown): number => {
 const DAY_MS = 86_400_000;
 const parseUTC = (d: string): number => Date.parse(d && d.length === 10 ? `${d}T00:00:00Z` : d);
 
+/** FMCSA/Socrata dates arrive in several shapes — YYYYMMDD (inspections,
+ *  crashes), MM/DD/YYYY (insurance), or ISO. Normalize to YYYY-MM-DD so the
+ *  pure date parsers (which assume ISO) work. Unknown shapes pass through. */
+export function normalizeFmcsaDate(raw: string | null | undefined): string {
+  const s = (raw ?? "").trim();
+  if (!s) return "";
+  let m = s.match(/^(\d{4})(\d{2})(\d{2})$/); // YYYYMMDD
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // MM/DD/YYYY
+  if (m) return `${m[3]}-${m[1].padStart(2, "0")}-${m[2].padStart(2, "0")}`;
+  m = s.match(/^(\d{4}-\d{2}-\d{2})/); // already ISO (possibly with time)
+  if (m) return m[1];
+  return s;
+}
+
 export type CarrierIntelligence = {
   trajectory: Trajectory;
   anomaly: AnomalyResult;
@@ -54,11 +69,11 @@ export function authorityInstability(history: SocrataAuthorityHistory[]): boolea
 export function toDatedInspections(rows: SocrataInspection[]): DatedInspection[] {
   return rows
     .filter((r) => r.insp_date)
-    .map((r) => ({ date: r.insp_date as string, oos: num(r.oos_total) > 0, violations: num(r.viol_total) }));
+    .map((r) => ({ date: normalizeFmcsaDate(r.insp_date), oos: num(r.oos_total) > 0, violations: num(r.viol_total) }));
 }
 
 export function toDatedCrashes(rows: SocrataCrash[]): DatedCrash[] {
-  return rows.filter((r) => r.report_date).map((r) => ({ date: r.report_date as string }));
+  return rows.filter((r) => r.report_date).map((r) => ({ date: normalizeFmcsaDate(r.report_date) }));
 }
 
 export function toInsurancePolicies(rows: SocrataInsurance[]): InsurancePolicy[] {
@@ -66,7 +81,7 @@ export function toInsurancePolicies(rows: SocrataInsurance[]): InsurancePolicy[]
   // (insurer count/changes are the meaningful Phase-1 churn signal).
   return rows
     .filter((r) => r.effective_date)
-    .map((r) => ({ insurer: r.name_company ?? "", from: r.effective_date as string, to: null }));
+    .map((r) => ({ insurer: r.name_company ?? "", from: normalizeFmcsaDate(r.effective_date), to: null }));
 }
 
 export function oosRates(rows: SocrataInspection[]): { vehicleOosRate: number | null; driverOosRate: number | null } {
@@ -80,7 +95,7 @@ export function recentFatalCrash(rows: SocrataCrash[], asOf: string): boolean {
   const asOfMs = parseUTC(asOf);
   return rows.some((r) => {
     if (num(r.fatalities) <= 0 || !r.report_date) return false;
-    const ms = parseUTC(r.report_date);
+    const ms = parseUTC(normalizeFmcsaDate(r.report_date));
     if (Number.isNaN(ms)) return false;
     const age = asOfMs - ms;
     return age >= 0 && age <= 730 * DAY_MS;

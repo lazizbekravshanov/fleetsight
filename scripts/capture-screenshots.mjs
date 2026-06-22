@@ -7,7 +7,7 @@
 import { chromium } from "playwright";
 
 const BASE = (process.env.SITE_URL || "https://fleetsight.vercel.app").replace(/\/$/, "");
-const CARRIER_DOT = process.env.CARRIER_DOT || "54283"; // a carrier with rich data
+const CARRIER_DOT = process.env.CARRIER_DOT || "3157032"; // rich, multi-year readout (deteriorating trajectory)
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
