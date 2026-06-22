@@ -6,8 +6,34 @@ import {
   oosRates,
   recentFatalCrash,
   authorityInstability,
+  normalizeFmcsaDate,
   buildIntelligence,
 } from "./adapters";
+
+describe("normalizeFmcsaDate", () => {
+  it("converts FMCSA YYYYMMDD to ISO", () => {
+    expect(normalizeFmcsaDate("20260620")).toBe("2026-06-20");
+  });
+  it("converts MM/DD/YYYY (insurance) to ISO, zero-padded", () => {
+    expect(normalizeFmcsaDate("12/31/2029")).toBe("2029-12-31");
+    expect(normalizeFmcsaDate("1/5/2024")).toBe("2024-01-05");
+  });
+  it("passes through an already-ISO date", () => {
+    expect(normalizeFmcsaDate("2025-03-01")).toBe("2025-03-01");
+  });
+  it("returns empty for blank/missing", () => {
+    expect(normalizeFmcsaDate("")).toBe("");
+    expect(normalizeFmcsaDate(null)).toBe("");
+    expect(normalizeFmcsaDate(undefined)).toBe("");
+  });
+});
+
+describe("toDatedInspections — date normalization", () => {
+  it("normalizes FMCSA YYYYMMDD inspection dates", () => {
+    const out = toDatedInspections([{ dot_number: "1", insp_date: "20250115", oos_total: "1", viol_total: "2" }]);
+    expect(out[0]).toEqual({ date: "2025-01-15", oos: true, violations: 2 });
+  });
+});
 
 describe("toDatedInspections", () => {
   it("maps date, OOS flag (oos_total>0), and violation count", () => {
@@ -138,5 +164,27 @@ describe("buildIntelligence", () => {
     expect(intel.outlook.factors.some((f) => f.label === "recent_fatal_crash")).toBe(true);
     expect(intel.outlook.factors.some((f) => f.label === "basic_percentile_critical")).toBe(true);
     expect(intel.outlook.factors.some((f) => f.label === "authority_instability")).toBe(true);
+  });
+
+  it("parses FMCSA YYYYMMDD dates so the trajectory verdict fires (regression)", () => {
+    const intel = buildIntelligence({
+      inspections: [
+        { dot_number: "1", insp_date: "20240110", oos_total: "0", viol_total: "0" },
+        { dot_number: "1", insp_date: "20240620", oos_total: "0", viol_total: "0" }, // 2024: 0% OOS
+        { dot_number: "1", insp_date: "20250110", oos_total: "1", viol_total: "1" },
+        { dot_number: "1", insp_date: "20250620", oos_total: "1", viol_total: "1" }, // 2025: 100% OOS
+      ],
+      crashes: [{ dot_number: "1", report_date: "20251201", fatalities: "1" }],
+      insurance: [],
+      basics: [],
+      authorityHistory: [],
+      vins: [],
+      drivers: [],
+      powerUnits: 3,
+      asOf: "2026-06-01",
+    });
+    expect(intel.trajectory.verdict).toBe("deteriorating"); // was "insufficient_data" before the fix
+    expect(intel.trajectory.daysSinceLastInspection).not.toBeNull();
+    expect(intel.outlook.factors.some((f) => f.label === "recent_fatal_crash")).toBe(true);
   });
 });
