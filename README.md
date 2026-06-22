@@ -18,6 +18,8 @@ No signup.
 
 ![Universal search](docs/home.png)
 
+![National safety map](docs/safety-map.png)
+
 ![Predictive intelligence](docs/carrier-intelligence.png)
 
 ## What it does
@@ -28,6 +30,7 @@ No signup.
 - **Fraud detection** — chameleon-carrier scoring, enabler-network mapping, and a Union-Find identity graph over shared identifiers
 - **Trust Score** — composite 0–100 across safety, compliance, fraud, and stability from 25+ automated signals
 - **Teams & monitoring** — shared, role-based watchlists and daily authority/alert crons
+- **National safety map** — interactive choropleth of FMCSA inspections, crashes, and fatalities by state, on the landing page
 
 ## Tech
 

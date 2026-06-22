@@ -11,6 +11,19 @@ import {
 } from "lucide-react";
 import type { SearchResult } from "./types";
 import { detectQuery, type SearchType } from "@/lib/search/detect";
+import dynamic from "next/dynamic";
+
+// Client-only (D3 + us-atlas) — loaded after paint so it never bloats the
+// initial landing payload or runs on the server.
+const SafetyMap = dynamic(() => import("@/components/landing/safety-map"), {
+  ssr: false,
+  loading: () => (
+    <div
+      className="h-[420px] animate-pulse rounded-2xl border"
+      style={{ borderColor: "var(--border)", background: "var(--surface-1)" }}
+    />
+  ),
+});
 
 const DETECT_LABEL: Record<SearchType, string> = {
   dot: "USDOT #",
@@ -373,6 +386,11 @@ export function CarrierLookup() {
                 </div>
               ))}
             </div>
+
+            {/* National safety map */}
+            <section className="mx-auto mt-16 max-w-4xl">
+              <SafetyMap />
+            </section>
 
             {/* What is FleetSight */}
             <section className="mx-auto mt-16 max-w-4xl">

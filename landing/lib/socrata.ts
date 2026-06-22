@@ -3,8 +3,8 @@ import { cacheGet, cacheSet } from "@/lib/cache";
 const BASE_URL = "https://data.transportation.gov/resource";
 
 export const CENSUS_RESOURCE = "az4n-8mr2";
-const INSPECTION_RESOURCE = "fx4q-ay7w";
-const CRASH_RESOURCE = "aayw-vxb3";
+export const INSPECTION_RESOURCE = "fx4q-ay7w";
+export const CRASH_RESOURCE = "aayw-vxb3";
 const INSURANCE_RESOURCE = "qh9u-swkp";   // dot_number is 8-char zero-padded
 const AUTH_HIST_RESOURCE = "9mw4-x3tu";    // dot_number is 8-char zero-padded
 const FLEET_UNIT_RESOURCE = "wt8s-2hbx";   // joined via inspection_id (no dot_number)
