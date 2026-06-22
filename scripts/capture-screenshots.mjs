@@ -18,7 +18,18 @@ await page.waitForTimeout(2500);
 await page.screenshot({ path: "docs/home.png" });
 console.log("✓ docs/home.png");
 
-// 2) Carrier intelligence page + the Predictive Intelligence section
+// 2) National safety map (landing-page section; renders client-side after a fetch)
+const map = page.locator("section").filter({ hasText: "National safety map" }).first();
+if (await map.count()) {
+  await map.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(3000); // let the choropleth fetch + fill
+  await map.screenshot({ path: "docs/safety-map.png" });
+  console.log("✓ docs/safety-map.png");
+} else {
+  console.warn("! National safety map section not found — skipped");
+}
+
+// 3) Carrier intelligence page + the Predictive Intelligence section
 await page.goto(`${BASE}/carrier/${CARRIER_DOT}`, { waitUntil: "networkidle" });
 await page.waitForTimeout(4000);
 await page.evaluate(() => window.scrollTo(0, 0));
